@@ -1,32 +1,37 @@
+"use client";
+
 import { signup } from "@/app/actions/auth";
+import { signIn } from "@/auth";
 import { useActionState } from "react";
 
-export function SignupForm() {
-  const [state, action, pending] = useActionState(signup, undefined);
+export default function SignupForm() {
+  // const [state, action, pending] = useActionState(signup, undefined);
+
+  const onSubmit = async (data) => {
+    try {
+      const res = await signIn("credentials", {
+        ...data,
+        // redirect: false,
+      });
+
+      if (!res?.ok) {
+        throw Error();
+      }
+    } catch (error) {
+      console.error("Error [LOGIN]", error);
+    }
+  };
   return (
-    <form action={action}>
+    <form onSubmit={onSubmit}>
       <div>
         <label htmlFor="email">Email</label>
         <input id="email" name="email" type="email" placeholder="Email" />
       </div>
-      {state?.errors?.email && <p>{state.errors.email}</p>}
       <div>
         <label htmlFor="password">Password</label>
         <input id="password" name="password" type="password" />
       </div>
-      {state?.errors?.password && (
-        <div>
-          <p>Password must:</p>
-          <ul>
-            {state.errors.password.map((error) => (
-              <li key={error}>- {error}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <button disabled={pending} type="submit">
-        Sign Up
-      </button>
+      <button type="submit">Sign Up</button>
     </form>
   );
 }
