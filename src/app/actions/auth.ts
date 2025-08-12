@@ -1,5 +1,4 @@
 import { signupFormSchema, FormState } from "@/app/lib/definitions";
-import { signIn } from "@/auth";
 
 export async function signup(state: FormState, formData: FormData) {
   // Validate form fields
@@ -15,7 +14,7 @@ export async function signup(state: FormState, formData: FormData) {
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-  signIn("credentials", formData);
+  // signIn("credentials", formData);
 
   // Call the provider or db to create a user...
 }
