@@ -1,9 +1,12 @@
+"use server";
 import { signupFormSchema, FormState } from "@/app/lib/definitions";
+import { db } from "@/db/db";
+import { usersTable } from "@/db/schema";
+import bcrypt from "bcrypt";
 
-export async function signup(state: FormState, formData: FormData) {
+export async function signin(state: FormState, formData: FormData) {
   // Validate form fields
   const validatedFields = signupFormSchema.safeParse({
-    name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
   });
@@ -14,7 +17,13 @@ export async function signup(state: FormState, formData: FormData) {
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-  // signIn("credentials", formData);
+  const { email, password } = validatedFields.data;
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Call the provider or db to create a user...
+  const data = await db
+    .insert(usersTable)
+    .values({ sessionID: crypto.randomUUID(), email, password: hashedPassword })
+    .returning({ id: usersTable.id });
+
+  console.log(data);
 }
