@@ -3,6 +3,9 @@ import { signupFormSchema, FormState } from "@/app/lib/definitions";
 import { db } from "@/db/db";
 import { usersTable } from "@/db/schema";
 import bcrypt from "bcrypt";
+import { createSession, deleteSession } from "../lib/session";
+import { redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 
 export async function signin(state: FormState, formData: FormData) {
   // Validate form fields
@@ -20,10 +23,37 @@ export async function signin(state: FormState, formData: FormData) {
   const { email, password } = validatedFields.data;
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const data = await db
-    .insert(usersTable)
-    .values({ sessionID: crypto.randomUUID(), email, password: hashedPassword })
-    .returning({ id: usersTable.id });
+  // Проверка, что юзер не существует
+  let isUserExist;
+  try {
+    isUserExist = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, email));
+  } catch (error) {
+    console.log(error);
+    return undefined;
+  }
 
-  console.log(data);
+  if ((isUserExist.length = 1)) {
+    await createSession(isUserExist[0].id, isUserExist[0].role);
+    redirect("/");
+  } else {
+    const [user] = await db
+      .insert(usersTable)
+      .values({
+        sessionID: crypto.randomUUID(),
+        email,
+        password: hashedPassword,
+        role: "user",
+      })
+      .returning({ id: usersTable.id, role: usersTable.role });
+    await createSession(user.id, user.role);
+    redirect("/dashboard");
+  }
+}
+
+export async function logout() {
+  await deleteSession();
+  redirect("/login");
 }

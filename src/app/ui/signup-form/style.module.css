@@ -1,0 +1,27 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form input {
+  height: 40px;
+  width: 300px;
+  border-radius: 8px;
+  outline: none;
+  border: 1px solid black;
+  padding: 4px 8px;
+}
+
+.form button {
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 25%);
+}
