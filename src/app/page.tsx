@@ -1,8 +1,17 @@
+"use client";
+
 import s from "./page.module.css";
 import Image from "next/image";
 import Kirill from "../../public/Kirill.webp";
+import { getUser } from "./lib/dal";
+import { redirect } from "next/navigation";
 
 export default function Home() {
+  // const user = await getUser();
+
+  const onClick = () => {
+    redirect("dashboard");
+  };
   return (
     <div className={s.page}>
       <main className={s.main}>
@@ -12,7 +21,9 @@ export default function Home() {
             <li>О преподавателе</li>
             <li>Курсы</li>
             <li>Отзывы</li>
-            <button className={s.button}>Вход</button>
+            <button className={s.button} onClick={onClick}>
+              {false ? "Личный кабинет" : "Вход"}
+            </button>
           </ul>
         </nav>
         <section className={s.mainSection}>
