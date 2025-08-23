@@ -1,0 +1,18 @@
+.card {
+  border: 1px solid #ebebeb;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.description {
+  font-size: 1rem;
+}
