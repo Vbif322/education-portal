@@ -1,0 +1,53 @@
+.header {
+  width: 100%;
+  border-bottom: 1px solid #cbcbcb;
+  display: flex;
+  justify-content: center;
+  z-index: 3000;
+}
+
+.wrapper {
+  max-width: 1200px;
+  padding-top: 16px;
+}
+
+.nav {
+  margin-top: 32px;
+  position: relative;
+}
+
+.menuList {
+  display: flex;
+  list-style-type: none;
+  gap: 32px;
+}
+
+.menuList li {
+  padding: 16px;
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+
+.indicator {
+  position: absolute;
+  display: inline-block;
+  background: #2563eb;
+  height: 2px;
+  bottom: 0;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input {
+  font-size: 0.875rem;
+  border-radius: 8px;
+  border: 1px solid #cbcbcb;
+  outline: none;
+  padding: 12px;
+  width: 22ch;
+  transition: 0.3s ease;
+}
+
+.input:focus {
+  border-color: #ababab;
+  width: 32ch;
+}
