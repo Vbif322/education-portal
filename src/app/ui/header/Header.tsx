@@ -2,11 +2,12 @@
 
 import { FC, MouseEvent, useState } from "react";
 import s from "./style.module.css";
-import { redirect, usePathname } from "next/navigation";
+import { redirect } from "next/navigation";
+import { LogOutIcon } from "lucide-react";
+import { logout } from "@/app/actions/auth";
 
 const Header: FC = () => {
   const [indicatorPos, setIndicatorPos] = useState({ left: 0, width: 100 });
-  const pathname = usePathname();
 
   const onTabClick = (e: MouseEvent<HTMLLIElement>) => {
     const target = e.target as HTMLLIElement;
@@ -20,7 +21,6 @@ const Header: FC = () => {
       }
     }
     setIndicatorPos({ width: target.offsetWidth, left });
-    console.log(pathname);
     if (target.dataset.url) {
       redirect("/dashboard" + target.dataset.url);
     }
@@ -28,8 +28,11 @@ const Header: FC = () => {
   return (
     <header className={s.header}>
       <div className={s.wrapper}>
-        <div>
+        <div className={s.input__container}>
           <input type="text" className={s.input} placeholder="Найти курс" />
+          <button className={s.iconButton} onClick={logout}>
+            <LogOutIcon />
+          </button>
         </div>
         <nav className={s.nav}>
           <ul className={s.menuList}>

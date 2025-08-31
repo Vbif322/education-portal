@@ -9,6 +9,7 @@
 .wrapper {
   max-width: 1200px;
   padding-top: 16px;
+  flex-grow: 1;
 }
 
 .nav {
@@ -35,6 +36,21 @@
   height: 2px;
   bottom: 0;
   transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input__container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.iconButton {
+  background: none;
+  padding: 0;
+}
+
+.iconButton svg {
+  stroke: #ababab;
 }
 
 .input {
