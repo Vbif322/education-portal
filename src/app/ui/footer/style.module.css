@@ -1,0 +1,26 @@
+.footer {
+  width: 100%;
+  background: #2d3748;
+  padding: 32px;
+  display: flex;
+  justify-content: space-evenly;
+  color: #ffffff;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.textContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 1.125rem;
+}

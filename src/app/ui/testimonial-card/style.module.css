@@ -1,0 +1,45 @@
+.card {
+  background-color: rgb(243 244 246);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  max-width: 304px;
+}
+
+.description {
+  font-style: italic;
+  color: rgb(55 65 81);
+  margin-bottom: 1.5rem;
+}
+
+.person {
+  display: flex;
+  gap: 16px;
+}
+
+.avatar {
+  min-width: 50px;
+  width: 50px;
+  min-height: 50px;
+  height: 50px;
+  background-color: #bbbbbb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.textContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-weight: 700;
+}
+
+.appointment {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: rgb(107 114 128);
+}

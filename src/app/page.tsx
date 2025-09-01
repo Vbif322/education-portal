@@ -6,6 +6,8 @@ import Kirill from "../../public/Kirill.webp";
 import { getUser } from "./lib/dal";
 import { redirect } from "next/navigation";
 import CourseCard from "./ui/course-card/CourseCard";
+import Footer from "./ui/footer/Footer";
+import TestimonialCard from "./ui/testimonial-card/TestimonialCard";
 
 const courses = [
   {
@@ -28,6 +30,30 @@ const courses = [
   },
 ];
 
+const testimonials = [
+  {
+    id: 1,
+    description:
+      '"Этот курс — лучшее вложение в мой бизнес. Никакой воды, только практика. За 2 месяца я увеличил прибыль на 40%."',
+    name: "Алексей Петров",
+    appointment: "Владелец интернет-магазина",
+  },
+  {
+    id: 2,
+    description:
+      '"Этот курс — лучшее вложение в мой бизнес. Никакой воды, только практика. За 2 месяца я увеличил прибыль на 40%."',
+    name: "Алексей Петров",
+    appointment: "Владелец интернет-магазина",
+  },
+  {
+    id: 3,
+    description:
+      '"Этот курс — лучшее вложение в мой бизнес. Никакой воды, только практика. За 2 месяца я увеличил прибыль на 40%."',
+    name: "Алексей Петров",
+    appointment: "Владелец интернет-магазина",
+  },
+];
+
 export default function Home() {
   // const user = await getUser();
 
@@ -36,7 +62,7 @@ export default function Home() {
   };
   return (
     <div className={s.page}>
-      <main className={s.main}>
+      <header className={s.header}>
         <nav className={s.nav}>
           <ul className={s.navigation}>
             <p className={s.logoTitle}>Бизнес с Кириллом Месеняшиным</p>
@@ -48,6 +74,8 @@ export default function Home() {
             </button>
           </ul>
         </nav>
+      </header>
+      <main className={s.main}>
         <section className={s.mainSection}>
           <div className={s.mainBlock}>
             <h1 className={s.title}>
@@ -80,16 +108,24 @@ export default function Home() {
         <section className={s.section}>
           <h3 className={s.sectionTitle}>Каталог курсов</h3>
           <div className={s.courseCardContainer}>
-            {courses.map((course) => (
-              <CourseCard
-                key={course.id}
-                {...course}
-                href={course.href + "/" + course.id}
-              />
+            {courses.map(({ id, ...props }) => (
+              <CourseCard key={id} {...props} href={props.href + "/" + id} />
+            ))}
+          </div>
+        </section>
+        <section className={s.section}>
+          <h3 className={s.testimonial__title}>Что говорят студенты</h3>
+          <p className={s.testimonial__subtitle}>
+            Реальные истории успеха от тех, кто уже прошел обучение
+          </p>
+          <div className={s.testimonialsContainer}>
+            {testimonials.map(({ id, ...props }) => (
+              <TestimonialCard key={id} {...props} />
             ))}
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 }
