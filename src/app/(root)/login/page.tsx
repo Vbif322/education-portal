@@ -5,6 +5,7 @@ export default function LoginPage() {
   return (
     <div className={s.container}>
       <div className={s.paper}>
+        <h2 className={s.title}>Вход в кабинет</h2>
         <SignupForm />
       </div>
     </div>

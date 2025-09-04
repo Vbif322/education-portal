@@ -14,11 +14,16 @@ export default function SignupForm() {
         <input id="email" name="email" type="email" placeholder="Email" />
       </div>
       <div>
-        <label htmlFor="password">Password</label>
-        <input id="password" name="password" type="password" />
+        <label htmlFor="password">Пароль</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Пароль"
+        />
       </div>
       <button type="submit" disabled={pending}>
-        Sign Up
+        Войти
       </button>
     </form>
   );

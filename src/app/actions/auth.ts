@@ -37,7 +37,7 @@ export async function signin(state: FormState, formData: FormData) {
 
   if ((isUserExist.length = 1)) {
     await createSession(isUserExist[0].id, isUserExist[0].role);
-    redirect("/");
+    redirect("/dashboard");
   } else {
     const [user] = await db
       .insert(usersTable)
