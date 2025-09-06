@@ -1,6 +1,7 @@
 import { verifySession } from "@/app/lib/dal";
-import Header from "@/app/ui/header/Header";
+import Header from "@/app/components/header/Header";
 import { FC } from "react";
+import Subheader from "@/app/components/subheader/Subheader";
 
 const DashboardLayout: FC<
   Readonly<{
@@ -12,6 +13,7 @@ const DashboardLayout: FC<
   return (
     <>
       <Header />
+      <Subheader />
       <div style={{ padding: 32, maxWidth: "1200px", margin: "auto" }}>
         {children}
       </div>

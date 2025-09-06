@@ -1,0 +1,9 @@
+.title {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.card__container {
+  display: flex;
+  gap: 32px;
+}

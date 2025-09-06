@@ -1,7 +1,7 @@
 import { FC } from "react";
 
 const StatisticsPage: FC = () => {
-  return <div>StatisticsPage</div>;
+  return <p style={{ fontSize: "2rem" }}>В разработке</p>;
 };
 
 export default StatisticsPage;

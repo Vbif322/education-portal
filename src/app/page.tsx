@@ -5,28 +5,25 @@ import Image from "next/image";
 import Kirill from "../../public/Kirill.webp";
 import { getUser } from "./lib/dal";
 import { redirect } from "next/navigation";
-import CourseCard from "./ui/course-card/CourseCard";
-import Footer from "./ui/footer/Footer";
-import TestimonialCard from "./ui/testimonial-card/TestimonialCard";
+import CourseCard from "./components/course-card/CourseCard";
+import Footer from "./components/footer/Footer";
+import TestimonialCard from "./components/testimonial-card/TestimonialCard";
 
 const courses = [
   {
-    id: 1,
+    id: "1",
     title: "Создание бизнеса с нуля",
     description: "Полный список курсов по запуску и развитию бизнеса",
-    href: "/course",
   },
   {
-    id: 2,
+    id: "2",
     title: "Создание бизнеса с нуля",
     description: "Полный список курсов по запуску и развитию бизнеса",
-    href: "/course",
   },
   {
-    id: 3,
+    id: " 3",
     title: "Создание бизнеса с нуля",
     description: "Полный список курсов по запуску и развитию бизнеса",
-    href: "/course",
   },
 ];
 
@@ -108,8 +105,8 @@ export default function Home() {
         <section className={s.section}>
           <h3 className={s.sectionTitle}>Каталог курсов</h3>
           <div className={s.courseCardContainer}>
-            {courses.map(({ id, ...props }) => (
-              <CourseCard key={id} {...props} href={props.href + "/" + id} />
+            {courses.map((course) => (
+              <CourseCard key={course.id} {...course} />
             ))}
           </div>
         </section>

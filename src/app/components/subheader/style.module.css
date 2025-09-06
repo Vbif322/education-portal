@@ -1,0 +1,25 @@
+.nav {
+  margin-top: 32px;
+  position: relative;
+}
+
+.menuList {
+  display: flex;
+  list-style-type: none;
+  gap: 32px;
+}
+
+.menuList li {
+  padding: 16px;
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+
+.indicator {
+  position: absolute;
+  display: inline-block;
+  background: #2563eb;
+  height: 2px;
+  bottom: 0;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
