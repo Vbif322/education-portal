@@ -8,7 +8,7 @@ type Props = {
   visible?: boolean;
 };
 
-const Subheader: FC<Props> = ({ visible }) => {
+const Navbar: FC<Props> = ({ visible }) => {
   const [indicatorPos, setIndicatorPos] = useState({ left: 0, width: 100 });
 
   const onTabClick = (e: MouseEvent<HTMLLIElement>) => {
@@ -45,4 +45,4 @@ const Subheader: FC<Props> = ({ visible }) => {
   );
 };
 
-export default Subheader;
+export default Navbar;
