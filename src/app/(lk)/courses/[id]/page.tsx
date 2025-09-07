@@ -59,6 +59,7 @@ const CoursePage: FC<Props> = async ({ params }) => {
               }
             />
           </div>
+          <p className={s.content__subtitle}>Получаемые навыки</p>
         </div>
       </div>
 

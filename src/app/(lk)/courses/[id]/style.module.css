@@ -51,11 +51,18 @@
 }
 
 .content h3 {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
 }
 
 .content__subtitle {
   margin-top: 32px;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 500;
+}
+
+.skills__container {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(2, 420px);
+  gap: 16px;
 }

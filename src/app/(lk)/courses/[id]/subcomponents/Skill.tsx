@@ -6,11 +6,10 @@ export const Skill = ({ description }: { description: string }) => {
       style={{
         display: "flex",
         alignItems: "center",
-        gap: "8px",
-        maxWidth: "300px",
+        gap: "16px",
       }}
     >
-      <Check />
+      <Check style={{ flexShrink: 0 }} />
       <p>{description}</p>
     </div>
   );
