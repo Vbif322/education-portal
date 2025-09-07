@@ -1,9 +1,7 @@
 .header {
   width: 100%;
-  /* border-bottom: 1px solid #cbcbcb; */
   display: flex;
   justify-content: center;
-  z-index: 3000;
 }
 
 .wrapper {

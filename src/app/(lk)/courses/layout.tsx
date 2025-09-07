@@ -1,0 +1,19 @@
+import Header from "@/app/components/header/Header";
+import Divider from "@/app/ui/Divider";
+import { FC } from "react";
+
+const CourseLayout: FC<
+  Readonly<{
+    children: React.ReactNode;
+  }>
+> = ({ children }) => {
+  return (
+    <>
+      <Header />
+      <Divider style={{ marginTop: "16px" }} />
+      <div>{children}</div>
+    </>
+  );
+};
+
+export default CourseLayout;

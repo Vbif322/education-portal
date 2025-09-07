@@ -1,5 +1,12 @@
 .nav {
   margin-top: 32px;
+  display: flex;
+  justify-content: center;
+}
+
+.wrapper {
+  max-width: 1200px;
+  width: 100%;
   position: relative;
 }
 

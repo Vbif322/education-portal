@@ -10,9 +10,7 @@ const CourseCard: FC<ICourse> = ({ title, description, id }) => {
     <div className={s.card}>
       <p className={s.title}>{title}</p>
       <p className={s.description}>{description}</p>
-      <button onClick={() => redirect("/dashboard/courses/" + id)}>
-        Подробнее
-      </button>
+      <button onClick={() => redirect("/courses/" + id)}>Подробнее</button>
     </div>
   );
 };
