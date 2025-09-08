@@ -1,13 +1,29 @@
 import { FC, ReactNode } from "react";
 import s from "./style.module.css";
 import { StarIcon } from "lucide-react";
-import Divider from "@/app/ui/Divider";
+import Divider from "@/app/ui/Divider/Divider";
 import { Block } from "./subcomponents/Block";
 import { Skill } from "./subcomponents/Skill";
+import Chip from "@/app/ui/Chip/Chip";
 
 type Props = {
   params: Promise<{ id: string }>;
 };
+
+const skills = [
+  "Бережливое производство",
+  "Оптимизация процессов",
+  "Кайдзен",
+  "Канбан",
+  "5S",
+  "Картирование потоков",
+  "Управление изменениями",
+  "Непрерывные улучшения",
+  "Стандартизация процессов",
+  "Анализ потерь",
+  "Производственная эффективность",
+  "Решение проблем",
+];
 
 const CoursePage: FC<Props> = async ({ params }) => {
   const { id } = await params;
@@ -60,6 +76,18 @@ const CoursePage: FC<Props> = async ({ params }) => {
             />
           </div>
           <p className={s.content__subtitle}>Получаемые навыки</p>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              marginTop: "16px",
+            }}
+          >
+            {skills.map((skill) => {
+              return <Chip key={skill} text={skill} />;
+            })}
+          </div>
         </div>
       </div>
 

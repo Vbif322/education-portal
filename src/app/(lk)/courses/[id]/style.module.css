@@ -61,7 +61,7 @@
 }
 
 .skills__container {
-  margin-top: 32px;
+  margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(2, 420px);
   gap: 16px;
