@@ -5,8 +5,10 @@ type Props = {};
 const ThemePage: FC<Props> = (props) => {
   return (
     <div>
-      <video width="320" height="240" controls preload="none">
-        <source src="/videos/Как менялся пит-стоп.mp4" type="video/mp4" />
+      <p>Вернуться к списку курсов</p>
+      <p>Бизнес-старт: от идеи до первых продаж</p>
+      <video width="1080" height="720" controls preload="none">
+        <source src="/videos/Управление задачами 12.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
     </div>
