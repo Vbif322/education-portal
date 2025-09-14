@@ -7,7 +7,13 @@ const ModuleLayout: FC<
   }>
 > = async ({ children }) => {
   return (
-    <div style={{ position: "relative" }}>
+    <div
+      style={{
+        position: "relative",
+        backgroundColor: "rgb(243 244 246)",
+        minHeight: "100vh",
+      }}
+    >
       <Aside />
       <div style={{ display: "flex", justifyContent: "center" }}>
         {children}

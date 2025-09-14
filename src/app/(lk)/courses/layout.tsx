@@ -10,8 +10,14 @@ const CourseLayout: FC<
   return (
     <>
       <Header />
-      <Divider style={{ marginTop: "16px" }} />
-      <div>{children}</div>
+      {/* <Divider
+        style={{
+          position: "fixed",
+          top: "calc(var(--header-height)+16px)",
+          zIndex: 1000,
+        }}
+      /> */}
+      {children}
     </>
   );
 };
