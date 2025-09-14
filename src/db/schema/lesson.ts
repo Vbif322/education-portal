@@ -1,12 +1,12 @@
-import { integer, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { integer, pgEnum, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import { createdAt, updatedAt } from "../schemaHelpers";
 
 export const statusEnum = pgEnum("statuses", ["public", "private"]);
 
 export const LessonTable = pgTable("lessons", {
-  id: uuid().primaryKey().defaultRandom(),
-  name: text().notNull(),
-  description: text(),
+  id: uuid().notNull().primaryKey().defaultRandom(),
+  name: varchar({ length: 256 }).notNull(),
+  description: varchar({ length: 256 }),
   status: statusEnum().default("private"),
   progress: integer(),
   createdAt,
