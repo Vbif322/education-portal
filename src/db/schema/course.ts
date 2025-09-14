@@ -1,5 +1,6 @@
 import {
   integer,
+  pgEnum,
   pgTable,
   primaryKey,
   serial,
@@ -9,10 +10,13 @@ import {
 import { createdAt, updatedAt } from "../schemaHelpers";
 import { relations } from "drizzle-orm";
 
+const levelEnum = pgEnum("levels", ["beginner", "intermediate", "advanced"]);
+
 export const courses = pgTable("courses", {
   courseId: uuid().notNull().primaryKey().defaultRandom(),
   name: varchar({ length: 256 }).notNull(),
   description: varchar({ length: 256 }),
+  level: levelEnum(),
   createdAt,
   updatedAt,
 });
