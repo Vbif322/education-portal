@@ -3,26 +3,23 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
-  serial,
-  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import { createdAt, updatedAt } from "../schemaHelpers";
 import { relations } from "drizzle-orm";
 
-const levelEnum = pgEnum("levels", ["beginner", "intermediate", "advanced"]);
+const levelEnum = pgEnum("level", ["beginner", "intermediate", "advanced"]);
 
 export const courses = pgTable("courses", {
-  courseId: uuid().notNull().primaryKey().defaultRandom(),
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
   description: varchar({ length: 256 }),
-  level: levelEnum(),
   createdAt,
   updatedAt,
 });
 
 export const skills = pgTable("skills", {
-  skillId: serial().notNull().primaryKey(),
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
   createdAt,
   updatedAt,
@@ -41,10 +38,10 @@ export const skillsToCourses = pgTable(
   {
     courseId: integer("course_id")
       .notNull()
-      .references(() => courses.courseId),
+      .references(() => courses.id, { onDelete: "cascade" }),
     skillId: integer("skill_id")
       .notNull()
-      .references(() => skills.skillId),
+      .references(() => skills.id, { onDelete: "cascade" }),
   },
   (t) => [primaryKey({ columns: [t.courseId, t.skillId] })]
 );
@@ -54,11 +51,11 @@ export const skillsToCoursesRelations = relations(
   ({ one }) => ({
     course: one(courses, {
       fields: [skillsToCourses.courseId],
-      references: [courses.courseId],
+      references: [courses.id],
     }),
     skill: one(skills, {
       fields: [skillsToCourses.skillId],
-      references: [skills.skillId],
+      references: [skills.id],
     }),
   })
 );

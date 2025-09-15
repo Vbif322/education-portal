@@ -1246,7 +1246,7 @@ doctrine@^2.1.0:
 
 drizzle-kit@^0.31.4:
   version "0.31.4"
-  resolved "https://registry.npmjs.org/drizzle-kit/-/drizzle-kit-0.31.4.tgz"
+  resolved "https://registry.yarnpkg.com/drizzle-kit/-/drizzle-kit-0.31.4.tgz#b4a23fae0ab8d64b262184aaf07f8cbdc2222751"
   integrity sha512-tCPWVZWZqWVx2XUsVpJRnH9Mx0ClVOf5YUHerZ5so1OKSlqww4zy1R5ksEdGRcO3tM3zj0PYN6V48TbQCL1RfA==
   dependencies:
     "@drizzle-team/brocli" "^0.10.2"
@@ -1258,6 +1258,13 @@ drizzle-orm@^0.44.4:
   version "0.44.4"
   resolved "https://registry.npmjs.org/drizzle-orm/-/drizzle-orm-0.44.4.tgz"
   integrity sha512-ZyzKFpTC/Ut3fIqc2c0dPZ6nhchQXriTsqTNs4ayRgl6sZcFlMs9QZKPSHXK4bdOf41GHGWf+FrpcDDYwW+W6Q==
+
+drizzle-seed@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/drizzle-seed/-/drizzle-seed-0.3.1.tgz#06866f05baf6470855d58ad7ff630435259552ba"
+  integrity sha512-F/0lgvfOAsqlYoHM/QAGut4xXIOXoE5VoAdv2FIl7DpGYVXlAzKuJO+IphkKUFK3Dz+rFlOsQLnMNrvoQ0cx7g==
+  dependencies:
+    pure-rand "^6.1.0"
 
 dunder-proto@^1.0.0, dunder-proto@^1.0.1:
   version "1.0.1"
@@ -2604,6 +2611,11 @@ punycode@^2.1.0:
   version "2.3.1"
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.3.1.tgz"
   integrity sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==
+
+pure-rand@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/pure-rand/-/pure-rand-6.1.0.tgz#d173cf23258231976ccbdb05247c9787957604f2"
+  integrity sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==
 
 queue-microtask@^1.2.2:
   version "1.2.3"

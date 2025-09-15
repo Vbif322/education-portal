@@ -1,10 +1,4 @@
-import { pgTable, uuid, varchar } from "drizzle-orm/pg-core";
-export const usersTable = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  email: varchar({ length: 255 }).notNull().unique(),
-  password: varchar({ length: 255 }).notNull(),
-  sessionID: uuid("session_id").unique(),
-  role: varchar({ enum: ["user", "admin"] })
-    .notNull()
-    .default("user"),
-});
+export * from "./schema/course";
+export * from "./schema/lesson";
+export * from "./schema/module";
+export * from "./schema/users";

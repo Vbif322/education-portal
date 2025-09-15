@@ -1,7 +1,7 @@
 "use server";
 import { signupFormSchema, FormState } from "@/app/lib/definitions";
 import { db } from "@/db/db";
-import { usersTable } from "@/db/schema";
+import { users } from "@/db/schema/users";
 import bcrypt from "bcrypt";
 import { createSession, deleteSession } from "../lib/session";
 import { redirect } from "next/navigation";
@@ -26,10 +26,7 @@ export async function signin(state: FormState, formData: FormData) {
   // Проверка, что юзер не существует
   let isUserExist;
   try {
-    isUserExist = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.email, email));
+    isUserExist = await db.select().from(users).where(eq(users.email, email));
   } catch (error) {
     console.log(error);
     return undefined;
@@ -40,14 +37,14 @@ export async function signin(state: FormState, formData: FormData) {
     redirect("/dashboard");
   } else {
     const [user] = await db
-      .insert(usersTable)
+      .insert(users)
       .values({
         sessionID: crypto.randomUUID(),
         email,
         password: hashedPassword,
         role: "user",
       })
-      .returning({ id: usersTable.id, role: usersTable.role });
+      .returning({ id: users.id, role: users.role });
     await createSession(user.id, user.role);
     redirect("/dashboard");
   }

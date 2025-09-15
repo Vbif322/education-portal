@@ -6,7 +6,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
-import { usersTable } from "@/db/schema";
+import { users } from "@/db/schema/users";
 import { IUser } from "../@types/user";
 
 export const verifySession = cache(async () => {
@@ -29,8 +29,8 @@ export const getUser = cache(async () => {
   if (!session) return null;
 
   try {
-    const data = await db.query.usersTable.findMany({
-      where: eq(usersTable.id, session.userId),
+    const data = await db.query.users.findMany({
+      where: eq(users.id, session.userId),
       // Explicitly return the columns you need rather than the whole user object
       columns: {
         id: true,
