@@ -9,9 +9,7 @@ const LessonCard: FC<ILesson> = ({ name, description, id }) => {
   return (
     <div className={s.card}>
       <p className={s.title}>{name}</p>
-      {description && (
-        <p className={s.description}>{description.slice(0, 150)}</p>
-      )}
+      {description && <p className={s.description}>{description}</p>}
       <button onClick={() => redirect("/courses/" + id)}>Подробнее</button>
     </div>
   );

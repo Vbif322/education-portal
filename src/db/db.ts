@@ -1,14 +1,27 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
-import { seed } from "drizzle-seed";
+import { reset, seed } from "drizzle-seed";
 
 export const db = drizzle(process.env.DATABASE_URL!, {
   schema,
 });
 
-// async function main() {
-//   const db = drizzle(process.env.DATABASE_URL!);
-//   await seed(db, schema, { count: 10 });
-// }
+async function main() {
+  await seed(db, schema, { count: 10 }).refine((f) => ({
+    lessons: {
+      count: 15,
+      columns: {
+        description: f.loremIpsum({
+          sentencesCount: 1,
+        }),
+      },
+    },
+  }));
+}
+
+async function resetDB() {
+  await reset(db, schema);
+}
 
 // main();
+// resetDB()
