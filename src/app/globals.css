@@ -3,6 +3,9 @@
   --foreground: #171717;
   --aside-width: 320px;
   --header-height: 58px;
+  --link-color: #2563eb;
+  --link-color-hover: #1d4ed8;
+  --link-color-active: #1e40af;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -44,6 +47,17 @@ button {
   border: none;
   border-radius: 4px;
   color: #fff;
+}
+
+.link {
+  color: var(--link-color);
+}
+
+.link:hover {
+  color: var(--link-color-hover);
+}
+.link:active {
+  color: var(--link-color-active);
 }
 
 @media (prefers-color-scheme: dark) {

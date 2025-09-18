@@ -1,7 +1,4 @@
-import { verifySession } from "@/app/lib/dal";
-import CourseCard from "@/app/components/course-card/CourseCard";
 import s from "./style.module.css";
-import { ICourse } from "@/app/@types/course";
 import { db } from "@/db/db";
 import { lessons, usersToLessons } from "@/db/schema";
 import LessonCard from "@/app/components/lesson-card/LessonCard";
@@ -26,8 +23,12 @@ import LessonCard from "@/app/components/lesson-card/LessonCard";
 
 export default async function Dashboard() {
   const allLessons = await db.select().from(lessons);
-  const myLessons = await db.select().from(usersToLessons);
-  console.log(myLessons);
+  // const myLessons = await db.query.usersToLessons.findMany({
+  //   with: {
+
+  //   }
+  // });
+  // console.log(myLessons);
   return (
     <div>
       <div>

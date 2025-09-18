@@ -32,7 +32,7 @@ export async function signin(state: FormState, formData: FormData) {
     return undefined;
   }
 
-  if ((isUserExist.length = 1)) {
+  if (isUserExist.length === 1) {
     await createSession(isUserExist[0].id, isUserExist[0].role);
     redirect("/dashboard");
   } else {

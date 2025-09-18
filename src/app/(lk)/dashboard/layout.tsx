@@ -9,8 +9,8 @@ const DashboardLayout: FC<
     children: React.ReactNode;
   }>
 > = async ({ children }) => {
-  const session = await verifySession();
-  console.log(session, "session");
+  // const session = await verifySession();
+  // console.log(session, "session");
   return (
     <>
       <Header />

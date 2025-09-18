@@ -1,4 +1,5 @@
-// import "server-only";
+import { db } from "@/db/db";
+import "server-only";
 // import { getUser } from "@/app/lib/dal";
 // import { db } from "@/db/db";
 // import { eq } from "drizzle-orm";
@@ -27,4 +28,8 @@
 //       ? user.phonenumber
 //       : null,
 //   };
+// }
+
+// async function getUserLessons(userId: string) {
+//     const courses = await db.query.le
 // }

@@ -1,3 +1,5 @@
+import { lessons } from "@/db/schema";
+
 export interface ICourse {
   id: string;
   title: string;
@@ -5,12 +7,4 @@ export interface ICourse {
   progress?: number;
 }
 
-export interface ILesson {
-  id: number;
-  name: string;
-  description?: string;
-  status: "public" | "private";
-  videoURL: string;
-  createdAt: number;
-  updatedAt: number;
-}
+export type Lesson = typeof lessons.$inferSelect;
