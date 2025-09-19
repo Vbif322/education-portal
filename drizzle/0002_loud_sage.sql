@@ -1,1 +1,0 @@
-ALTER TABLE "lessons" ALTER COLUMN "status" SET NOT NULL;

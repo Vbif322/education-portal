@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1757967069309,
-      "tag": "0000_strong_dorian_gray",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1757967128379,
-      "tag": "0001_marvelous_molecule_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1757968966296,
-      "tag": "0002_loud_sage",
+      "when": 1758312624576,
+      "tag": "0000_fair_shocker",
       "breakpoints": true
     }
   ]

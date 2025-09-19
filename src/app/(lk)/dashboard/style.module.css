@@ -4,6 +4,12 @@
 }
 
 .card__container {
+  display: grid;
+  gap: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.selfcard__container {
   display: flex;
   flex-wrap: wrap;
   gap: 32px;

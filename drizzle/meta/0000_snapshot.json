@@ -1,5 +1,5 @@
 {
-  "id": "c5cbff23-46f3-42fa-9e8a-08d50e50a819",
+  "id": "1fb78006-2c80-4f1e-8102-407903d4e53a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -36,14 +36,6 @@
           "type": "varchar(256)",
           "primaryKey": false,
           "notNull": false
-        },
-        "level": {
-          "name": "level",
-          "type": "level",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'beginner'"
         },
         "created_at": {
           "name": "created_at",
@@ -216,7 +208,7 @@
           "type": "statuses",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "'private'"
         },
         "videoURL": {
@@ -254,7 +246,7 @@
       "columns": {
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -439,6 +431,15 @@
     }
   },
   "enums": {
+    "public.level": {
+      "name": "level",
+      "schema": "public",
+      "values": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ]
+    },
     "public.statuses": {
       "name": "statuses",
       "schema": "public",

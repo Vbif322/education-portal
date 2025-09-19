@@ -1,9 +1,9 @@
+CREATE TYPE "public"."level" AS ENUM('beginner', 'intermediate', 'advanced');--> statement-breakpoint
 CREATE TYPE "public"."statuses" AS ENUM('public', 'private');--> statement-breakpoint
 CREATE TABLE "courses" (
 	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "courses_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
 	"name" varchar(256) NOT NULL,
 	"description" varchar(256),
-	"level" "level" DEFAULT 'beginner',
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -25,14 +25,14 @@ CREATE TABLE "lessons" (
 	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "lessons_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
 	"name" varchar(256) NOT NULL,
 	"description" varchar(256),
-	"status" "statuses" DEFAULT 'private',
+	"status" "statuses" DEFAULT 'private' NOT NULL,
 	"videoURL" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "users_to_lessons" (
-	"user_id" integer NOT NULL,
+	"user_id" uuid NOT NULL,
 	"lesson_id" integer NOT NULL,
 	"started_at" timestamp DEFAULT now() NOT NULL,
 	"completed_at" timestamp,

@@ -8,7 +8,11 @@ import {
 import { createdAt, updatedAt } from "../schemaHelpers";
 import { relations } from "drizzle-orm";
 
-const levelEnum = pgEnum("level", ["beginner", "intermediate", "advanced"]);
+export const levelEnum = pgEnum("level", [
+  "beginner",
+  "intermediate",
+  "advanced",
+]);
 
 export const courses = pgTable("courses", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),

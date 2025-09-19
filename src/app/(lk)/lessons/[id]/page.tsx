@@ -1,7 +1,7 @@
 import Paper from "@/app/ui/Paper/Paper";
 import s from "./style.module.css";
 import Player from "@/app/components/video-player/Player";
-import { getUser } from "@/app/lib/dal";
+import { addLessonToUser } from "@/app/lib/dto";
 
 export default async function LessonPage({
   params,
@@ -9,13 +9,7 @@ export default async function LessonPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const user = await getUser();
-  const res = await fetch("http://localhost:3000/api/lessons/lesson", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId: user?.id, videoId: id }),
-  });
-  console.log(res, "res");
+  await addLessonToUser(Number(id));
   return (
     <div className={s.container}>
       <div className={s.wrapper}>
