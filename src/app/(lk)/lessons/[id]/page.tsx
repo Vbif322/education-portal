@@ -1,7 +1,7 @@
 import Paper from "@/app/ui/Paper/Paper";
 import s from "./style.module.css";
 import Player from "@/app/components/video-player/Player";
-import { addLessonToUser } from "@/app/lib/dto";
+import { addLessonToUser } from "@/app/lib/dal";
 
 export default async function LessonPage({
   params,

@@ -3,10 +3,13 @@
 import { FC, MouseEvent, useState } from "react";
 import s from "./style.module.css";
 import { redirect } from "next/navigation";
+import { User } from "@/app/@types/user";
 
-type Props = {};
+type Props = {
+  role?: User["role"];
+};
 
-const Navbar: FC<Props> = () => {
+const Navbar: FC<Props> = ({ role }) => {
   const [indicatorPos, setIndicatorPos] = useState({ left: 0, width: 100 });
 
   const onTabClick = (e: MouseEvent<HTMLLIElement>) => {
@@ -32,12 +35,17 @@ const Navbar: FC<Props> = () => {
           <li onClick={onTabClick} id="tab-0" role="tab" data-url="/">
             Главная
           </li>
-          <li onClick={onTabClick} id="tab-1" role="tab" data-url="/my-courses">
+          {/* <li onClick={onTabClick} id="tab-1" role="tab" data-url="/my-courses">
             Мои курсы
-          </li>
-          <li onClick={onTabClick} id="tab-2" role="tab" data-url="/statistics">
+          </li> */}
+          {/* <li onClick={onTabClick} id="tab-2" role="tab" data-url="/statistics">
             Статистика
-          </li>
+          </li> */}
+          {role === "admin" && (
+            <li onClick={onTabClick} id="tab-2" role="tab" data-url="/admin">
+              Панель управления
+            </li>
+          )}
         </ul>
         <span className={s.indicator} style={indicatorPos}></span>
       </div>

@@ -1,4 +1,3 @@
-export interface IUser {
-  login: string;
-  role: "user" | "admin";
-}
+import { users } from "@/db/schema";
+
+export type User = typeof users.$inferSelect;

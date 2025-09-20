@@ -7,7 +7,9 @@ import { redirect } from "next/navigation";
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
 import { users } from "@/db/schema/users";
-import { IUser } from "../@types/user";
+import { User } from "../@types/user";
+import { lessons, usersToLessons } from "@/db/schema";
+import { Lesson } from "../@types/course";
 
 export const verifySession = cache(async () => {
   const cookie = (await cookies()).get("session")?.value;
@@ -24,14 +26,13 @@ export const getUser = cache(async () => {
   const session = (await verifySession()) as {
     isAuth: boolean;
     userId: string;
-    role: IUser["role"];
+    role: User["role"];
   };
   if (!session) return null;
 
   try {
     const data = await db.query.users.findMany({
       where: eq(users.id, session.userId),
-      // Explicitly return the columns you need rather than the whole user object
       columns: {
         id: true,
         email: true,
@@ -43,7 +44,48 @@ export const getUser = cache(async () => {
 
     return user;
   } catch (error) {
-    console.log("Failed to fetch user");
+    console.log("Failed to fetch user", error);
     return null;
   }
 });
+
+export async function getAllLessons() {
+  const user = await getUser();
+  if (!user) return [];
+  try {
+    return await db.select().from(lessons);
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+}
+
+export async function getUserLessons() {
+  const user = await getUser();
+  if (!user) return [];
+  try {
+    const userLessons = await db.query.usersToLessons.findMany({
+      with: {
+        lesson: true,
+      },
+    });
+    return userLessons.map((state) => state.lesson);
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function addLessonToUser(lessonId: Lesson["id"]) {
+  const user = await getUser();
+  if (!user) return;
+  try {
+    const res = await db
+      .insert(usersToLessons)
+      .values({ lessonId, userId: user.id })
+      .onConflictDoNothing()
+      .returning();
+    return res;
+  } catch (error) {
+    return error;
+  }
+}
