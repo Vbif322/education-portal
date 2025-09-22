@@ -1,19 +1,30 @@
-import LessonItem from "@/app/components/lesson-item/LessonItem";
 import LessonTable from "@/app/components/lesson-table/LessonTable";
 import { getAllLessons } from "@/app/lib/dal";
 import React from "react";
+import LessonModal from "./lesson-modal";
 
 type Props = {};
 
 export default async function AdminPage({}: Props) {
   const lessons = await getAllLessons();
-  console.log(lessons);
   return (
-    <div>
-      <p>Уроки</p>
+    <>
       <div>
-        <LessonTable data={lessons} />
+        <h4>Уроки</h4>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "end",
+            marginBottom: "16px",
+          }}
+        >
+          <LessonModal />
+        </div>
+        <div style={{ height: "200vh" }}>
+          <LessonTable data={lessons} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

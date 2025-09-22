@@ -42,7 +42,7 @@ const Navbar: FC<Props> = ({ role }) => {
             Статистика
           </li> */}
           {role === "admin" && (
-            <li onClick={onTabClick} id="tab-2" role="tab" data-url="/admin">
+            <li onClick={onTabClick} id="tab-3" role="tab" data-url="/admin">
               Панель управления
             </li>
           )}

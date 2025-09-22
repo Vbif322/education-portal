@@ -13,6 +13,8 @@ export const signupFormSchema = z.object({
     .trim(),
 });
 
+export const lessonSchema = z.object({});
+
 export type FormState =
   | {
       errors?: {

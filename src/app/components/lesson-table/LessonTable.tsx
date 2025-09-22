@@ -1,6 +1,7 @@
 import { Lesson } from "@/app/@types/course";
 import Button from "@/app/ui/Button/Button";
 import { FC } from "react";
+import s from "./style.module.css";
 
 type Props = {
   data: Lesson[];
@@ -8,8 +9,8 @@ type Props = {
 
 const LessonTable: FC<Props> = ({ data }) => {
   return (
-    <div>
-      <table>
+    <div className={s.table__container}>
+      <table className={s.table}>
         <thead>
           <tr>
             <th>Название</th>
