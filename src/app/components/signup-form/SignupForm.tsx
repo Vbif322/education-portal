@@ -3,6 +3,7 @@
 import { signin } from "@/app/actions/auth";
 import { useActionState } from "react";
 import s from "./style.module.css";
+import Button from "@/app/ui/Button/Button";
 
 export default function SignupForm() {
   const [state, action, pending] = useActionState(signin, undefined);
@@ -22,9 +23,9 @@ export default function SignupForm() {
           placeholder="Пароль"
         />
       </div>
-      <button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending}>
         Войти
-      </button>
+      </Button>
     </form>
   );
 }

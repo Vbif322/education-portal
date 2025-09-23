@@ -21,7 +21,7 @@ export default async function AdminPage({}: Props) {
         >
           <LessonModal />
         </div>
-        <div style={{ height: "200vh" }}>
+        <div>
           <LessonTable data={lessons} />
         </div>
       </div>

@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import CourseCard from "./components/course-card/CourseCard";
 import Footer from "./components/footer/Footer";
 import TestimonialCard from "./components/testimonial-card/TestimonialCard";
+import Button from "./ui/Button/Button";
 
 const courses = [
   {
@@ -66,9 +67,9 @@ export default function Home() {
             <li>О преподавателе</li>
             <li>Курсы</li>
             <li>Отзывы</li>
-            <button onClick={onClick}>
+            <Button onClick={onClick}>
               {false ? "Личный кабинет" : "Вход"}
-            </button>
+            </Button>
           </ul>
         </nav>
       </header>
@@ -81,7 +82,7 @@ export default function Home() {
             <span className={s.subtitle}>
               Пошаговые программы для запуска и развития бизнеса
             </span>
-            <button style={{ maxWidth: "300px" }}>Выбрать курс</button>
+            <Button style={{ maxWidth: "300px" }}>Выбрать курс</Button>
           </div>
           <div className={s.imgContainer}>
             <Image src={Kirill} alt="Главное фото преподавателя" width={350} />

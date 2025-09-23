@@ -4,6 +4,7 @@ import { FC } from "react";
 import s from "./style.module.css";
 import { LogOutIcon } from "lucide-react";
 import { logout } from "@/app/actions/auth";
+import IconButton from "@/app/ui/IconButton/IconButton";
 
 const Header: FC = () => {
   return (
@@ -11,9 +12,9 @@ const Header: FC = () => {
       <div className={s.wrapper}>
         <div className={s.input__container}>
           <input type="text" className={s.input} placeholder="Найти курс" />
-          <button className={s.iconButton} onClick={logout}>
+          <IconButton onClick={logout}>
             <LogOutIcon />
-          </button>
+          </IconButton>
         </div>
       </div>
     </header>

@@ -8,3 +8,13 @@ export interface ICourse {
 }
 
 export type Lesson = typeof lessons.$inferSelect;
+
+export type LessonFormErrors = {
+  errors: [];
+  properties: {
+    name?: { errors: string[] };
+    videofile?: { errors: string[] };
+    status?: { errors: string[] };
+    description?: { errors: string[] };
+  };
+};
