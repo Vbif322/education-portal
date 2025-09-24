@@ -1,6 +1,6 @@
 import s from "./style.module.css";
 import LessonCard from "@/app/components/lesson-card/LessonCard";
-import { getAllLessons, getUserLessons } from "@/app/lib/dal";
+import { getAllLessons, getUserLessons } from "@/app/lib/dal/lesson.dal";
 
 export default async function Dashboard() {
   const allLessons = await getAllLessons();

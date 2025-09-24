@@ -7,6 +7,7 @@ export const db = drizzle(process.env.DATABASE_URL!, {
 });
 
 async function main() {
+  console.log("generate");
   await seed(db, schema, { count: 10 }).refine((f) => ({
     lessons: {
       count: 15,

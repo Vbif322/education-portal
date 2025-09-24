@@ -1,3 +1,5 @@
+"use client";
+
 import { Lesson } from "@/@types/course";
 import Button from "@/app/ui/Button/Button";
 import { FC } from "react";
@@ -5,9 +7,17 @@ import s from "./style.module.css";
 
 type Props = {
   data: Lesson[];
+  handleChange: (arg01: Lesson["id"]) => void;
+  handleAttach: (arg01: Lesson["id"]) => void;
+  handleDelete: (arg01: Lesson["id"]) => void;
 };
 
-const LessonTable: FC<Props> = ({ data }) => {
+const LessonTable: FC<Props> = ({
+  data,
+  handleChange,
+  handleAttach,
+  handleDelete,
+}) => {
   return (
     <div className={s.table__container}>
       <table className={s.table}>
@@ -15,7 +25,7 @@ const LessonTable: FC<Props> = ({ data }) => {
           <tr>
             <th>Название</th>
             <th>Доступность</th>
-            <th>Управление</th>
+            <th style={{ textAlign: "center" }}>Управление</th>
           </tr>
         </thead>
         <tbody>
@@ -24,9 +34,25 @@ const LessonTable: FC<Props> = ({ data }) => {
               <tr key={lesson.id}>
                 <td>{lesson.name}</td>
                 <td>{lesson.status}</td>
-                <td>
-                  <Button variant="text">Изменить</Button>
-                  <Button variant="text">Прикрепить материалы</Button>
+                <td style={{ display: "flex", justifyContent: "center" }}>
+                  <Button
+                    variant="text"
+                    onClick={() => handleChange(lesson.id)}
+                  >
+                    Изменить
+                  </Button>
+                  <Button
+                    variant="text"
+                    onClick={() => handleAttach(lesson.id)}
+                  >
+                    Прикрепить материалы
+                  </Button>
+                  <Button
+                    style={{ backgroundColor: "#d32f2f" }}
+                    onClick={() => handleDelete(lesson.id)}
+                  >
+                    Удалить
+                  </Button>
                 </td>
               </tr>
             );
