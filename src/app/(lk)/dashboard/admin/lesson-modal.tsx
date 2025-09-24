@@ -1,16 +1,19 @@
 "use client";
 
-import { LessonFormErrors } from "@/app/@types/course";
+import { LessonFormErrors } from "@/@types/course";
 import LessonForm from "@/app/components/forms/lesson-form";
 import Button from "@/app/ui/Button/Button";
 import Dialog from "@/app/ui/Dialog/Dialog";
-import { FC, FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FC, FormEvent, useState, useTransition } from "react";
 
 type Props = {};
 
 const LessonModal: FC<Props> = () => {
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<LessonFormErrors>();
+  const router = useRouter();
+  const [_, startTransition] = useTransition();
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,6 +27,9 @@ const LessonModal: FC<Props> = () => {
     if (!res.ok) {
       setErrors(data);
     } else {
+      startTransition(() => {
+        router.refresh();
+      });
       setOpen(false);
     }
   };

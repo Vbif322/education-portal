@@ -7,7 +7,6 @@ export const db = drizzle(process.env.DATABASE_URL!, {
 });
 
 async function main() {
-  console.log(1);
   await seed(db, schema, { count: 10 }).refine((f) => ({
     lessons: {
       count: 15,
@@ -21,8 +20,9 @@ async function main() {
 }
 
 async function resetDB() {
+  console.log("reset");
   await reset(db, schema);
 }
 
 // main();
-// resetDB()
+// resetDB();

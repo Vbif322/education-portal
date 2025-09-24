@@ -1,9 +1,9 @@
 "use client";
 
-import { FC, FormEvent, useRef, useState } from "react";
+import { FC, FormEvent, useRef } from "react";
 import s from "./style.module.css";
 import Button from "@/app/ui/Button/Button";
-import { LessonFormErrors } from "@/app/@types/course";
+import { LessonFormErrors } from "@/@types/course";
 
 const LessonForm: FC<{
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;

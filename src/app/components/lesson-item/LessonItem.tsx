@@ -1,4 +1,4 @@
-import { Lesson } from "@/app/@types/course";
+import { Lesson } from "@/@types/course";
 import Paper from "@/app/ui/Paper/Paper";
 import { FC } from "react";
 

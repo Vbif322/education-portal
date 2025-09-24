@@ -3,7 +3,7 @@
 import { FC } from "react";
 import s from "./style.module.css";
 import { redirect } from "next/navigation";
-import { ICourse } from "@/app/@types/course";
+import { ICourse } from "@/@types/course";
 import Button from "@/app/ui/Button/Button";
 
 const CourseCard: FC<ICourse> = ({ title, description, id }) => {

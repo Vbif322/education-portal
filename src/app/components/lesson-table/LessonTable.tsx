@@ -1,4 +1,4 @@
-import { Lesson } from "@/app/@types/course";
+import { Lesson } from "@/@types/course";
 import Button from "@/app/ui/Button/Button";
 import { FC } from "react";
 import s from "./style.module.css";

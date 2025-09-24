@@ -1,4 +1,4 @@
-import { IUser } from "../@types/user";
+import { IUser } from "../../@types/user";
 
 export async function getUserFromDb(
   email: string,
