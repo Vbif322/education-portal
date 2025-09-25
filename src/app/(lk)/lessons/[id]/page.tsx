@@ -17,9 +17,9 @@ export default async function LessonPage({
   }
   // console.log(lesson);
 
-  const videoRes = await fetch(
-    process.env.BASE_URL + "/api/videos/?name=" + lesson.videoURL
-  );
+  // const videoRes = await fetch(
+  //   process.env.BASE_URL + "/api/videos/?name=" + lesson.videoURL
+  // );
   // const videoData = await videoRes.json();
   // console.log(videoRes);
 
@@ -28,11 +28,12 @@ export default async function LessonPage({
       <div className={s.bg}></div>
       <div className={s.wrapper}>
         <Player
-          source={{
-            src: "/videos/Управление задачами 12.mp4",
-            type: "video/mp4",
-          }}
-          controls
+          videoId={lesson.videoURL}
+          // source={{
+          //   src: "/videos/Управление задачами 12.mp4",
+          //   type: "video/mp4",
+          // }}
+          // controls
         />
         <p className={s.title}>{lesson.name}</p>
         <Paper>
