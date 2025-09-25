@@ -33,7 +33,11 @@ const LessonTable: FC<Props> = ({
             return (
               <tr key={lesson.id}>
                 <td>{lesson.name}</td>
-                <td>{lesson.status}</td>
+                <td>
+                  {lesson.status === "private"
+                    ? "Доступ закрыт"
+                    : "Доступ закрыт"}
+                </td>
                 <td style={{ display: "flex", justifyContent: "center" }}>
                   <Button
                     variant="text"

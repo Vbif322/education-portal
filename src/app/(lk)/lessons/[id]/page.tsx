@@ -1,7 +1,7 @@
 import Paper from "@/app/ui/Paper/Paper";
 import s from "./style.module.css";
 import Player from "@/app/components/video-player/Player";
-import { addLessonToUser } from "@/app/lib/dal/lesson.dal";
+import { addLessonToUser, getLesson } from "@/app/lib/dal/lesson.dal";
 
 export default async function LessonPage({
   params,
@@ -9,9 +9,23 @@ export default async function LessonPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  await addLessonToUser(Number(id));
+  addLessonToUser(Number(id));
+
+  const lesson = await getLesson(Number(id));
+  if (!lesson) {
+    return <p>Такой урок не найден</p>;
+  }
+  // console.log(lesson);
+
+  const videoRes = await fetch(
+    process.env.BASE_URL + "/api/videos/?name=" + lesson.videoURL
+  );
+  // const videoData = await videoRes.json();
+  // console.log(videoRes);
+
   return (
     <div className={s.container}>
+      <div className={s.bg}></div>
       <div className={s.wrapper}>
         <Player
           source={{
@@ -20,26 +34,24 @@ export default async function LessonPage({
           }}
           controls
         />
-        <p className={s.title}></p>
+        <p className={s.title}>{lesson.name}</p>
         <Paper>
           <p className={s.title}>Описание</p>
-          <p className={s.text}>
-            Важна систематизация работы с задачами, как части операционного
-            менеджмента, для эффективного управления ресурсами, реализации
-            проектов, решения проблем, достижения целей
-          </p>
+          <p className={s.text}>{lesson.description}</p>
         </Paper>
-        <Paper>
-          <p className={s.title}>Материалы</p>
-          <div className={s.material__container}>
-            <a href="#" className="link">
-              Презентация
-            </a>
-            <a href="#" className="link">
-              Контрольный лист
-            </a>
-          </div>
-        </Paper>
+        {lesson.materials.length > 0 && (
+          <Paper>
+            <p className={s.title}>Материалы</p>
+            <div className={s.material__container}>
+              <a href="#" className="link">
+                Презентация
+              </a>
+              <a href="#" className="link">
+                Контрольный лист
+              </a>
+            </div>
+          </Paper>
+        )}
       </div>
     </div>
   );

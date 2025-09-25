@@ -1,19 +1,27 @@
 import LessonTable from "@/app/components/lesson-table/LessonTable";
-import { deleteLesson, getAllLessons } from "@/app/lib/dal/lesson.dal";
+import { getAllLessons } from "@/app/lib/dal/lesson.dal";
 import React from "react";
 import LessonModal from "./lesson-modal";
 import { Lesson } from "@/@types/course";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
-type Props = {};
-
-export default async function AdminPage({}: Props) {
+export default async function AdminPage() {
   const lessons = await getAllLessons();
 
   const handleDelete = async (id: Lesson["id"]) => {
     "use server";
-    const res = await deleteLesson(id);
-    if (res.success) {
+    const res = await fetch(process.env.BASE_URL + "/api/lessons/lesson", {
+      method: "DELETE",
+      headers: {
+        Cookie: (await cookies()).toString(),
+      },
+      body: JSON.stringify({ lessonId: id }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.error(data);
+    } else {
       revalidatePath("/dashboard/admin");
     }
   };

@@ -2,8 +2,22 @@ import { db } from "@/db/db";
 import { getUser } from "../dal";
 import { Lesson } from "@/@types/course";
 import { lessons, usersToLessons } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { QueryResult } from "pg";
+
+export async function getLesson(id: Lesson["id"]) {
+  try {
+    const user = await getUser();
+    if (!user) return null;
+    return await db.query.lessons.findFirst({
+      where: (lessons, { eq }) => eq(lessons.id, id),
+      with: {
+        materials: true,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
 
 export async function getAllLessons() {
   const user = await getUser();
@@ -43,24 +57,5 @@ export async function addLessonToUser(lessonId: Lesson["id"]) {
     return res;
   } catch (error) {
     return error;
-  }
-}
-
-export async function deleteLesson(lessonId: Lesson["id"]): Promise<{
-  success: boolean;
-  message?: string;
-}> {
-  const user = await getUser();
-  if (!user || user.role !== "admin")
-    return { success: false, message: "Нет доступа" };
-  try {
-    const res = await db.delete(lessons).where(eq(lessons.id, lessonId));
-    if (res.rowCount) {
-      return { success: true };
-    } else {
-      return { success: false };
-    }
-  } catch (error) {
-    return { success: false, message: JSON.stringify(error) };
   }
 }

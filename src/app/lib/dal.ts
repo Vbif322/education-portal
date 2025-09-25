@@ -8,8 +8,6 @@ import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
 import { users } from "@/db/schema/users";
 import { User } from "../../@types/user";
-import { lessons, usersToLessons } from "@/db/schema";
-import { Lesson } from "../../@types/course";
 
 export const verifySession = cache(async () => {
   const cookie = (await cookies()).get("session")?.value;
