@@ -3,7 +3,6 @@
 import s from "./page.module.css";
 import Image from "next/image";
 import Kirill from "../../public/Kirill.webp";
-import { getUser } from "./lib/dal";
 import { redirect } from "next/navigation";
 import CourseCard from "./components/course-card/CourseCard";
 import Footer from "./components/footer/Footer";
@@ -53,8 +52,6 @@ const testimonials = [
 ];
 
 export default function Home() {
-  // const user = await getUser();
-
   const onClick = () => {
     redirect("dashboard");
   };

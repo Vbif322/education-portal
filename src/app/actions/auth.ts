@@ -33,7 +33,12 @@ export async function signin(state: FormState, formData: FormData) {
   }
 
   if (isUserExist.length === 1) {
-    await createSession(isUserExist[0].id, isUserExist[0].role);
+    const user = await db
+      .update(users)
+      .set({ sessionID: crypto.randomUUID() })
+      .where(eq(users.id, isUserExist[0].id))
+      .returning();
+    await createSession(user[0].id, user[0].role, user[0].sessionID);
     redirect("/dashboard");
   } else {
     const [user] = await db
@@ -44,13 +49,23 @@ export async function signin(state: FormState, formData: FormData) {
         password: hashedPassword,
         role: "user",
       })
-      .returning({ id: users.id, role: users.role });
-    await createSession(user.id, user.role);
+      .returning({
+        id: users.id,
+        role: users.role,
+        sessionID: users.sessionID,
+      });
+    await createSession(user.id, user.role, user.sessionID);
     redirect("/dashboard");
   }
 }
 
 export async function logout() {
-  await deleteSession();
+  const cookie = await deleteSession();
+  if (cookie) {
+    await db
+      .update(users)
+      .set({ sessionID: null })
+      .where(eq(users.id, cookie.userId));
+  }
   redirect("/");
 }
