@@ -15,26 +15,12 @@ export default async function LessonPage({
   if (!lesson) {
     return <p>Такой урок не найден</p>;
   }
-  // console.log(lesson);
-
-  // const videoRes = await fetch(
-  //   process.env.BASE_URL + "/api/videos/?name=" + lesson.videoURL
-  // );
-  // const videoData = await videoRes.json();
-  // console.log(videoRes);
 
   return (
     <div className={s.container}>
       <div className={s.bg}></div>
       <div className={s.wrapper}>
-        <Player
-          videoId={lesson.videoURL}
-          // source={{
-          //   src: "/videos/Управление задачами 12.mp4",
-          //   type: "video/mp4",
-          // }}
-          // controls
-        />
+        <Player videoId={lesson.videoURL} />
         <p className={s.title}>{lesson.name}</p>
         <Paper>
           <p className={s.title}>Описание</p>

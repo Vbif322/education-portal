@@ -3,17 +3,19 @@
 import { FC, FormEvent, useRef } from "react";
 import s from "./style.module.css";
 import Button from "@/app/ui/Button/Button";
-import { LessonFormErrors } from "@/@types/course";
+import { Lesson, LessonFormErrors } from "@/@types/course";
 
 const LessonForm: FC<{
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
   errors?: LessonFormErrors;
-}> = ({ handleSubmit, errors }) => {
+  isLoading?: boolean;
+  title: string;
+  data?: Lesson;
+}> = ({ handleSubmit, errors, isLoading, title, data }) => {
   const formRef = useRef(null);
-
   return (
     <div className={s["form-container"]}>
-      <h2 className={s.h2}>Добавить новый урок</h2>
+      <h2 className={s.h2}>{title}</h2>
       <form ref={formRef} onSubmit={handleSubmit}>
         <div>
           <label htmlFor="name">Название урока</label>
@@ -22,6 +24,7 @@ const LessonForm: FC<{
             type="text"
             name="name"
             required
+            defaultValue={data?.name}
             autoComplete="off"
             style={{
               borderColor:
@@ -37,13 +40,18 @@ const LessonForm: FC<{
           }
         </div>
         <div>
-          <label htmlFor="videofile">Файл</label>
+          <label htmlFor="videofile">
+            Файл
+            <span style={{ color: "#000", fontSize: "0.875rem" }}>
+              {" - " + (data?.videoURL ? data.videoURL : "")}
+            </span>
+          </label>
           <input
             id="videofile"
             type="file"
             name="videofile"
             placeholder="https://example.com/video.mp4"
-            required
+            required={!data?.videoURL}
             autoComplete="off"
             style={{
               borderColor:
@@ -63,7 +71,7 @@ const LessonForm: FC<{
           <select
             id="status"
             name="status"
-            defaultValue="private"
+            defaultValue={data?.status || "private"}
             required
             style={{
               borderColor:
@@ -88,6 +96,7 @@ const LessonForm: FC<{
             name="description"
             rows={4}
             autoComplete="off"
+            defaultValue={data?.description || ""}
             style={{
               borderColor:
                 errors?.properties && "description" in errors?.properties
@@ -101,7 +110,9 @@ const LessonForm: FC<{
             </span>
           }
         </div>
-        <Button type="submit">Добавить</Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Загрузка" : data?.name ? "Изменить" : "Добавить"}
+        </Button>
       </form>
     </div>
   );

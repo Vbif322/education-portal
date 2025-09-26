@@ -24,13 +24,13 @@ const Player: FC<Props> = ({
   ...props
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [streamUrl, setStreamUrl] = useState<string>("");
-  const [loading, setLoading] = useState(true);
+  // const [streamUrl, setStreamUrl] = useState<string>("");
+  // const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
-  const [progress, setProgress] = useState(0);
-  const [buffering, setBuffering] = useState(false);
-  const [savedProgress, setSavedProgress] = useState(0);
-  const progressSaveInterval = useRef<NodeJS.Timeout>(null);
+  // const [progress, setProgress] = useState(0);
+  // const [buffering, setBuffering] = useState(false);
+  // const [savedProgress, setSavedProgress] = useState(0);
+  // const progressSaveInterval = useRef<NodeJS.Timeout>(null);
 
   // useEffect(() => {
   //   fetchStreamUrl();
@@ -174,7 +174,6 @@ const Player: FC<Props> = ({
       width={width}
       height={height}
       ref={videoRef}
-      src={`/api/videos?name=${videoId}`}
       controls
       controlsList="nodownload"
       // onTimeUpdate={handleTimeUpdate}
@@ -188,6 +187,7 @@ const Player: FC<Props> = ({
       {...props}
     >
       {/* <source src="/videos/Управление задачами 12.mp4" type="video/mp4" /> */}
+      <source src={`/api/videos?name=${videoId}`} type="video/mp4" />
       Ваш браузер не поддерживает видео
     </video>
   );

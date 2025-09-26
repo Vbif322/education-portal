@@ -61,6 +61,75 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const id = Number(request.nextUrl.searchParams.get("id"));
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "id не найдено" }, { status: 400 });
+    }
+    const formData = await request.formData();
+
+    const fields = lessonFormSchema.safeParse({
+      file: formData.get("videofile") as File,
+      name: formData.get("name"),
+      status: formData.get("status"),
+      description: formData.get("description"),
+    });
+    if (!fields.success) {
+      return NextResponse.json(z.treeifyError(fields.error), { status: 400 });
+    }
+
+    const isFileChanged = fields.data.file.type !== "application/octet-stream";
+    const { file, ...other } = fields.data;
+
+    // Проверяем изменен ли файл
+    if (isFileChanged) {
+      const bytes = await fields.data.file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const filepath = path.join(
+        process.cwd(),
+        "src",
+        "videos",
+        fields.data.file.name
+      );
+      // Если файл с таким названием уже существует, то перезаписываем, если нет - то удаляем старый
+      if (!fs.existsSync(filepath)) {
+        const oldFilename = await db
+          .select({ field1: lessons.videoURL })
+          .from(lessons)
+          .where(eq(lessons.id, id));
+        const oldFilepath = path.join(
+          process.cwd(),
+          "src",
+          "videos",
+          oldFilename[0].field1
+        );
+        await fsp.unlink(oldFilepath);
+      }
+      await db
+        .update(lessons)
+        .set({ ...fields.data, videoURL: file.name })
+        .where(eq(lessons.id, id));
+      await writeFile(filepath, buffer);
+    } else {
+      // Если файл не изменен, то обновляем данные других полей
+      await db
+        .update(lessons)
+        .set({ ...other })
+        .where(eq(lessons.id, id));
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json(
+      { error: "Ошибка загрузки", details: error },
+      { status: 400 }
+    );
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const user = await getUser();
