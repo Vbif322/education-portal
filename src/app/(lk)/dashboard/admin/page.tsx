@@ -5,8 +5,15 @@ import LessonModal from "./lesson-modal";
 import { Lesson } from "@/@types/course";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { getUser } from "@/app/lib/dal";
+import { notFound, redirect } from "next/navigation";
 
 export default async function AdminPage() {
+  const user = await getUser();
+  if (!user || user.role !== "admin") {
+    notFound();
+  }
+
   const lessons = await getAllLessons();
 
   const handleDelete = async (id: Lesson["id"]) => {

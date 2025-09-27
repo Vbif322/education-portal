@@ -9,20 +9,24 @@ export default async function LessonPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  addLessonToUser(Number(id));
 
   const lesson = await getLesson(Number(id));
   if (!lesson) {
     return <p>Такой урок не найден</p>;
+  }
+  const forbidden = "forbidden" in lesson ? true : false;
+
+  if (!forbidden) {
+    addLessonToUser(Number(id));
   }
 
   return (
     <div className={s.container}>
       <div className={s.bg}></div>
       <div className={s.wrapper}>
-        <Player videoId={lesson.videoURL} />
+        <Player videoId={forbidden ? "" : lesson.videoURL} />
         <p className={s.title}>{lesson.name}</p>
-        <Paper>
+        <Paper style={{ width: "100%" }}>
           <p className={s.title}>Описание</p>
           <p className={s.text}>{lesson.description}</p>
         </Paper>

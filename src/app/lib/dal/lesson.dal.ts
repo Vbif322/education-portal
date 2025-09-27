@@ -1,3 +1,5 @@
+import "server-only";
+
 import { db } from "@/db/db";
 import { getUser } from "../dal";
 import { Lesson } from "@/@types/course";
@@ -7,12 +9,30 @@ export async function getLesson(id: Lesson["id"]) {
   try {
     const user = await getUser();
     if (!user) return null;
-    return await db.query.lessons.findFirst({
+    const lesson = await db.query.lessons.findFirst({
       where: (lessons, { eq }) => eq(lessons.id, id),
       with: {
         materials: true,
       },
     });
+    if (!lesson) {
+      return null;
+    }
+    if (lesson.status === "public" || user.role === "admin") {
+      return lesson;
+    } else {
+      const sub = await db.query.subscription.findFirst({
+        where: (subscription, { eq }) => eq(subscription.userId, user.id),
+      });
+      if (sub?.type === "all") {
+        return lesson;
+      } else {
+        return {
+          ...lesson,
+          forbidden: true,
+        };
+      }
+    }
   } catch (error) {
     console.error(error);
     return null;

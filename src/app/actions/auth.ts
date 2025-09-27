@@ -1,13 +1,14 @@
 "use server";
-import { signupFormSchema, FormState } from "@/app/lib/definitions";
+import { signupFormSchema } from "@/app/lib/definitions";
 import { db } from "@/db/db";
-import { users } from "@/db/schema/users";
-import bcrypt from "bcrypt";
+import { subscription, users } from "@/db/schema/users";
+import * as bcrypt from "bcrypt";
 import { createSession, deleteSession } from "../lib/session";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
+import z from "zod";
 
-export async function signin(state: FormState, formData: FormData) {
+export async function signin(state: any, formData: FormData) {
   // Validate form fields
   const validatedFields = signupFormSchema.safeParse({
     email: formData.get("email"),
@@ -16,8 +17,13 @@ export async function signin(state: FormState, formData: FormData) {
 
   // If any form fields are invalid, return early
   if (!validatedFields.success) {
+    console.log(validatedFields);
     return {
-      errors: validatedFields.error.flatten().fieldErrors,
+      ...z.treeifyError(validatedFields.error),
+      fields: {
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+      },
     };
   }
   const { email, password } = validatedFields.data;
@@ -26,35 +32,64 @@ export async function signin(state: FormState, formData: FormData) {
   // Проверка, что юзер не существует
   let isUserExist;
   try {
-    isUserExist = await db.select().from(users).where(eq(users.email, email));
+    isUserExist = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
   } catch (error) {
     console.log(error);
-    return undefined;
+    return {
+      fields: {
+        email,
+        password,
+      },
+      errors: ["Ошибка при получении пользователя"],
+    };
   }
 
   if (isUserExist.length === 1) {
-    const user = await db
-      .update(users)
-      .set({ sessionID: crypto.randomUUID() })
-      .where(eq(users.id, isUserExist[0].id))
-      .returning();
-    await createSession(user[0].id, user[0].role, user[0].sessionID);
-    redirect("/dashboard");
+    const isMatch = await bcrypt.compare(password, hashedPassword);
+    if (isMatch) {
+      const user = await db
+        .update(users)
+        .set({ sessionID: crypto.randomUUID() })
+        .where(eq(users.id, isUserExist[0].id))
+        .returning();
+      await createSession(user[0].id, user[0].role, user[0].sessionID);
+      redirect("/dashboard");
+    } else {
+      return {
+        fields: {
+          email,
+          password,
+        },
+        errors: ["Неверное имя пользователя или пароль"],
+      };
+    }
   } else {
-    const [user] = await db
-      .insert(users)
-      .values({
-        sessionID: crypto.randomUUID(),
-        email,
-        password: hashedPassword,
-        role: "user",
-      })
-      .returning({
-        id: users.id,
-        role: users.role,
-        sessionID: users.sessionID,
+    await db.transaction(async (tx) => {
+      const [user] = await tx
+        .insert(users)
+        .values({
+          sessionID: crypto.randomUUID(),
+          email,
+          password: hashedPassword,
+          role: "user",
+        })
+        .returning({
+          id: users.id,
+          role: users.role,
+          sessionID: users.sessionID,
+        });
+      await tx.insert(subscription).values({
+        userId: user.id,
+        type: "free",
+        endedAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 дней
       });
-    await createSession(user.id, user.role, user.sessionID);
+      await createSession(user.id, user.role, user.sessionID);
+    });
+
     redirect("/dashboard");
   }
 }
