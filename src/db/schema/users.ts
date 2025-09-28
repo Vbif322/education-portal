@@ -19,7 +19,9 @@ export const users = pgTable("users", {
 
 export const subscription = pgTable("subscription", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  type: varchar({ enum: ["free", "all"] }).default("free"),
+  type: varchar({ enum: ["Ознакомительная", "Все включено"] }).default(
+    "Ознакомительная"
+  ),
   endedAt: timestamp("ended_at").notNull(),
   userId: uuid("user_id").references(() => users.id),
 });

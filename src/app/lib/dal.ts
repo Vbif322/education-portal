@@ -6,7 +6,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
-import { users } from "@/db/schema/users";
+import { subscription, users } from "@/db/schema/users";
 // import { User } from "../../@types/user";
 
 export const verifySession = cache(async () => {
@@ -50,6 +50,24 @@ export const getUser = cache(async () => {
     return user;
   } catch (error) {
     console.log("Failed to fetch user", error);
+    return null;
+  }
+});
+
+export const getUserSubscription = cache(async () => {
+  const user = await getUser();
+  if (!user) {
+    return null;
+  }
+  try {
+    const data = await db
+      .select()
+      .from(subscription)
+      .where(eq(subscription.userId, user.id))
+      .limit(1);
+    return data[0];
+  } catch (error) {
+    console.log(error);
     return null;
   }
 });

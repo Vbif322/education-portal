@@ -26,7 +26,7 @@ const SettingBlock: FC<Props> = ({ title, rows }) => {
               ) : (
                 <div className={s.link}>
                   <p className={s.text1}>{row.text1}</p>
-                  <p>{row.text2}</p>
+                  <p className={s.text2}>{row.text2}</p>
                 </div>
               )}
             </div>

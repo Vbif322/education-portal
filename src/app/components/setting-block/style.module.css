@@ -1,6 +1,6 @@
 .container {
   max-width: 500px;
-  flex-grow: 1;
+  width: 100%;
 }
 
 .title {

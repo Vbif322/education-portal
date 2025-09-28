@@ -24,7 +24,7 @@ export async function getLesson(id: Lesson["id"]) {
       const sub = await db.query.subscription.findFirst({
         where: (subscription, { eq }) => eq(subscription.userId, user.id),
       });
-      if (sub?.type === "all") {
+      if (sub?.type === "Все включено") {
         return lesson;
       } else {
         return {
