@@ -1,0 +1,36 @@
+.container {
+  max-width: 500px;
+  flex-grow: 1;
+}
+
+.title {
+  margin: 16px;
+  font-size: 1.5rem;
+  line-height: 1.334;
+}
+
+.paper {
+  padding: 0;
+}
+
+.link {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  padding: 16px;
+}
+
+.link:hover {
+  background-color: rgb(0 0 0 / 0.05);
+}
+
+.text1 {
+  color: rgb(95, 99, 104);
+  font-weight: 500;
+  font-size: 0.8rem;
+  max-width: 120px;
+}
+
+.icon {
+  justify-self: end;
+}

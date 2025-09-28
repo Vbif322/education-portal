@@ -2,6 +2,7 @@ import Paper from "@/app/ui/Paper/Paper";
 import s from "./style.module.css";
 import Player from "@/app/components/video-player/Player";
 import { addLessonToUser, getLesson } from "@/app/lib/dal/lesson.dal";
+import Button from "@/app/ui/Button/Button";
 
 export default async function LessonPage({
   params,
@@ -24,13 +25,21 @@ export default async function LessonPage({
     <div className={s.container}>
       <div className={s.bg}></div>
       <div className={s.wrapper}>
+        {forbidden && (
+          <div className={s.forbidden}>
+            <Paper className={s.modal}>
+              <p>Для просмотра требуется подписка</p>
+              <Button>Открыть доступ</Button>
+            </Paper>
+          </div>
+        )}
         <Player videoId={forbidden ? "" : lesson.videoURL} />
         <p className={s.title}>{lesson.name}</p>
         <Paper style={{ width: "100%" }}>
           <p className={s.title}>Описание</p>
           <p className={s.text}>{lesson.description}</p>
         </Paper>
-        {lesson.materials.length > 0 && (
+        {lesson.materials.length > 0 && forbidden && (
           <Paper>
             <p className={s.title}>Материалы</p>
             <div className={s.material__container}>

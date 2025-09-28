@@ -30,6 +30,7 @@ export async function getLesson(id: Lesson["id"]) {
         return {
           ...lesson,
           forbidden: true,
+          videoURL: "",
         };
       }
     }

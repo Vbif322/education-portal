@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
 import { users } from "@/db/schema/users";
-import { User } from "../../@types/user";
+// import { User } from "../../@types/user";
 
 export const verifySession = cache(async () => {
   const cookieStore = await cookies();
@@ -28,17 +28,13 @@ export const verifySession = cache(async () => {
     return { isAuth: true, userId: session.userId, role: session.role };
   }
 });
-
+// as {
+//     isAuth: boolean;
+//     userId: string;
+//     role: User["role"];
+//   }
 export const getUser = cache(async () => {
-  const session = (await verifySession()) as {
-    isAuth: boolean;
-    userId: string;
-    role: User["role"];
-  };
-  if (!session) {
-    return null;
-  }
-
+  const session = await verifySession();
   try {
     const data = await db.query.users.findMany({
       where: eq(users.id, session.userId),
