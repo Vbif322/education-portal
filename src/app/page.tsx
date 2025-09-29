@@ -1,60 +1,39 @@
-"use client";
-
 import s from "./page.module.css";
 import Image from "next/image";
 import Kirill from "../../public/Kirill.webp";
-import { redirect } from "next/navigation";
-import CourseCard from "./components/course-card/CourseCard";
 import Footer from "./components/footer/Footer";
 import TestimonialCard from "./components/testimonial-card/TestimonialCard";
 import Button from "./ui/Button/Button";
-
-const courses = [
-  {
-    id: "1",
-    title: "Создание бизнеса с нуля",
-    description: "Полный список курсов по запуску и развитию бизнеса",
-  },
-  {
-    id: "2",
-    title: "Создание бизнеса с нуля",
-    description: "Полный список курсов по запуску и развитию бизнеса",
-  },
-  {
-    id: " 3",
-    title: "Создание бизнеса с нуля",
-    description: "Полный список курсов по запуску и развитию бизнеса",
-  },
-];
+import Link from "next/link";
+import { getAllLessons } from "./lib/dal/lesson.dal";
+import LessonCard from "./components/lesson-card/LessonCard";
 
 const testimonials = [
   {
     id: 1,
     description:
-      '"Этот курс — лучшее вложение в мой бизнес. Никакой воды, только практика. За 2 месяца я увеличил прибыль на 40%."',
-    name: "Алексей Петров",
-    appointment: "Владелец интернет-магазина",
+      '"Наконец-то я увидел, как теория бережливого производства работает на практике, а не только в книгах. Ценнейший опыт, который можно сразу применять в своей компании"',
+    name: "Алексей",
+    appointment: "Руководитель производственного отдела",
   },
   {
     id: 2,
     description:
-      '"Этот курс — лучшее вложение в мой бизнес. Никакой воды, только практика. За 2 месяца я увеличил прибыль на 40%."',
-    name: "Алексей Петров",
-    appointment: "Владелец интернет-магазина",
+      '"Материал подается очень структурированно, сложнейшие концепции операционного менеджмента раскладываются по полочкам. Видно, что за плечами преподавателя колоссальный управленческий опыт"',
+    name: "Светлана",
+    appointment: "Менеджер проектов",
   },
   {
     id: 3,
     description:
-      '"Этот курс — лучшее вложение в мой бизнес. Никакой воды, только практика. За 2 месяца я увеличил прибыль на 40%."',
-    name: "Алексей Петров",
-    appointment: "Владелец интернет-магазина",
+      '"Этот курс — не просто набор инструментов, а полноценная система для выстраивания стратегии на уровне всей компании. Редкая возможность поучиться у практика такого масштаба"',
+    name: "Игорь",
+    appointment: "Предприниматель",
   },
 ];
 
-export default function Home() {
-  const onClick = () => {
-    redirect("dashboard");
-  };
+export default async function Home() {
+  const lessons = await getAllLessons({ onlyPublic: true, limit: 3 });
   return (
     <div className={s.page}>
       <header className={s.header}>
@@ -64,9 +43,9 @@ export default function Home() {
             <li>О преподавателе</li>
             <li>Курсы</li>
             <li>Отзывы</li>
-            <Button onClick={onClick}>
-              {false ? "Личный кабинет" : "Вход"}
-            </Button>
+            <Link href={"/dashboard"}>
+              <Button>{false ? "Личный кабинет" : "Вход"}</Button>
+            </Link>
           </ul>
         </nav>
       </header>
@@ -79,7 +58,9 @@ export default function Home() {
             <span className={s.subtitle}>
               Пошаговые программы для запуска и развития бизнеса
             </span>
-            <Button style={{ maxWidth: "300px" }}>Выбрать курс</Button>
+            <Link href={"/dashboard"}>
+              <Button style={{ maxWidth: "300px" }}>Выбрать курс</Button>
+            </Link>
           </div>
           <div className={s.imgContainer}>
             <Image src={Kirill} alt="Главное фото преподавателя" width={350} />
@@ -93,18 +74,29 @@ export default function Home() {
               alt="Маленькое фото преподавателя"
               width={200}
             />
-            <p className={s.mainInfoText}>
-              <b>Кирилл Месеняшин</b> - эксперт-практик с 20-летним опытом в
-              области организационного развития и совершенствования cистем
-              управления
-            </p>
+            <div>
+              <p className={s.mainInfoText}>
+                <b>Кирилл Месеняшин</b> - эксперт-практик с 20-летним опытом в
+                области организационного развития и совершенствования cистем
+                управления
+              </p>
+              <br />
+              <p className={s.mainInfoText}>
+                Основатель и генеральный директор консалтинговой компании
+                «ОПТИМУМ». Возглавлял ряд крупных производственных компаний в
+                Санкт-Петербурге. Успешно реализовал более 100 проектов и обучил
+                более 3000 сотрудников в российских и иностранных компаниях.
+              </p>
+              <br />
+              <b className={s.mainInfoText}>Зеленый пояс Six Sigma</b>
+            </div>
           </div>
         </section>
         <section className={s.section}>
           <h3 className={s.sectionTitle}>Каталог курсов</h3>
           <div className={s.courseCardContainer}>
-            {courses.map((course) => (
-              <CourseCard key={course.id} {...course} />
+            {lessons.map((lesson) => (
+              <LessonCard key={lesson.id} {...lesson} />
             ))}
           </div>
         </section>

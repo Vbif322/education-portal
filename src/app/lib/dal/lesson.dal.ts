@@ -4,6 +4,7 @@ import { db } from "@/db/db";
 import { getUser } from "../dal";
 import { Lesson } from "@/@types/course";
 import { lessons, usersToLessons } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function getLesson(id: Lesson["id"]) {
   try {
@@ -40,11 +41,23 @@ export async function getLesson(id: Lesson["id"]) {
   }
 }
 
-export async function getAllLessons() {
+export async function getAllLessons(
+  config?: Partial<{
+    onlyPublic: boolean;
+    limit: number;
+  }>
+) {
   const user = await getUser();
   if (!user) return [];
   try {
-    return await db.select().from(lessons);
+    let query = db.select().from(lessons).$dynamic();
+    if (config?.onlyPublic) {
+      query = query.where(eq(lessons.status, "public"));
+    }
+    if (config?.limit) {
+      query = query.limit(config.limit);
+    }
+    return await query;
   } catch (error) {
     console.log(error);
     return [];
