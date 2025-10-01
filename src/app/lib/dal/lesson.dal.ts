@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db } from "@/db/db";
-import { getUser } from "../dal";
+import { getUser, verifySession } from "../dal";
 import { Lesson } from "@/@types/course";
 import { lessons, usersToLessons } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -47,8 +47,6 @@ export async function getAllLessons(
     limit: number;
   }>
 ) {
-  const user = await getUser();
-  if (!user) return [];
   try {
     let query = db.select().from(lessons).$dynamic();
     if (config?.onlyPublic) {
@@ -69,6 +67,7 @@ export async function getUserLessons() {
   if (!user) return [];
   try {
     const userLessons = await db.query.usersToLessons.findMany({
+      where: eq(usersToLessons.userId, user.id),
       with: {
         lesson: true,
       },
