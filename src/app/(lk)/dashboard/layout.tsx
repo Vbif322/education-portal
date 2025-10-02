@@ -3,7 +3,6 @@ import Header from "@/app/components/header/Header";
 import { FC } from "react";
 import Navbar from "@/app/components/navbar/Navbar";
 import Divider from "@/app/ui/Divider/Divider";
-import { redirect } from "next/navigation";
 
 const DashboardLayout: FC<
   Readonly<{

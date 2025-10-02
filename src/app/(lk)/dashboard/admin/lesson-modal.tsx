@@ -7,14 +7,13 @@ import Dialog from "@/app/ui/Dialog/Dialog";
 import { useRouter } from "next/navigation";
 import { FC, FormEvent, useState, useTransition } from "react";
 
-type Props = {};
-
-const LessonModal: FC<Props> = () => {
+const LessonModal: FC = () => {
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<LessonFormErrors>();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const [_, startTransition] = useTransition();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isPending, startTransition] = useTransition();
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

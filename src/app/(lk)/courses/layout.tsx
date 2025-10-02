@@ -1,5 +1,4 @@
 import Header from "@/app/components/header/Header";
-import Divider from "@/app/ui/Divider/Divider";
 import { FC } from "react";
 
 const CourseLayout: FC<

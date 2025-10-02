@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db } from "@/db/db";
-import { getUser, verifySession } from "../dal";
+import { getUser } from "../dal";
 import { Lesson } from "@/@types/course";
 import { lessons, usersToLessons } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -16,6 +16,7 @@ export async function getLesson(id: Lesson["id"]) {
         materials: true,
       },
     });
+    console.log(lesson);
     if (!lesson) {
       return null;
     }
@@ -74,6 +75,7 @@ export async function getUserLessons() {
     });
     return userLessons.map((state) => state.lesson);
   } catch (error) {
+    console.error(error);
     return [];
   }
 }

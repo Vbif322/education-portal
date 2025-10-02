@@ -1,9 +1,7 @@
 import { FC } from "react";
 import s from "./style.module.css";
 
-type Props = {};
-
-const Aside: FC<Props> = (props) => {
+const Aside: FC = () => {
   return (
     <aside className={s.aside}>
       <p className={s.title}>Содержание курса</p>

@@ -4,7 +4,7 @@ import {
   FC,
   MouseEvent,
   useEffect,
-  useLayoutEffect,
+  // useLayoutEffect,
   useRef,
   useState,
 } from "react";
