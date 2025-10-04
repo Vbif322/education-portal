@@ -3,7 +3,7 @@ import { decrypt } from "@/app/lib/session";
 import { cookies } from "next/headers";
 
 // 1. Specify protected and public routes
-const publicRoutes = ["/login", "/signup", "/"];
+const publicRoutes = ["/login", "/"];
 
 export default async function middleware(req: NextRequest) {
   // 2. Check if the current route is protected or public
@@ -12,6 +12,13 @@ export default async function middleware(req: NextRequest) {
 
   // 3. Decrypt the session from the cookie
   const cookie = (await cookies()).get("session")?.value;
+  if (!cookie) {
+    if (isPublicRoute) {
+      return NextResponse.next();
+    } else {
+      return NextResponse.redirect(new URL("/login", req.nextUrl));
+    }
+  }
   const session = await decrypt(cookie);
 
   // 4. Redirect to /login if the user is not authenticated

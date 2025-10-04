@@ -7,11 +7,13 @@ import { redirect } from "next/navigation";
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
 import { subscription, users } from "@/db/schema/users";
-// import { User } from "../../@types/user";
 
 export const verifySession = cache(async () => {
   const cookieStore = await cookies();
   const cookie = cookieStore.get("session")?.value;
+  if (!cookie) {
+    return null;
+  }
   const session = await decrypt(cookie);
 
   if (!session || !("userId" in session)) {
@@ -28,13 +30,12 @@ export const verifySession = cache(async () => {
     return { isAuth: true, userId: session.userId, role: session.role };
   }
 });
-// as {
-//     isAuth: boolean;
-//     userId: string;
-//     role: User["role"];
-//   }
+
 export const getUser = cache(async () => {
   const session = await verifySession();
+  if (session === null) {
+    redirect("/");
+  }
   try {
     const data = await db.query.users.findMany({
       where: eq(users.id, session.userId),

@@ -16,6 +16,7 @@ export async function getLesson(id: Lesson["id"]) {
         materials: true,
       },
     });
+    console.log(lesson);
     if (!lesson) {
       return null;
     }
@@ -47,8 +48,6 @@ export async function getAllLessons(
     limit: number;
   }>
 ) {
-  const user = await getUser();
-  if (!user) return [];
   try {
     let query = db.select().from(lessons).$dynamic();
     if (config?.onlyPublic) {
@@ -69,6 +68,7 @@ export async function getUserLessons() {
   if (!user) return [];
   try {
     const userLessons = await db.query.usersToLessons.findMany({
+      where: eq(usersToLessons.userId, user.id),
       with: {
         lesson: true,
       },

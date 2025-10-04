@@ -26,7 +26,7 @@ export const subscription = pgTable("subscription", {
   userId: uuid("user_id").references(() => users.id),
 });
 
-export const usersRelations = relations(users, ({ one }) => ({
+export const usersSubRelations = relations(users, ({ one }) => ({
   subscription: one(subscription),
 }));
 
