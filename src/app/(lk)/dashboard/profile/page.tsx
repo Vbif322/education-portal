@@ -26,7 +26,7 @@ export default async function ProfilePage() {
   const subscription = [
     {
       text1: "Тариф",
-      text2: userSub.type,
+      text2: userSub.type || "",
     },
     {
       text1: "Дата окончания",

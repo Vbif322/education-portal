@@ -39,19 +39,22 @@ export default async function LessonPage({
           <p className={s.title}>Описание</p>
           <p className={s.text}>{lesson.description}</p>
         </Paper>
-        {lesson.materials.length > 0 && forbidden && (
-          <Paper>
-            <p className={s.title}>Материалы</p>
-            <div className={s.material__container}>
-              <a href="#" className="link">
-                Презентация
-              </a>
-              <a href="#" className="link">
-                Контрольный лист
-              </a>
-            </div>
-          </Paper>
-        )}
+        {"materials" in lesson &&
+          Array.isArray(lesson.materials) &&
+          lesson.materials.length > 0 &&
+          forbidden && (
+            <Paper>
+              <p className={s.title}>Материалы</p>
+              <div className={s.material__container}>
+                <a href="#" className="link">
+                  Презентация
+                </a>
+                <a href="#" className="link">
+                  Контрольный лист
+                </a>
+              </div>
+            </Paper>
+          )}
       </div>
     </div>
   );
