@@ -16,6 +16,10 @@
   color: black;
 }
 
+.error {
+  background-color: #d32f2f;
+}
+
 .text:hover {
   background-color: #efefef;
 }

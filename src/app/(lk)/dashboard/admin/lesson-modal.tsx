@@ -11,39 +11,72 @@ const LessonModal: FC = () => {
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<LessonFormErrors>();
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const router = useRouter();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+
+  const onClose = () => {
+    setErrors(undefined);
+    setOpen(false);
+  };
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors(undefined);
     setLoading(true);
-    const body = new FormData(e.target as HTMLFormElement);
-    const res = await fetch(location.origin + "/api/lessons/lesson", {
-      method: "POST",
-      body,
+
+    const formData = new FormData(e.currentTarget);
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        const percentComplete = Math.round((event.loaded / event.total) * 100);
+        setProgress(percentComplete);
+      }
     });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setErrors(data);
-    } else {
-      startTransition(() => {
-        router.refresh();
-      });
-      setOpen(false);
-    }
+
+    xhr.addEventListener("load", () => {
+      setLoading(false);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        startTransition(() => {
+          router.refresh();
+        });
+        setProgress(0);
+        setErrors(undefined);
+        setOpen(false);
+      } else {
+        // Обработка ошибок от сервера (например, файл уже существует)
+        try {
+          const response = JSON.parse(xhr.responseText);
+          setProgress(0);
+          setErrors(response);
+        } catch (e) {
+          console.log(e);
+          // setErrors(`Ошибка сервера: ${xhr.status}`);
+        }
+      }
+    });
+
+    xhr.addEventListener("error", (e) => {
+      console.log(e, "err");
+      setLoading(false);
+      // setError("Произошла ошибка при загрузке файла.");
+    });
+
+    xhr.open("POST", location.origin + "/api/lessons/lesson");
+    xhr.send(formData);
   };
   return (
     <>
       <Button onClick={() => setOpen(true)}>Добавить урок</Button>
-      <Dialog open={open} onClose={() => setOpen(false)}>
+      <Dialog open={open} onClose={onClose}>
         <LessonForm
           title="Добавить новый урок"
           errors={errors}
           handleSubmit={onSubmit}
           isLoading={loading}
+          progress={progress}
         />
       </Dialog>
     </>

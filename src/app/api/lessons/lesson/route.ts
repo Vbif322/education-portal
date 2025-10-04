@@ -1,5 +1,4 @@
-import { writeFile } from "fs/promises";
-import fs from "fs";
+import fs, { createWriteStream } from "fs";
 import * as fsp from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
@@ -9,6 +8,8 @@ import { db } from "@/db/db";
 import { lessons } from "@/db/schema";
 import { getUser } from "@/app/lib/dal";
 import { eq } from "drizzle-orm";
+import { pipeline } from "stream/promises";
+import { Readable } from "stream";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,9 +25,6 @@ export async function POST(request: NextRequest) {
     if (!fields.success) {
       return NextResponse.json(z.treeifyError(fields.error), { status: 400 });
     }
-
-    const bytes = await fields.data.file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
 
     const filepath = path.join(
       process.cwd(),
@@ -45,6 +43,10 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       );
     }
+
+    const stream = fields.data.file.stream();
+    const writeStream = createWriteStream(filepath);
+
     await db.insert(lessons).values({
       name: fields.data.name,
       status: fields.data.status,
@@ -52,7 +54,9 @@ export async function POST(request: NextRequest) {
       description: fields.data.description,
     });
 
-    await writeFile(filepath, buffer);
+    // Что тут поставить вместо any пока не понял
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await pipeline(Readable.fromWeb(stream as any), writeStream);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -84,15 +88,15 @@ export async function PATCH(request: NextRequest) {
 
     // Проверяем изменен ли файл
     if (isFileChanged) {
-      const bytes = await fields.data.file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
       const filepath = path.join(
         process.cwd(),
         "src",
         "videos",
         fields.data.file.name
       );
+
+      const stream = fields.data.file.stream();
+      const writeStream = createWriteStream(filepath);
       // Если файл с таким названием уже существует, то перезаписываем, если нет - то удаляем старый
       if (!fs.existsSync(filepath)) {
         const oldFilename = await db
@@ -111,7 +115,9 @@ export async function PATCH(request: NextRequest) {
         .update(lessons)
         .set({ ...fields.data, videoURL: file.name })
         .where(eq(lessons.id, id));
-      await writeFile(filepath, buffer);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await pipeline(Readable.fromWeb(stream as any), writeStream);
     } else {
       // Если файл не изменен, то обновляем данные других полей
       await db
@@ -149,7 +155,9 @@ export async function DELETE(request: NextRequest) {
       .returning({ url: lessons.videoURL });
     const filename = response[0].url;
     const filepath = path.join(process.cwd(), "src", "videos", filename);
-    await fsp.unlink(filepath);
+    if (fs.existsSync(filepath)) {
+      await fsp.unlink(filepath);
+    }
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(

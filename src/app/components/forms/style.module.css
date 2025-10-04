@@ -18,7 +18,7 @@
 .form-container input,
 .form-container textarea,
 .form-container select {
-  width: 100%;
+  width: 300px;
   padding: 12px;
   box-sizing: border-box;
   border: 1px solid #ccc;
@@ -66,6 +66,7 @@
 
 .error {
   height: 18px;
+  max-width: 300px;
   margin-top: 4px;
   margin-bottom: 4px;
   display: block;

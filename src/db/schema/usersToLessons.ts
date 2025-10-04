@@ -24,11 +24,11 @@ export const usersToLessons = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.lessonId] })]
 );
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersLessonsRelations = relations(users, ({ many }) => ({
   lessons: many(usersToLessons),
 }));
 
-export const lessonsRelations = relations(lessons, ({ many }) => ({
+export const lessonsUsersRelations = relations(lessons, ({ many }) => ({
   users: many(usersToLessons),
 }));
 

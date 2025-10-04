@@ -1,9 +1,10 @@
 "use client";
 
-import { FC, FormEvent, useRef } from "react";
+import { FC, FormEvent } from "react";
 import s from "./style.module.css";
 import Button from "@/app/ui/Button/Button";
 import { Lesson, LessonFormErrors } from "@/@types/course";
+import Progress from "@/app/ui/Progress/Progress";
 
 const LessonForm: FC<{
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
@@ -11,12 +12,12 @@ const LessonForm: FC<{
   isLoading?: boolean;
   title: string;
   data?: Lesson;
-}> = ({ handleSubmit, errors, isLoading, title, data }) => {
-  const formRef = useRef(null);
+  progress: number;
+}> = ({ handleSubmit, errors, isLoading, title, data, progress }) => {
   return (
     <div className={s["form-container"]}>
       <h2 className={s.h2}>{title}</h2>
-      <form ref={formRef} onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="name">Название урока</label>
           <input
@@ -110,6 +111,7 @@ const LessonForm: FC<{
             </span>
           }
         </div>
+        <Progress value={progress} style={{ marginBottom: "18px" }} />
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Загрузка" : data?.name ? "Изменить" : "Добавить"}
         </Button>

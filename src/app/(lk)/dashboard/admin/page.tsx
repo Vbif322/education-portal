@@ -38,7 +38,6 @@ export default async function AdminPage() {
   };
   const handleChange = async () => {
     "use server";
-    console.log("change");
     revalidatePath("/dashboard/admin");
   };
   return (
