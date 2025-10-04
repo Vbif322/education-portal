@@ -6,7 +6,7 @@ import { Lesson } from "@/@types/course";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { getUser } from "@/app/lib/dal";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 export default async function AdminPage() {
   const user = await getUser();
@@ -38,7 +38,6 @@ export default async function AdminPage() {
   };
   const handleChange = async () => {
     "use server";
-    console.log("change");
     revalidatePath("/dashboard/admin");
   };
   return (
