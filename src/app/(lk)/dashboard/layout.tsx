@@ -1,4 +1,4 @@
-import { getUser, verifySession } from "@/app/lib/dal";
+import { getUser } from "@/app/lib/dal";
 import Header from "@/app/components/header/Header";
 import { FC } from "react";
 import Navbar from "@/app/components/navbar/Navbar";

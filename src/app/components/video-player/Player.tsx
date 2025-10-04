@@ -3,9 +3,9 @@
 import {
   DetailedHTMLProps,
   FC,
-  SourceHTMLAttributes,
-  useCallback,
-  useEffect,
+  // SourceHTMLAttributes,
+  // useCallback,
+  // useEffect,
   useRef,
   useState,
   VideoHTMLAttributes,
@@ -26,7 +26,7 @@ const Player: FC<Props> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   // const [streamUrl, setStreamUrl] = useState<string>("");
   // const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
+  const [error] = useState<string>("");
   // const [progress, setProgress] = useState(0);
   // const [buffering, setBuffering] = useState(false);
   // const [savedProgress, setSavedProgress] = useState(0);

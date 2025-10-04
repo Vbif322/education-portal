@@ -1,4 +1,3 @@
-import { writeFile } from "fs/promises";
 import fs, { createWriteStream } from "fs";
 import * as fsp from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
@@ -55,6 +54,8 @@ export async function POST(request: NextRequest) {
       description: fields.data.description,
     });
 
+    // Что тут поставить вместо any пока не понял
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await pipeline(Readable.fromWeb(stream as any), writeStream);
 
     return NextResponse.json({ success: true });
@@ -115,6 +116,7 @@ export async function PATCH(request: NextRequest) {
         .set({ ...fields.data, videoURL: file.name })
         .where(eq(lessons.id, id));
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await pipeline(Readable.fromWeb(stream as any), writeStream);
     } else {
       // Если файл не изменен, то обновляем данные других полей

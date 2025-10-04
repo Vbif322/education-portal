@@ -75,6 +75,7 @@ export async function getUserLessons() {
     });
     return userLessons.map((state) => state.lesson);
   } catch (error) {
+    console.error(error);
     return [];
   }
 }

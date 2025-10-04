@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import z from "zod";
 
-export async function signin(state: any, formData: FormData) {
+export async function signin(_: unknown, formData: FormData) {
   // Validate form fields
   const validatedFields = signupFormSchema.safeParse({
     email: formData.get("email"),
@@ -84,7 +84,7 @@ export async function signin(state: any, formData: FormData) {
         });
       await tx.insert(subscription).values({
         userId: user.id,
-        type: "free",
+        type: "Ознакомительная",
         endedAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 дней
       });
       await createSession(user.id, user.role, user.sessionID);

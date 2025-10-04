@@ -1,9 +1,7 @@
 import { FC } from "react";
 import s from "./style.module.css";
 
-type Props = {};
-
-const ThemePage: FC<Props> = (props) => {
+const ThemePage: FC = () => {
   return (
     <div style={{ padding: "16px" }}>
       <p>Вернуться к списку курсов</p>

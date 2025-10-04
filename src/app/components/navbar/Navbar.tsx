@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  FC,
-  MouseEvent,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { FC, MouseEvent, useEffect, useRef, useState } from "react";
 import s from "./style.module.css";
 import { redirect } from "next/navigation";
 import { User } from "@/@types/user";

@@ -6,7 +6,7 @@ import { ChevronRight } from "lucide-react";
 
 type Props = {
   title: string;
-  rows: any[];
+  rows: { navigate?: string; text1: string; text2: string }[];
 };
 
 const SettingBlock: FC<Props> = ({ title, rows }) => {

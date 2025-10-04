@@ -17,10 +17,12 @@ const LessonChangeModal: FC<Props> = ({ open, onClose, lesson }) => {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const router = useRouter();
-  const [_, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const onCloseHandle = () => {
-    onClose && onClose();
+    if (onClose) {
+      onClose();
+    }
   };
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
