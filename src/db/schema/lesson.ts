@@ -40,7 +40,7 @@ export const lessonsToMaterials = pgTable(
   (t) => [primaryKey({ columns: [t.lessonId, t.meterialId] })]
 );
 
-export const lessonsRelations = relations(lessons, ({ many }) => ({
+export const lessonsMaterialsRelations = relations(lessons, ({ many }) => ({
   materials: many(lessonsToMaterials),
 }));
 
