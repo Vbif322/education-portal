@@ -15,7 +15,13 @@ const DashboardLayout: FC<
       <Header />
       <Navbar role={user?.role} />
       <Divider />
-      <div style={{ padding: 32, maxWidth: "1200px", margin: "auto" }}>
+      <div
+        style={{
+          padding: 32,
+          maxWidth: "1200px",
+          margin: "auto",
+        }}
+      >
         {children}
       </div>
     </>

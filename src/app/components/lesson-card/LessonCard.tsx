@@ -18,7 +18,7 @@ const LessonCard: FC<Lesson & { progress?: boolean }> = ({
       <div style={{ flex: 1 }}>
         {description && <p className={s.description}>{description}</p>}
       </div>
-      <Button onClick={() => redirect("/lessons/" + id)}>
+      <Button onClick={() => redirect("/dashboard/lessons/" + id)}>
         {progress ? "Продолжить" : "Подробнее"}
       </Button>
     </div>
