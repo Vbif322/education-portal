@@ -11,7 +11,7 @@ export default async function Dashboard() {
   return (
     <div>
       <div>
-        <h3 className={s.title}>Начатые курсы</h3>
+        <h3 className={s.title}>Начатые уроки</h3>
         <div className={s.selfcard__container}>
           {userLessons.map((lesson) => {
             return <LessonCard key={lesson.id} progress {...lesson} />;
@@ -19,7 +19,7 @@ export default async function Dashboard() {
         </div>
       </div>
       <div style={{ marginTop: "3rem" }}>
-        <h3 className={s.title}>Все курсы</h3>
+        <h3 className={s.title}>Все уроки</h3>
         <div className={s.card__container}>
           {otherLessons.map((lesson) => {
             return <LessonCard key={lesson.id} {...lesson} />;

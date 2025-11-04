@@ -18,6 +18,9 @@ export const courses = pgTable("courses", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
   description: varchar({ length: 256 }),
+  privacy: varchar({ enum: ["private", "public"] })
+    .notNull()
+    .default("private"),
   createdAt,
   updatedAt,
 });

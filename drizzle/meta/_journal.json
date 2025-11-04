@@ -29,6 +29,20 @@
       "when": 1759085954648,
       "tag": "0003_high_warlock",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1762279812925,
+      "tag": "0004_robust_synch",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1762280785690,
+      "tag": "0005_bright_jackal",
+      "breakpoints": true
     }
   ]
 }

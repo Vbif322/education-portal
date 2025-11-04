@@ -1,4 +1,4 @@
-import { lessons } from "@/db/schema";
+import { courses, modules, lessons } from "@/db/schema";
 
 export interface ICourse {
   id: string;
@@ -8,6 +8,8 @@ export interface ICourse {
 }
 
 export type Lesson = typeof lessons.$inferSelect;
+export type Module = typeof modules.$inferSelect;
+export type Course = typeof courses.$inferSelect;
 
 export type LessonFormErrors = {
   errors: [];

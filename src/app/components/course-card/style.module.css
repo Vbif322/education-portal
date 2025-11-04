@@ -11,6 +11,11 @@
     0 4px 6px -4px rgb(0 0 0 / 0.2);
 }
 
+.card button {
+  border-radius: 0.5rem;
+  background-color: #000;
+}
+
 .title {
   font-size: 1.5rem;
   font-weight: 600;
