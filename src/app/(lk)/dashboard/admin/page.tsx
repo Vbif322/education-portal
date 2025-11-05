@@ -2,9 +2,8 @@ import LessonTable from "@/app/components/tables/LessonTable";
 import { getAllLessons } from "@/app/lib/dal/lesson.dal";
 import React from "react";
 import LessonModal from "./lesson-modal";
-import { Lesson } from "@/@types/course";
+import { Course, Lesson, Module } from "@/@types/course";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { getUser } from "@/app/lib/dal";
 import { notFound } from "next/navigation";
 import CourseTable from "@/app/components/tables/CourseTable";
@@ -13,6 +12,9 @@ import { getAllCourses } from "@/app/lib/dal/course.dal";
 import Link from "next/link";
 import { getAllModules } from "@/app/lib/dal/module.dal";
 import ModuleTable from "@/app/components/tables/ModuleTable";
+import { deleteCourse } from "@/app/actions/courses";
+import { deleteModule } from "@/app/actions/modules";
+import { deleteLesson } from "@/app/actions/lessons";
 
 export default async function AdminPage() {
   const user = await getUser();
@@ -20,25 +22,23 @@ export default async function AdminPage() {
     notFound();
   }
 
-  const lessons = await getAllLessons();
-  const modules = await getAllModules();
-  const courses = await getAllCourses();
+  const [lessons, modules, courses] = await Promise.all([
+    getAllLessons(),
+    getAllModules(),
+    getAllCourses(),
+  ]);
 
-  const handleDelete = async (id: Lesson["id"]) => {
+  const handleDeleteLesson = async (id: Lesson["id"]) => {
     "use server";
-    const res = await fetch(process.env.BASE_URL + "/api/lessons/lesson", {
-      method: "DELETE",
-      headers: {
-        Cookie: (await cookies()).toString(),
-      },
-      body: JSON.stringify({ lessonId: id }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      console.error(data);
-    } else {
-      revalidatePath("/dashboard/admin");
-    }
+    await deleteLesson(id);
+  };
+  const handleDeleteModule = async (id: Module["id"]) => {
+    "use server";
+    await deleteModule(id);
+  };
+  const handleDeleteCourse = async (id: Course["id"]) => {
+    "use server";
+    await deleteCourse(id);
   };
   const handleAttach = async () => {
     "use server";
@@ -59,16 +59,15 @@ export default async function AdminPage() {
           marginBottom: "16px",
         }}
       >
-        <Link href={"admin/newcourse"}>
+        <Link href={"admin/course/new"}>
           <Button>Добавить курс</Button>
         </Link>
       </div>
       <div>
         <CourseTable
           data={courses}
-          handleAttach={handleAttach}
           handleChange={handleChange}
-          handleDelete={handleDelete}
+          handleDelete={handleDeleteCourse}
         />
       </div>
       <h4 style={{ marginTop: "64px" }}>Темы</h4>
@@ -80,17 +79,12 @@ export default async function AdminPage() {
           marginBottom: "16px",
         }}
       >
-        <Link href={"admin/newcourse"}>
+        <Link href={"admin/module/new"}>
           <Button>Добавить тему</Button>
         </Link>
       </div>
       <div>
-        <ModuleTable
-          data={modules}
-          handleAttach={handleAttach}
-          handleChange={handleChange}
-          handleDelete={handleDelete}
-        />
+        <ModuleTable data={modules} handleDelete={handleDeleteModule} />
       </div>
       <h4 style={{ marginTop: "64px" }}>Уроки</h4>
       <div
@@ -108,7 +102,7 @@ export default async function AdminPage() {
           data={lessons}
           handleAttach={handleAttach}
           handleChange={handleChange}
-          handleDelete={handleDelete}
+          handleDelete={handleDeleteLesson}
         />
       </div>
     </div>

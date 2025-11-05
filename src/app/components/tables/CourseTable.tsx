@@ -10,7 +10,6 @@ import DeleteDialog from "../dialogs/delete-dialog";
 type Props = {
   data: Course[];
   handleChange: (arg01: Course["id"]) => void;
-  handleAttach: (arg01: Course["id"]) => void;
   handleDelete: (arg01: Course["id"]) => void;
 };
 
@@ -38,12 +37,7 @@ function reducer(
   }
 }
 
-const CourseTable: FC<Props> = ({
-  data,
-  handleChange,
-  handleAttach,
-  handleDelete,
-}) => {
+const CourseTable: FC<Props> = ({ data, handleChange, handleDelete }) => {
   const [modalState, setModalState] = useState<{
     open: boolean;
     course: Course | undefined;

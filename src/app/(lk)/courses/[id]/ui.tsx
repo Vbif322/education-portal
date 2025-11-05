@@ -3,7 +3,7 @@ import { FC } from "react";
 import { Block } from "./subcomponents/Block";
 import s from "./style.module.css";
 import { StarIcon } from "lucide-react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Skill } from "./subcomponents/Skill";
 import Chip from "@/app/ui/Chip/Chip";
 
@@ -13,6 +13,8 @@ type Props = {
 };
 
 const UI: FC<Props> = ({ id, skills }) => {
+  const router = useRouter();
+
   return (
     <div className={s.container}>
       <div className={s.blocks}>
@@ -36,7 +38,7 @@ const UI: FC<Props> = ({ id, skills }) => {
           <h4 className={s.title}>Методы бережливого производства</h4>
           <button
             className={s.button}
-            onClick={() => redirect(id + "/modules")}
+            onClick={() => router.push(id + "/modules")}
           >
             Начать обучение
           </button>

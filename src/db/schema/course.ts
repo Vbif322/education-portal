@@ -7,6 +7,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createdAt, updatedAt } from "../schemaHelpers";
 import { relations } from "drizzle-orm";
+import { coursesToModules } from "./coursesToModules";
 
 export const levelEnum = pgEnum("level", [
   "beginner",
@@ -38,6 +39,7 @@ export const skillsRelations = relations(skills, ({ many }) => ({
 
 export const courseRelations = relations(courses, ({ many }) => ({
   skillsToCourses: many(skillsToCourses),
+  modules: many(coursesToModules),
 }));
 
 export const skillsToCourses = pgTable(

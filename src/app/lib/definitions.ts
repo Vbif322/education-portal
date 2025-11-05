@@ -14,7 +14,7 @@ export const signupFormSchema = z.object({
 });
 
 export const lessonFormSchema = z.object({
-  name: z.string().min(5, { message: "Это поле не может быть пустым" }).trim(),
+  name: z.string().min(1, { message: "Это поле не может быть пустым" }).trim(),
   description: z.string().trim(),
   status: z.literal(["public", "private"]),
   file: z.file(),

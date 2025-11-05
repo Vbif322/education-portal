@@ -2,117 +2,69 @@
 
 import { Module } from "@/@types/course";
 import Button from "@/app/ui/Button/Button";
-import { FC, useReducer, useState } from "react";
+import { FC } from "react";
 import s from "./style.module.css";
+import { useRouter } from "next/navigation";
 
 type Props = {
   data: Module[];
-  handleChange: (arg01: Module["id"]) => void;
-  handleAttach: (arg01: Module["id"]) => void;
   handleDelete: (arg01: Module["id"]) => void;
 };
 
-function reducer(
-  state: {
-    open: boolean;
-    moduleId?: number;
-  },
-  action: { type: "open" | "close"; value?: number }
-) {
-  switch (action.type) {
-    case "open":
-      return {
-        open: true,
-        courseId: action.value,
-      };
-    case "close":
-      return {
-        open: false,
-        courseId: undefined,
-      };
-
-    default:
-      return state;
-  }
-}
-
-const ModuleTable: FC<Props> = ({
-  data,
-  handleChange,
-  handleAttach,
-  handleDelete,
-}) => {
-  const [modalState, setModalState] = useState<{
-    open: boolean;
-    module: Module | undefined;
-  }>({ open: false, module: undefined });
-
-  const [modalDeleteState, dispatch] = useReducer(reducer, {
-    open: false,
-    moduleId: undefined,
-  });
+const ModuleTable: FC<Props> = ({ data, handleDelete }) => {
+  const router = useRouter();
 
   const onChangeHandle = (module: Module) => {
-    handleChange(module.id);
-    setModalState({ open: true, module: module });
+    router.push(`/dashboard/admin/module/edit/${module.id}`);
   };
 
-  const onCloseHandle = () => {
-    dispatch({ type: "close" });
+  const onDeleteHandle = (module: Module) => {
+    if (confirm(`Вы уверены, что хотите удалить модуль "${module.name}"?`)) {
+      handleDelete(module.id);
+    }
   };
-
-  //   const onDeleteHandle = () => {
-  //     if (!modalDeleteState.moduleId) return;
-  //     handleDelete(modalDeleteState.moduleId);
-  //     dispatch({ type: "close" });
-  //   };
 
   return (
-    <>
-      <div className={s.table__container}>
-        <table className={s.table}>
-          <thead>
-            <tr>
-              <th>Название</th>
-              {/* <th>Доступность</th> */}
-              <th style={{ textAlign: "center" }}>Управление</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((moduleItem) => {
-              return (
-                <tr key={moduleItem.id}>
-                  <td>{moduleItem.name}</td>
-                  {/* <td>
+    <div className={s.table__container}>
+      <table className={s.table}>
+        <thead>
+          <tr>
+            <th>Название</th>
+            {/* <th>Доступность</th> */}
+            <th style={{ textAlign: "center" }}>Управление</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((moduleItem) => {
+            return (
+              <tr key={moduleItem.id}>
+                <td>{moduleItem.name}</td>
+                {/* <td>
                     {courseItem.privacy === "private"
                       ? "Доступ закрыт"
                       : "Доступ открыт"}
                   </td> */}
-                  <td style={{ display: "flex", justifyContent: "center" }}>
-                    <Button
-                      variant="text"
-                      onClick={() => onChangeHandle(moduleItem)}
-                    >
-                      Изменить
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      {/* <LessonChangeModal
-        open={modalState.open}
-        onClose={() => setModalState({ open: false, lesson: undefined })}
-        lesson={modalState.lesson}
-      />
-      <DeleteDialog
-        open={modalDeleteState.open}
-        onDelete={onDeleteHandle}
-        onBack={onCloseHandle}
-      /> */}
-    </>
+                <td style={{ display: "flex", justifyContent: "center" }}>
+                  <Button
+                    variant="text"
+                    onClick={() => onChangeHandle(moduleItem)}
+                  >
+                    Изменить
+                  </Button>
+                  {/* <Button
+                    variant="text"
+                    color="error"
+                    onClick={() => onDeleteHandle(moduleItem)}
+                  >
+                    Удалить
+                  </Button> */}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 };
 

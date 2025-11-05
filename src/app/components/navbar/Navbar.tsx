@@ -2,7 +2,7 @@
 
 import { FC, MouseEvent, useEffect, useRef, useState } from "react";
 import s from "./style.module.css";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { User } from "@/@types/user";
 
 type Props = {
@@ -10,6 +10,7 @@ type Props = {
 };
 
 const Navbar: FC<Props> = ({ role }) => {
+  const router = useRouter();
   const [indicatorPos, setIndicatorPos] = useState<{
     left: number;
     width: number;
@@ -53,7 +54,7 @@ const Navbar: FC<Props> = ({ role }) => {
     }
     setIndicatorPos({ width: target.offsetWidth, left });
     if (target.dataset.url) {
-      redirect("/dashboard" + target.dataset.url);
+      router.push("/dashboard" + target.dataset.url);
     }
   };
   return (

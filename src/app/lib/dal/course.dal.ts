@@ -22,3 +22,25 @@ export async function getAllCourses(
     return [];
   }
 }
+
+export async function getCourseById(id: number) {
+  try {
+    const course = await db.query.courses.findFirst({
+      where: eq(courses.id, id),
+      with: {
+        modules: {
+          with: {
+            module: true,
+          },
+          orderBy: (coursesToModules, { asc }) => [
+            asc(coursesToModules.order),
+          ],
+        },
+      },
+    });
+    return course;
+  } catch (error) {
+    console.error("Ошибка при получении курса:", error);
+    return null;
+  }
+}

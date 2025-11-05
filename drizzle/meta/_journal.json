@@ -43,6 +43,13 @@
       "when": 1762280785690,
       "tag": "0005_bright_jackal",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1762374998128,
+      "tag": "0006_loud_guardsmen",
+      "breakpoints": true
     }
   ]
 }
