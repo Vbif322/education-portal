@@ -164,3 +164,36 @@ export async function deleteCourse(courseId: number) {
     return { success: false, error: "Ошибка при удалении курса" };
   }
 }
+
+export async function enrollUserInCourse(courseId: number) {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, error: "Необходимо войти в систему" };
+    }
+
+    // Проверяем существование курса
+    const course = await db.query.courses.findFirst({
+      where: eq(courses.id, courseId),
+    });
+
+    if (!course) {
+      return { success: false, error: "Курс не найден" };
+    }
+
+    // Импортируем enrollInCourse из DAL
+    const { enrollInCourse } = await import("@/app/lib/dal/course.dal");
+    const result = await enrollInCourse(courseId);
+
+    if (!result) {
+      return { success: false, error: "Не удалось записаться на курс" };
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath(`/courses/${courseId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Ошибка при записи на курс:", error);
+    return { success: false, error: "Ошибка при записи на курс" };
+  }
+}

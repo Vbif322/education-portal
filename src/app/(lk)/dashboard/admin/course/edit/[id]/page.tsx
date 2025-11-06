@@ -39,8 +39,8 @@ export default async function EditCoursePage({ params }: Props) {
     <CourseForm
       modules={modules}
       course={course}
-      title=" 540:B8@>20=85 :C@A0"
-      submitButtonText="!>E@0=8BL 87<5=5=8O"
+      title="Редактирование курса"
+      submitButtonText="Сохранить изменения"
       onSubmit={handleUpdate}
     />
   );

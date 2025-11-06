@@ -16,7 +16,6 @@ export async function getLesson(id: Lesson["id"]) {
         materials: true,
       },
     });
-    console.log(lesson);
     if (!lesson) {
       return null;
     }

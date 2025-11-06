@@ -2,14 +2,13 @@
 
 import { Course } from "@/@types/course";
 import Button from "@/app/ui/Button/Button";
-import { FC, useReducer, useState } from "react";
+import { FC, useReducer } from "react";
 import s from "./style.module.css";
-import LessonChangeModal from "@/app/(lk)/dashboard/admin/lesson-change-modal";
 import DeleteDialog from "../dialogs/delete-dialog";
+import { useRouter } from "next/navigation";
 
 type Props = {
   data: Course[];
-  handleChange: (arg01: Course["id"]) => void;
   handleDelete: (arg01: Course["id"]) => void;
 };
 
@@ -37,21 +36,13 @@ function reducer(
   }
 }
 
-const CourseTable: FC<Props> = ({ data, handleChange, handleDelete }) => {
-  const [modalState, setModalState] = useState<{
-    open: boolean;
-    course: Course | undefined;
-  }>({ open: false, course: undefined });
+const CourseTable: FC<Props> = ({ data, handleDelete }) => {
+  const router = useRouter();
 
   const [modalDeleteState, dispatch] = useReducer(reducer, {
     open: false,
     courseId: undefined,
   });
-
-  const onChangeHandle = (course: Course) => {
-    handleChange(course.id);
-    setModalState({ open: true, course: course });
-  };
 
   const onCloseHandle = () => {
     dispatch({ type: "close" });
@@ -87,9 +78,19 @@ const CourseTable: FC<Props> = ({ data, handleChange, handleDelete }) => {
                   <td style={{ display: "flex", justifyContent: "center" }}>
                     <Button
                       variant="text"
-                      onClick={() => onChangeHandle(courseItem)}
+                      onClick={() =>
+                        router.push("admin/course/edit/" + courseItem.id)
+                      }
                     >
                       Изменить
+                    </Button>
+                    <Button
+                      color="error"
+                      onClick={() =>
+                        dispatch({ type: "open", value: courseItem.id })
+                      }
+                    >
+                      Удалить
                     </Button>
                   </td>
                 </tr>
@@ -98,16 +99,12 @@ const CourseTable: FC<Props> = ({ data, handleChange, handleDelete }) => {
           </tbody>
         </table>
       </div>
-      {/* <LessonChangeModal
-        open={modalState.open}
-        onClose={() => setModalState({ open: false, lesson: undefined })}
-        lesson={modalState.lesson}
-      />
+
       <DeleteDialog
         open={modalDeleteState.open}
         onDelete={onDeleteHandle}
         onBack={onCloseHandle}
-      /> */}
+      />
     </>
   );
 };

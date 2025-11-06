@@ -1,19 +1,57 @@
 "use client";
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Block } from "./subcomponents/Block";
 import s from "./style.module.css";
 import { StarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Skill } from "./subcomponents/Skill";
 import Chip from "@/app/ui/Chip/Chip";
+import { enrollUserInCourse } from "@/app/actions/courses";
 
 type Props = {
   id: string;
+  courseId: number;
+  courseName: string;
+  courseDescription: string | null;
   skills: string[];
+  isEnrolled: boolean;
 };
 
-const UI: FC<Props> = ({ id, skills }) => {
+const UI: FC<Props> = ({
+  id,
+  courseId,
+  courseName,
+  courseDescription,
+  skills,
+  isEnrolled,
+}) => {
   const router = useRouter();
+  const [isEnrolling, setIsEnrolling] = useState(false);
+
+  const handleEnroll = async () => {
+    setIsEnrolling(true);
+    try {
+      const result = await enrollUserInCourse(courseId);
+      if (result.success) {
+        router.push(id + "/modules");
+      } else {
+        alert(result.error || "Не удалось записаться на курс");
+      }
+    } catch (error) {
+      console.error("Ошибка при записи на курс:", error);
+      alert("Произошла ошибка при записи на курс");
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
+
+  const handleButtonClick = () => {
+    if (isEnrolled) {
+      router.push(id + "/modules");
+    } else {
+      handleEnroll();
+    }
+  };
 
   return (
     <div className={s.container}>
@@ -35,12 +73,17 @@ const UI: FC<Props> = ({ id, skills }) => {
       <div className={s.wrapper}>
         <div>
           <div className={s.background}></div>
-          <h4 className={s.title}>Методы бережливого производства</h4>
+          <h4 className={s.title}>{courseName}</h4>
           <button
             className={s.button}
-            onClick={() => router.push(id + "/modules")}
+            onClick={handleButtonClick}
+            disabled={isEnrolling}
           >
-            Начать обучение
+            {isEnrolling
+              ? "Записываемся..."
+              : isEnrolled
+              ? "Начать обучение"
+              : "Записаться на курс"}
           </button>
         </div>
         <div className={s.content}>

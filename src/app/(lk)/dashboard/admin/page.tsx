@@ -27,19 +27,6 @@ export default async function AdminPage() {
     getAllModules(),
     getAllCourses(),
   ]);
-
-  const handleDeleteLesson = async (id: Lesson["id"]) => {
-    "use server";
-    await deleteLesson(id);
-  };
-  const handleDeleteModule = async (id: Module["id"]) => {
-    "use server";
-    await deleteModule(id);
-  };
-  const handleDeleteCourse = async (id: Course["id"]) => {
-    "use server";
-    await deleteCourse(id);
-  };
   const handleAttach = async () => {
     "use server";
     console.log("attach");
@@ -64,11 +51,7 @@ export default async function AdminPage() {
         </Link>
       </div>
       <div>
-        <CourseTable
-          data={courses}
-          handleChange={handleChange}
-          handleDelete={handleDeleteCourse}
-        />
+        <CourseTable data={courses} handleDelete={deleteCourse} />
       </div>
       <h4 style={{ marginTop: "64px" }}>Темы</h4>
       <div
@@ -84,7 +67,7 @@ export default async function AdminPage() {
         </Link>
       </div>
       <div>
-        <ModuleTable data={modules} handleDelete={handleDeleteModule} />
+        <ModuleTable data={modules} handleDelete={deleteModule} />
       </div>
       <h4 style={{ marginTop: "64px" }}>Уроки</h4>
       <div
@@ -102,7 +85,7 @@ export default async function AdminPage() {
           data={lessons}
           handleAttach={handleAttach}
           handleChange={handleChange}
-          handleDelete={handleDeleteLesson}
+          handleDelete={deleteLesson}
         />
       </div>
     </div>

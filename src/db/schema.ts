@@ -5,3 +5,4 @@ export * from "./schema/modulesToLessons";
 export * from "./schema/coursesToModules";
 export * from "./schema/users";
 export * from "./schema/usersToLessons";
+export * from "./schema/usersToCourses";

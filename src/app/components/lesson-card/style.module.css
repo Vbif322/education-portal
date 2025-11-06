@@ -2,7 +2,7 @@
   border-color: #e5e7eb;
   border-radius: 0.5rem;
   padding: 1.5rem;
-  width: 320px;
+  width: 300px;
   height: 278px;
   display: flex;
   flex-direction: column;
@@ -11,13 +11,26 @@
     0 4px 6px -4px rgb(0 0 0 / 0.2);
 }
 
+.titleContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
 .title {
   font-size: 1.5rem;
   font-weight: 600;
+  margin: 0;
 }
 
 .description {
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: rgb(75 85 99);
+  margin-top: 8px;
 }
