@@ -5,17 +5,20 @@ import { getAllLessons, getUserLessons } from "@/app/lib/dal/lesson.dal";
 import { getUserCourses, getAllCourses } from "@/app/lib/dal/course.dal";
 
 export default async function Dashboard() {
-  const allLessons = await getAllLessons();
-  const userLessons = await getUserLessons();
-  const userCourses = await getUserCourses();
-  const allCourses = await getAllCourses({ withMetadata: true });
+  const [allLessons, userLessons, userCourses, allCourses] = await Promise.all([
+    getAllLessons(),
+    getUserLessons(),
+    getUserCourses(),
+    getAllCourses({ withMetadata: true }),
+  ]);
 
   // Get lesson IDs that are part of enrolled courses
   const enrolledCourseLessonIds = new Set(
-    userCourses.flatMap((course: any) =>
-      course.modules?.flatMap(
-        (cm: any) => cm.module?.lessons?.map((ml: any) => ml.lesson.id) || []
-      ) || []
+    userCourses.flatMap(
+      (course: any) =>
+        course.modules?.flatMap(
+          (cm: any) => cm.module?.lessons?.map((ml: any) => ml.lesson.id) || []
+        ) || []
     )
   );
 
@@ -31,7 +34,7 @@ export default async function Dashboard() {
   );
 
   // Get courses not enrolled in
-  const enrolledCourseIds = new Set(userCourses.map((course) => course.id));
+  const enrolledCourseIds = new Set(userCourses.map(({ course }) => course.id));
   const otherCourses = allCourses.filter(
     (course) => !enrolledCourseIds.has(course.id)
   );
@@ -43,16 +46,16 @@ export default async function Dashboard() {
         <div>
           <h3 className={s.title}>Мои курсы</h3>
           <div className={s.card__container}>
-            {userCourses.map((course: any) => {
+            {userCourses.map(({ course }) => {
               return (
                 <CourseCard
                   key={course.id}
                   id={course.id}
                   title={course.name}
                   description={course.description}
-                  moduleCount={course.moduleCount}
-                  lessonCount={course.lessonCount}
-                  progress={course.progress}
+                  // moduleCount={course.moduleCount}
+                  // lessonCount={course.lessonCount}
+                  // progress={course.progress}
                 />
               );
             })}
@@ -77,15 +80,15 @@ export default async function Dashboard() {
         <div style={{ marginTop: "3rem" }}>
           <h3 className={s.title}>Доступные курсы</h3>
           <div className={s.card__container}>
-            {otherCourses.map((course: any) => {
+            {otherCourses.map((course) => {
               return (
                 <CourseCard
                   key={course.id}
                   id={course.id}
                   title={course.name}
                   description={course.description}
-                  moduleCount={course.moduleCount}
-                  lessonCount={course.lessonCount}
+                  // moduleCount={course.moduleCount}
+                  // lessonCount={course.lessonCount}
                 />
               );
             })}
