@@ -10,20 +10,12 @@ import { getUser } from "@/app/lib/dal";
 import { eq } from "drizzle-orm";
 import { pipeline } from "stream/promises";
 import { Readable } from "stream";
+import { getVideoPath } from "@/app/utils/helpers";
 
 // Максимальный размер файла: 1000 MB
 const MAX_FILE_SIZE = 1000 * 1024 * 1024;
 // Разрешенные расширения видео
 const ALLOWED_EXTENSIONS = [".mp4", ".webm", ".mov", ".avi", ".mkv"];
-
-/**
- * Получает безопасный путь к видеофайлу с санитизацией имени
- */
-function getVideoPath(filename: string): string {
-  // Санитизация: берем только имя файла без директорий
-  const sanitizedFilename = path.basename(filename);
-  return path.join(process.cwd(), "src", "videos", sanitizedFilename);
-}
 
 /**
  * Валидирует видеофайл по размеру и расширению
