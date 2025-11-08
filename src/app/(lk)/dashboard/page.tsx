@@ -47,17 +47,7 @@ export default async function Dashboard() {
           <h3 className={s.title}>Мои курсы</h3>
           <div className={s.card__container}>
             {userCourses.map(({ course }) => {
-              return (
-                <CourseCard
-                  key={course.id}
-                  id={course.id}
-                  title={course.name}
-                  description={course.description}
-                  // moduleCount={course.moduleCount}
-                  // lessonCount={course.lessonCount}
-                  // progress={course.progress}
-                />
-              );
+              return <CourseCard key={course.id} {...course} />;
             })}
           </div>
         </div>
@@ -81,16 +71,7 @@ export default async function Dashboard() {
           <h3 className={s.title}>Доступные курсы</h3>
           <div className={s.card__container}>
             {otherCourses.map((course) => {
-              return (
-                <CourseCard
-                  key={course.id}
-                  id={course.id}
-                  title={course.name}
-                  description={course.description}
-                  // moduleCount={course.moduleCount}
-                  // lessonCount={course.lessonCount}
-                />
-              );
+              return <CourseCard key={course.id} {...course} />;
             })}
           </div>
         </div>

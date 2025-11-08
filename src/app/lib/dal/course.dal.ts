@@ -35,21 +35,21 @@ export async function getAllCourses(
         },
       });
 
-      return allCourses.map((course) => {
-        const moduleCount = course.modules?.length || 0;
-        const lessonCount =
-          course.modules?.reduce(
-            (total: number, cm: any) =>
-              total + (cm.module?.lessons?.length || 0),
-            0
-          ) || 0;
+      // return allCourses.map((course) => {
+      //   const moduleCount = course.modules?.length || 0;
+      //   const lessonCount =
+      //     course.modules?.reduce(
+      //       (total: number, cm: any) =>
+      //         total + (cm.module?.lessons?.length || 0),
+      //       0
+      //     ) || 0;
 
-        return {
-          ...course,
-          moduleCount,
-          lessonCount,
-        };
-      });
+      //   return {
+      //     ...course,
+      //     moduleCount,
+      //     lessonCount,
+      //   };
+      // });
     }
 
     let query = db.select().from(courses).$dynamic();

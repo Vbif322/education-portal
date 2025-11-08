@@ -57,6 +57,13 @@
       "when": 1762460156288,
       "tag": "0007_exotic_valkyrie",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1762594843020,
+      "tag": "0008_redundant_brother_voodoo",
+      "breakpoints": true
     }
   ]
 }

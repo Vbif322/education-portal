@@ -32,6 +32,7 @@ const LessonModal: FC = () => {
     xhr.upload.addEventListener("progress", (event) => {
       if (event.lengthComputable) {
         const percentComplete = Math.round((event.loaded / event.total) * 100);
+        console.log(event.loaded);
         setProgress(percentComplete);
       }
     });

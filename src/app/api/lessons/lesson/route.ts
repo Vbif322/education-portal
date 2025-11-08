@@ -11,6 +11,7 @@ import { eq } from "drizzle-orm";
 import { pipeline } from "stream/promises";
 import { Readable } from "stream";
 import { getVideoPath } from "@/app/utils/helpers";
+import { exec } from "child_process";
 
 // Максимальный размер файла: 1000 MB
 const MAX_FILE_SIZE = 1000 * 1024 * 1024;

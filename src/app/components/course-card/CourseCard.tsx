@@ -8,7 +8,7 @@ import { BookOpen } from "lucide-react";
 
 interface CourseCardProps {
   id: number | string;
-  title: string;
+  name: string;
   description?: string | null;
   moduleCount?: number;
   lessonCount?: number;
@@ -20,7 +20,7 @@ interface CourseCardProps {
 }
 
 const CourseCard: FC<CourseCardProps> = ({
-  title,
+  name,
   description,
   id,
   moduleCount,
@@ -33,15 +33,29 @@ const CourseCard: FC<CourseCardProps> = ({
     <div className={s.card}>
       <div className={s.titleContainer}>
         <BookOpen className={s.icon} size={20} />
-        <p className={s.title}>{title}</p>
+        <p className={s.title}>{name}</p>
       </div>
       <div style={{ flex: 1 }}>
         {description && <p className={s.description}>{description}</p>}
         {(moduleCount !== undefined || lessonCount !== undefined) && (
           <p className={s.meta}>
-            {moduleCount !== undefined && `${moduleCount} ${moduleCount === 1 ? 'модуль' : moduleCount < 5 ? 'модуля' : 'модулей'}`}
-            {moduleCount !== undefined && lessonCount !== undefined && ' • '}
-            {lessonCount !== undefined && `${lessonCount} ${lessonCount === 1 ? 'урок' : lessonCount < 5 ? 'урока' : 'уроков'}`}
+            {moduleCount !== undefined &&
+              `${moduleCount} ${
+                moduleCount === 1
+                  ? "модуль"
+                  : moduleCount < 5
+                  ? "модуля"
+                  : "модулей"
+              }`}
+            {moduleCount !== undefined && lessonCount !== undefined && " • "}
+            {lessonCount !== undefined &&
+              `${lessonCount} ${
+                lessonCount === 1
+                  ? "урок"
+                  : lessonCount < 5
+                  ? "урока"
+                  : "уроков"
+              }`}
           </p>
         )}
         {progress && (
