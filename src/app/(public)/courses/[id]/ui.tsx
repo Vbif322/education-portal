@@ -2,7 +2,6 @@
 import { FC, useState } from "react";
 import { Block } from "./subcomponents/Block";
 import s from "./style.module.css";
-import { StarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Skill } from "./subcomponents/Skill";
 import Chip from "@/app/ui/Chip/Chip";

@@ -2,7 +2,6 @@ import LessonTable from "@/app/components/tables/LessonTable";
 import { getAllLessons } from "@/app/lib/dal/lesson.dal";
 import React from "react";
 import LessonModal from "./lesson-modal";
-import { Course, Lesson, Module } from "@/@types/course";
 import { revalidatePath } from "next/cache";
 import { getUser } from "@/app/lib/dal";
 import { notFound } from "next/navigation";

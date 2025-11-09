@@ -21,7 +21,7 @@ export async function createSkill(name: string) {
     if (!validation.success) {
       return {
         success: false,
-        error: validation.error.errors[0]?.message || "Неверные данные",
+        error: z.treeifyError(validation.error),
       };
     }
 

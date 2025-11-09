@@ -51,7 +51,6 @@ const testimonials = [
 
 export default async function Home() {
   const courses = await getLandingCourses();
-  console.log(courses);
   return (
     <div className={s.page}>
       <header className={s.header}>
@@ -309,21 +308,9 @@ export default async function Home() {
         <section className={s.section} id="courses">
           <h3 className={s.sectionTitle}>Каталог курсов</h3>
           <div className={s.courseCardContainer}>
-            {/* <CourseCard
-              id="1"
-              name="Стратегический менеджмент"
-              description="Разработка и реализация стратегий развития компании"
-            />
-            <CourseCard
-              id="2"
-              name="Операционный менеджмент"
-              description="Оптимизация бизнес-процессов и управление операциями"
-            />
-            <CourseCard
-              id="3"
-              name="Бережливое производство"
-              description="Внедрение принципов Lean и повышение эффективности"
-            /> */}
+            {courses.map((course) => {
+              return <CourseCard key={course.id} {...course} />;
+            })}
           </div>
         </section>
         <section className={s.section} id="testimonials">

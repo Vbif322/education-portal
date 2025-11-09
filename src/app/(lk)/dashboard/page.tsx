@@ -13,14 +13,9 @@ export default async function Dashboard() {
   ]);
 
   // Get lesson IDs that are part of enrolled courses
-  const enrolledCourseLessonIds = new Set(
-    userCourses.flatMap(
-      (course: any) =>
-        course.modules?.flatMap(
-          (cm: any) => cm.module?.lessons?.map((ml: any) => ml.lesson.id) || []
-        ) || []
-    )
-  );
+  // Note: userCourses doesn't include modules, so this will be empty
+  // This appears to be dead code or incomplete implementation
+  const enrolledCourseLessonIds = new Set<number>();
 
   // Filter user lessons to show only standalone lessons (not part of enrolled courses)
   const standaloneLessons = userLessons.filter(

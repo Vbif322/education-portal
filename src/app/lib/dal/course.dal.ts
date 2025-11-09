@@ -5,14 +5,18 @@ import {
   courses,
   usersToCourses,
   coursesToModules,
-  modules,
   modulesToLessons,
   skillsToCourses,
   skills,
 } from "@/db/schema";
 import { eq, and, asc, count, sql } from "drizzle-orm";
 import { getUser } from "../dal";
-import { Course, CourseWithMetadata } from "@/@types/course";
+import {
+  Course,
+  CourseWithMetadata,
+  CourseWithModules,
+  UserCourseEnrollment,
+} from "@/@types/course";
 
 // Helper functions to create reusable subqueries
 function createModuleCountSubquery() {
@@ -128,21 +132,11 @@ export async function getCourseById(
 export async function getCourseById(
   id: number,
   config?: { withMetadata?: false }
-): Promise<
-  | (Course & {
-      modules: {
-        order: number;
-        courseId: number;
-        moduleId: number;
-        module: typeof modules.$inferSelect;
-      }[];
-    })
-  | null
->;
+): Promise<CourseWithModules | null>;
 export async function getCourseById(
   id: number,
   config?: { withMetadata?: boolean }
-): Promise<any> {
+): Promise<CourseWithMetadata | CourseWithModules | null> {
   try {
     if (config?.withMetadata) {
       const moduleCountSubquery = createModuleCountSubquery();
@@ -156,6 +150,7 @@ export async function getCourseById(
           privacy: courses.privacy,
           createdAt: courses.createdAt,
           updatedAt: courses.updatedAt,
+          showOnLanding: courses.showOnLanding,
           moduleCount: sql<number>`COALESCE(${moduleCountSubquery.moduleCount}, 0)`,
           lessonCount: sql<number>`COALESCE(${lessonCountSubquery.lessonCount}, 0)`,
         })
@@ -204,7 +199,7 @@ export async function getCourseById(
         },
       },
     });
-    return course;
+    return (course as CourseWithModules | undefined) ?? null;
   } catch (error) {
     console.error("Ошибка при получении курса:", error);
     return null;
@@ -244,7 +239,7 @@ export async function isUserEnrolledInCourse(courseId: number) {
   }
 }
 
-export async function getUserCourses() {
+export async function getUserCourses(): Promise<UserCourseEnrollment[]> {
   const user = await getUser();
   if (!user) return [];
   try {
@@ -263,6 +258,7 @@ export async function getUserCourses() {
           privacy: courses.privacy,
           createdAt: courses.createdAt,
           updatedAt: courses.updatedAt,
+          showOnLanding: courses.showOnLanding,
           moduleCount: sql<number>`COALESCE(${moduleCountSubquery.moduleCount}, 0)`,
           lessonCount: sql<number>`COALESCE(${lessonCountSubquery.lessonCount}, 0)`,
         },

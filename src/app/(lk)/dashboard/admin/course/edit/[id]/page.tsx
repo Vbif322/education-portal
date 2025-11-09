@@ -4,7 +4,6 @@ import { getAllSkills } from "@/app/lib/dal/skill.dal";
 import { getCourseById } from "@/app/lib/dal/course.dal";
 import { updateCourse } from "@/app/actions/courses";
 import { notFound } from "next/navigation";
-import { Skill } from "@/@types/course";
 
 type Props = {
   params: Promise<{ id: string }>;

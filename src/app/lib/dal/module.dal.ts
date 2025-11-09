@@ -34,7 +34,7 @@ export async function getModuleById(
   id: number
 ): Promise<ModuleWithLessons | null> {
   try {
-    const module = await db.query.modules.findFirst({
+    const moduleResult = await db.query.modules.findFirst({
       where: eq(modules.id, id),
       with: {
         lessons: {
@@ -45,7 +45,7 @@ export async function getModuleById(
         },
       },
     });
-    return (module as ModuleWithLessons | undefined) ?? null;
+    return (moduleResult as ModuleWithLessons | undefined) ?? null;
   } catch (error) {
     console.error("Ошибка при получении модуля:", error);
     return null;

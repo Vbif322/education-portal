@@ -7,7 +7,7 @@ import Button from "@/app/ui/Button/Button";
 import { BookOpen } from "lucide-react";
 import { CourseWithMetadata } from "@/@types/course";
 
-interface CourseCardProps extends CourseWithMetadata {
+interface CourseCardProps extends Partial<CourseWithMetadata> {
   progress?: {
     completed: number;
     total: number;

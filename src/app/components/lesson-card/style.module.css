@@ -39,7 +39,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  justify-content: end;
+  justify-content: flex-end;
 }
 
 .durationIcon {

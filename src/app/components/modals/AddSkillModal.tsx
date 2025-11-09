@@ -7,24 +7,60 @@ import Button from "@/app/ui/Button/Button";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (name: string) => Promise<{ success: boolean; error?: string }>;
+  onAdd: (name: string) => Promise<
+    | {
+        success: boolean;
+        error?: undefined;
+      }
+    | {
+        success: boolean;
+        error:
+          | string
+          | {
+              errors: string[];
+              properties?:
+                | {
+                    name?:
+                      | {
+                          errors: string[];
+                        }
+                      | undefined;
+                  }
+                | undefined;
+            }
+          | undefined;
+      }
+  >;
 };
 
 const AddSkillModal: FC<Props> = ({ isOpen, onClose, onAdd }) => {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(undefined);
+    setError(null);
     setLoading(true);
 
     try {
       const result = await onAdd(name);
 
       if (!result.success) {
-        setError(result.error || "Ошибка при добавлении навыка");
+        if (typeof result.error === "string") {
+          setError(result.error);
+        } else if (typeof result.error === "object") {
+          // Пытаемся извлечь первую ошибку из сложной структуры
+          const complexError = result.error;
+          const errorMessage =
+            complexError.errors?.[0] ||
+            complexError.properties?.name?.errors?.[0] ||
+            "Ошибка валидации";
+          setError(errorMessage);
+        } else {
+          // Если error undefined, но success false
+          setError("Ошибка при добавлении навыка");
+        }
       } else {
         setName("");
         onClose();
@@ -42,7 +78,7 @@ const AddSkillModal: FC<Props> = ({ isOpen, onClose, onAdd }) => {
   const handleClose = () => {
     if (!loading) {
       setName("");
-      setError(undefined);
+      setError(null);
       onClose();
     }
   };
