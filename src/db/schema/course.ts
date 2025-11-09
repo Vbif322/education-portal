@@ -1,23 +1,22 @@
 import {
+  boolean,
   integer,
-  pgEnum,
   pgTable,
   primaryKey,
   varchar,
 } from "drizzle-orm/pg-core";
 import { createdAt, updatedAt } from "../schemaHelpers";
 import { relations } from "drizzle-orm";
-
-export const levelEnum = pgEnum("level", [
-  "beginner",
-  "intermediate",
-  "advanced",
-]);
+import { coursesToModules } from "./coursesToModules";
 
 export const courses = pgTable("courses", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
   description: varchar({ length: 256 }),
+  privacy: varchar({ enum: ["private", "public"] })
+    .notNull()
+    .default("private"),
+  showOnLanding: boolean().default(false),
   createdAt,
   updatedAt,
 });
@@ -35,6 +34,7 @@ export const skillsRelations = relations(skills, ({ many }) => ({
 
 export const courseRelations = relations(courses, ({ many }) => ({
   skillsToCourses: many(skillsToCourses),
+  modules: many(coursesToModules),
 }));
 
 export const skillsToCourses = pgTable(

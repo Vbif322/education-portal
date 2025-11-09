@@ -1,0 +1,189 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.container h2 {
+  margin-bottom: 24px;
+  color: #1a1a1a;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formGroup label {
+  font-weight: 500;
+  color: #333;
+}
+
+.required {
+  color: #d32f2f;
+  margin-left: 4px;
+}
+
+.input,
+.textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #1976d2;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.lessonsSection,
+.availableLessonsSection {
+  margin-top: 16px;
+}
+
+.lessonsSection h3,
+.availableLessonsSection h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: #333;
+}
+
+.selectedLessons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.lessonItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  transition: box-shadow 0.2s;
+}
+
+.lessonItem:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.lessonInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.lessonOrder {
+  font-weight: 600;
+  color: #666;
+  min-width: 24px;
+}
+
+.lessonName {
+  color: #1a1a1a;
+}
+
+.lessonActions {
+  display: flex;
+  gap: 4px;
+}
+
+.actionButton {
+  padding: 6px 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.actionButton:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.actionButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.removeButton {
+  color: #d32f2f;
+}
+
+.removeButton:hover:not(:disabled) {
+  background: #ffebee;
+  border-color: #d32f2f;
+}
+
+.availableLessons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.availableLesson {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.availableLesson span {
+  color: #333;
+}
+
+.emptyMessage {
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  padding: 24px;
+}
+
+.error {
+  padding: 12px;
+  background: #ffebee;
+  color: #d32f2f;
+  border-radius: 4px;
+  border: 1px solid #ef9a9a;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}

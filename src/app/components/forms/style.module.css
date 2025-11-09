@@ -73,3 +73,9 @@
   text-align: center;
   color: #9a2430;
 }
+
+.progress {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}

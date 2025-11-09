@@ -15,6 +15,7 @@ export const lessons = pgTable("lessons", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
   description: varchar({ length: 256 }),
+  duration: integer().notNull(),
   status: statusEnum().notNull().default("private"),
   videoURL: text().notNull(),
   createdAt,

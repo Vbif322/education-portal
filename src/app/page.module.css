@@ -3,11 +3,25 @@
   align-items: center;
   flex-direction: column;
   padding-top: 32px;
+  --main-bg: linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #f0f9ff 100%);
 }
 
 .header {
   width: 100%;
   max-width: 1200px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .main {
@@ -16,10 +30,14 @@
 }
 
 .nav {
-  padding: 32px;
-  background-color: #f5f5f5;
+  padding: 24px 48px;
+  background: rgb(255 255 255 / 0.7);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgb(255 255 255 / 0.5);
 }
 
 .navigation {
@@ -27,33 +45,136 @@
   list-style-type: none;
   justify-content: space-between;
   align-items: center;
+  gap: 48px;
+}
+
+.navLinks {
+  display: flex;
+  list-style-type: none;
+  gap: 36px;
+  align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
 .navigation li {
   font-size: 1.125rem;
+  font-weight: 500;
+  position: relative;
+}
+
+.navigation li a {
+  color: rgb(55 65 81);
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+  display: block;
+}
+
+.navigation li a:hover {
+  color: #2563eb;
+}
+
+.navigation li a::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  transition: width 0.2s ease;
+}
+
+.navigation li a:hover::after {
+  width: 100%;
 }
 
 .logoTitle {
+  font-weight: 700;
+  font-size: 1.375rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  white-space: nowrap;
+}
+
+.logoTitle:hover {
+  transform: scale(1.02);
+}
+
+.loginButton {
+  padding: 10px 24px;
+  font-size: 1rem;
   font-weight: 600;
-  font-size: 1.25rem;
+  background: white;
+  color: #2563eb;
+  border: 2px solid #2563eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.loginButton:hover {
+  background: #2563eb;
+  color: white;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .mainSection {
   display: flex;
   align-items: center;
-  background-color: #f5f5f5;
+  background: var(--main-bg);
   justify-content: space-evenly;
-  padding-inline: 48px;
+  padding: 48px;
   gap: 64px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-  padding-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+  min-height: 600px;
+}
+
+.mainSection::before {
+  content: "";
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(
+    circle,
+    rgba(37, 99, 235, 0.08) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.mainSection::after {
+  content: "";
+  position: absolute;
+  bottom: -80px;
+  left: -80px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.06) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  z-index: 0;
 }
 
 .mainBlock {
   display: flex;
   flex-direction: column;
   gap: 36px;
+  position: relative;
+  z-index: 1;
 }
 
 .title {
@@ -61,12 +182,28 @@
   line-height: 3.75rem;
 }
 
+.titleAccent {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
 .subtitle {
   font-size: 1.5rem;
 }
 
+.imgContainer {
+  position: relative;
+  z-index: 1;
+}
+
 .imgContainer img {
   border-radius: 8px;
+  display: block;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
 .section {
@@ -77,19 +214,202 @@
   font-size: 2.5rem;
 }
 
-.mainInfoContainer {
+.aboutCard {
   margin-top: 32px;
-  display: flex;
-  align-items: center;
-  gap: 32px;
+  background: white;
+  border-radius: 12px;
+  padding: 48px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
 }
 
-.mainInfoContainer img {
+.aboutCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa);
+}
+
+.aboutHeader {
+  margin-bottom: 32px;
+}
+
+.aboutName {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.aboutRole {
+  font-size: 1.25rem;
+  color: rgb(107 114 128);
+  font-weight: 500;
+}
+
+.aboutBio {
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.aboutBio p {
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: rgb(55 65 81);
+}
+
+.aboutSection {
+  margin-bottom: 40px;
+}
+
+.aboutSection:last-child {
+  margin-bottom: 0;
+}
+
+.aboutSectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgb(17 24 39);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgb(229 231 235);
+}
+
+.specializationGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.specializationItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: rgb(249 250 251);
   border-radius: 8px;
 }
 
-.mainInfoText {
-  font-size: 1.5rem;
+.specializationIcon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 8px;
+  color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+}
+
+.specializationItem span {
+  font-size: 1rem;
+  color: rgb(55 65 81);
+  line-height: 1.5;
+  padding-top: 4px;
+}
+
+.certificatesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.certificateBadge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: rgb(239 246 255);
+  border: 2px solid #2563eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.certificateBadge svg {
+  flex-shrink: 0;
+}
+
+.aboutText {
+  font-size: 1.125rem;
+  color: rgb(55 65 81);
+  margin-bottom: 16px;
+  line-height: 1.75;
+}
+
+.schoolsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.schoolItem {
+  font-size: 1.0625rem;
+  color: rgb(55 65 81);
+  padding: 12px 16px;
+  background: rgb(249 250 251);
+  border-radius: 6px;
+  border-left: 3px solid #2563eb;
+}
+
+.careerHighlights {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.highlightItem {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: rgb(249 250 251);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.highlightItem:hover {
+  background: rgb(239 246 255);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+}
+
+.highlightIcon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 8px;
+  color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+}
+
+.highlightItem p {
+  font-size: 1rem;
+  color: rgb(55 65 81);
+  line-height: 1.6;
+  margin: 0;
+  padding-top: 2px;
+}
+
+.featuresContainer {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
 }
 
 .courseCardContainer {
@@ -102,6 +422,333 @@
   margin-top: 32px;
   display: flex;
   justify-content: space-between;
+}
+
+.ctaContainer {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 40px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.ctaPrimary:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(37, 99, 235, 0.5);
+  }
+}
+
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  background: transparent;
+  color: #2563eb;
+  border: 2px solid #2563eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ctaSecondary:hover {
+  background: #2563eb;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.trustBadges {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.badgeIcon {
+  font-size: 1.5rem;
+}
+
+.badgeContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.badgeValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2563eb;
+  line-height: 1;
+}
+
+.badgeLabel {
+  font-size: 0.875rem;
+  color: rgb(107 114 128);
+  margin-top: 2px;
+}
+
+.benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.benefitItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  color: rgb(55 65 81);
+}
+
+.checkIcon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: #10b981;
+}
+
+@media (max-width: 1024px) {
+  .featuresContainer {
+    gap: 24px;
+  }
+
+  .nav {
+    padding: 20px 32px;
+  }
+
+  .navigation {
+    gap: 24px;
+  }
+
+  .navLinks {
+    gap: 24px;
+  }
+
+  .navigation li {
+    font-size: 1rem;
+  }
+
+  .logoTitle {
+    font-size: 1.125rem;
+  }
+
+  .aboutCard {
+    padding: 36px;
+  }
+
+  .aboutName {
+    font-size: 1.75rem;
+  }
+
+  .aboutBio p {
+    font-size: 1rem;
+  }
+
+  .aboutText {
+    font-size: 1rem;
+  }
+
+  .schoolItem {
+    font-size: 1rem;
+  }
+
+  .highlightItem p {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .featuresContainer {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .nav {
+    padding: 16px 24px;
+  }
+
+  .navigation {
+    flex-direction: column;
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .navLinks {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .navigation li {
+    padding: 8px 0;
+  }
+
+  .logoTitle {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .loginButton {
+    width: 100%;
+    text-align: center;
+  }
+
+  .mainSection {
+    flex-direction: column;
+    padding-inline: 24px;
+    gap: 40px;
+    min-height: auto;
+    padding-top: 40px;
+  }
+
+  .title {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+    text-align: center;
+  }
+
+  .subtitle {
+    font-size: 1.125rem;
+    text-align: center;
+  }
+
+  .ctaContainer {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .ctaPrimary,
+  .ctaSecondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .trustBadges {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .badge {
+    width: 100%;
+  }
+
+  .aboutCard {
+    padding: 24px;
+  }
+
+  .aboutName {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .aboutRole {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .aboutBio p {
+    font-size: 1rem;
+  }
+
+  .aboutSectionTitle {
+    font-size: 1.25rem;
+  }
+
+  .specializationGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .specializationItem {
+    padding: 12px;
+  }
+
+  .specializationIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .specializationItem span {
+    font-size: 0.9375rem;
+  }
+
+  .certificatesContainer {
+    flex-direction: column;
+  }
+
+  .certificateBadge {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .aboutText {
+    font-size: 0.9375rem;
+  }
+
+  .schoolItem {
+    font-size: 0.9375rem;
+    padding: 10px 12px;
+  }
+
+  .highlightItem {
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .highlightIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .highlightItem p {
+    font-size: 0.9375rem;
+  }
 }
 
 .testimonial__title {

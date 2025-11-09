@@ -1,14 +1,17 @@
 import Header from "@/app/components/header/Header";
+import { getUser } from "@/app/lib/dal";
 import { FC } from "react";
 
 const CourseLayout: FC<
   Readonly<{
     children: React.ReactNode;
   }>
-> = ({ children }) => {
+> = async ({ children }) => {
+  const user = await getUser();
+
   return (
     <>
-      <Header />
+      <Header variant={user ? "private" : "public"} />
       {children}
     </>
   );

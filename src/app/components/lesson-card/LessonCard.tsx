@@ -5,21 +5,31 @@ import s from "./style.module.css";
 import { redirect } from "next/navigation";
 import { Lesson } from "@/@types/course";
 import Button from "@/app/ui/Button/Button";
+import { PlayCircle, Clock } from "lucide-react";
+import { formatTime } from "@/app/utils/helpers";
 
 const LessonCard: FC<Lesson & { progress?: boolean }> = ({
   name,
   description,
   id,
   progress,
+  duration,
 }) => {
   return (
     <div className={s.card}>
-      <p className={s.title}>{name}</p>
+      <div className={s.titleContainer}>
+        <PlayCircle className={s.icon} size={20} />
+        <p className={s.title}>{name}</p>
+      </div>
       <div style={{ flex: 1 }}>
         {description && <p className={s.description}>{description}</p>}
       </div>
-      <Button onClick={() => redirect("/lessons/" + id)}>
-        {progress ? "Продолжить" : "Подробнее"}
+      <div className={s.durationContainer}>
+        <Clock className={s.durationIcon} size={16} />
+        <span className={s.durationText}>{formatTime(duration)}</span>
+      </div>
+      <Button onClick={() => redirect("/dashboard/lessons/" + id)}>
+        {progress ? "Продолжить" : "Смотреть"}
       </Button>
     </div>
   );

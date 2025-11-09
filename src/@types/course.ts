@@ -1,13 +1,29 @@
-import { lessons } from "@/db/schema";
+import { courses, modules, lessons, skills, coursesToModules, skillsToCourses } from "@/db/schema";
 
-export interface ICourse {
-  id: string;
-  title: string;
-  description: string;
-  progress?: number;
-}
-
+export type Skill = typeof skills.$inferSelect;
 export type Lesson = typeof lessons.$inferSelect;
+export type Module = typeof modules.$inferSelect;
+export type Course = typeof courses.$inferSelect;
+export type CoursesToModules = typeof coursesToModules.$inferSelect;
+export type SkillsToCourses = typeof skillsToCourses.$inferSelect;
+
+export type CourseWithMetadata = Course & {
+  moduleCount: number;
+  lessonCount: number;
+  skills?: { skill: Skill }[];
+};
+
+export type CourseWithModules = Course & {
+  modules: (CoursesToModules & { module: Module })[];
+  skillsToCourses: (SkillsToCourses & { skill: Skill })[];
+};
+
+export type UserCourseEnrollment = {
+  courseId: number;
+  userId: string;
+  enrolledAt: Date;
+  course: CourseWithMetadata;
+};
 
 export type LessonFormErrors = {
   errors: [];

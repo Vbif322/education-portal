@@ -24,3 +24,16 @@
   gap: 8px;
   font-size: 1.125rem;
 }
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.company {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.875rem;
+}

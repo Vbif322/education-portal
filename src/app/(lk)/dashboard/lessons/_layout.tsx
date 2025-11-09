@@ -10,7 +10,7 @@ const LessonLayout: FC<
 > = ({ children }) => {
   return (
     <>
-      <Header />
+      <Header variant="private" />
       <nav style={{ maxWidth: "1200px", margin: "auto" }}>
         <Link
           href="/dashboard"
