@@ -8,6 +8,7 @@ import IconButton from "@/app/ui/IconButton/IconButton";
 import Link from "next/link";
 import Navbar from "../navbar/Navbar";
 import { User } from "@/@types/user";
+import Divider from "@/app/ui/Divider/Divider";
 
 type Props = {
   role?: User["role"];
@@ -31,6 +32,9 @@ const Header: FC<Props> = ({ role }) => {
           </div>
         </div>
         <Navbar role={role} />
+        <Divider
+          style={{ position: "absolute", width: "100%", left: 0, zIndex: -1 }}
+        />
       </div>
     </header>
   );

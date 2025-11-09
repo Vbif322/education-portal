@@ -10,6 +10,10 @@ export interface ICourse {
 export type Lesson = typeof lessons.$inferSelect;
 export type Module = typeof modules.$inferSelect;
 export type Course = typeof courses.$inferSelect;
+export type CourseWithMetadata = Course & {
+  moduleCount: number;
+  lessonCount: number;
+};
 
 export type LessonFormErrors = {
   errors: [];

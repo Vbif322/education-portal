@@ -1,49 +1,91 @@
 import "server-only";
 
 import { db } from "@/db/db";
-import { courses, usersToCourses, coursesToModules } from "@/db/schema";
-import { eq, and, asc } from "drizzle-orm";
+import {
+  courses,
+  usersToCourses,
+  coursesToModules,
+  modules,
+  modulesToLessons,
+} from "@/db/schema";
+import { eq, and, asc, count, sql } from "drizzle-orm";
 import { getUser } from "../dal";
+import { Course, CourseWithMetadata } from "@/@types/course";
 
+// Function overloads for better type inference
+export async function getAllCourses(
+  config: { withMetadata: true } & Partial<{
+    onlyPublic: boolean;
+    limit: number;
+  }>
+): Promise<CourseWithMetadata[]>;
+export async function getAllCourses(
+  config?: Partial<{
+    onlyPublic: boolean;
+    limit: number;
+    withMetadata?: false;
+  }>
+): Promise<Course[]>;
 export async function getAllCourses(
   config?: Partial<{
     onlyPublic: boolean;
     limit: number;
     withMetadata?: boolean;
   }>
-) {
+): Promise<Course[] | CourseWithMetadata[]> {
   try {
     if (config?.withMetadata) {
-      // Get courses with module and lesson counts
-      const allCourses = await db.query.courses.findMany({
-        with: {
-          modules: {
-            with: {
-              module: {
-                with: {
-                  lessons: true,
-                },
-              },
-            },
-          },
-        },
-      });
+      const moduleCountSubquery = db
+        .select({
+          courseId: coursesToModules.courseId,
+          moduleCount: count(coursesToModules.moduleId).as("module_count"),
+        })
+        .from(coursesToModules)
+        .groupBy(coursesToModules.courseId)
+        .as("module_counts");
 
-      // return allCourses.map((course) => {
-      //   const moduleCount = course.modules?.length || 0;
-      //   const lessonCount =
-      //     course.modules?.reduce(
-      //       (total: number, cm: any) =>
-      //         total + (cm.module?.lessons?.length || 0),
-      //       0
-      //     ) || 0;
+      const lessonCountSubquery = db
+        .select({
+          courseId: coursesToModules.courseId,
+          lessonCount: count(modulesToLessons.lessonId).as("lesson_count"),
+        })
+        .from(coursesToModules)
+        .leftJoin(
+          modulesToLessons,
+          eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+        )
+        .groupBy(coursesToModules.courseId)
+        .as("lesson_counts");
 
-      //   return {
-      //     ...course,
-      //     moduleCount,
-      //     lessonCount,
-      //   };
-      // });
+      let query = db
+        .select({
+          id: courses.id,
+          name: courses.name,
+          description: courses.description,
+          privacy: courses.privacy,
+          createdAt: courses.createdAt,
+          updatedAt: courses.updatedAt,
+          moduleCount: sql<number>`COALESCE(${moduleCountSubquery.moduleCount}, 0)`,
+          lessonCount: sql<number>`COALESCE(${lessonCountSubquery.lessonCount}, 0)`,
+        })
+        .from(courses)
+        .leftJoin(
+          moduleCountSubquery,
+          eq(courses.id, moduleCountSubquery.courseId)
+        )
+        .leftJoin(
+          lessonCountSubquery,
+          eq(courses.id, lessonCountSubquery.courseId)
+        )
+        .$dynamic();
+      if (config?.onlyPublic) {
+        query = query.where(eq(courses.privacy, "public"));
+      }
+      if (config?.limit) {
+        query = query.limit(config.limit);
+      }
+
+      return await query;
     }
 
     let query = db.select().from(courses).$dynamic();
@@ -117,58 +159,57 @@ export async function getUserCourses() {
   const user = await getUser();
   if (!user) return [];
   try {
-    const userCourses = await db.query.usersToCourses.findMany({
-      where: eq(usersToCourses.userId, user.id),
-      with: {
-        course: true,
-        // {
-        //   with: {
-        //     modules: {
-        //       with: {
-        //         module: {
-        //           with: {
-        //             lessons: {
-        //               with: {
-        //                 lesson: true,
-        //               },
-        //             },
-        //           },
-        //         },
-        //       },
-        //       orderBy: asc(coursesToModules.order),
-        //     },
-        //   },
-        // },
-      },
-    });
+    const moduleCountSubquery = db
+      .select({
+        courseId: coursesToModules.courseId,
+        moduleCount: count(coursesToModules.moduleId).as("module_count"),
+      })
+      .from(coursesToModules)
+      .groupBy(coursesToModules.courseId)
+      .as("module_counts");
 
-    // Calculate progress and metadata for each course
-    // const coursesWithProgress = await Promise.all(
-    //   userCourses.map(async (enrollment) => {
-    //     const progress = await getCourseProgress(enrollment.course.id);
+    const lessonCountSubquery = db
+      .select({
+        courseId: coursesToModules.courseId,
+        lessonCount: count(modulesToLessons.lessonId).as("lesson_count"),
+      })
+      .from(coursesToModules)
+      .leftJoin(
+        modulesToLessons,
+        eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+      )
+      .groupBy(coursesToModules.courseId)
+      .as("lesson_counts");
 
-    //     // Calculate module count
-    //     const moduleCount = enrollment.course.modules?.length || 0;
+    const result = await db
+      .select({
+        courseId: usersToCourses.courseId,
+        userId: usersToCourses.userId,
+        enrolledAt: usersToCourses.enrolledAt,
+        course: {
+          id: courses.id,
+          name: courses.name,
+          description: courses.description,
+          privacy: courses.privacy,
+          createdAt: courses.createdAt,
+          updatedAt: courses.updatedAt,
+          moduleCount: sql<number>`COALESCE(${moduleCountSubquery.moduleCount}, 0)`,
+          lessonCount: sql<number>`COALESCE(${lessonCountSubquery.lessonCount}, 0)`,
+        },
+      })
+      .from(usersToCourses)
+      .innerJoin(courses, eq(usersToCourses.courseId, courses.id))
+      .leftJoin(
+        moduleCountSubquery,
+        eq(courses.id, moduleCountSubquery.courseId)
+      )
+      .leftJoin(
+        lessonCountSubquery,
+        eq(courses.id, lessonCountSubquery.courseId)
+      )
+      .where(eq(usersToCourses.userId, user.id));
 
-    //     // Calculate lesson count
-    //     const lessonCount =
-    //       enrollment.course.modules?.reduce(
-    //         (total: number, cm: any) =>
-    //           total + (cm.module?.lessons?.length || 0),
-    //         0
-    //       ) || 0;
-
-    //     return {
-    //       ...enrollment.course,
-    //       progress,
-    //       enrolledAt: enrollment.enrolledAt,
-    //       moduleCount,
-    //       lessonCount,
-    //     };
-    //   })
-    // );
-
-    return userCourses;
+    return result;
   } catch (error) {
     console.error("Ошибка при получении курсов пользователя:", error);
     return [];

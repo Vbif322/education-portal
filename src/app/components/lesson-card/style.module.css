@@ -34,3 +34,20 @@
   color: rgb(75 85 99);
   margin-top: 8px;
 }
+
+.durationContainer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: end;
+}
+
+.durationIcon {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.durationText {
+  font-size: 0.875rem;
+  color: #6b7280;
+}

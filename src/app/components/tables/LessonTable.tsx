@@ -6,6 +6,7 @@ import { FC, useReducer, useState } from "react";
 import s from "./style.module.css";
 import LessonChangeModal from "@/app/(lk)/dashboard/admin/lesson-change-modal";
 import DeleteDialog from "../dialogs/delete-dialog";
+import { formatTime } from "@/app/utils/helpers";
 
 type Props = {
   data: Lesson[];
@@ -83,14 +84,6 @@ const LessonTable: FC<Props> = ({
           </thead>
           <tbody>
             {data.map((lessonItem) => {
-              let min: string | number = Math.floor(lessonItem.duration / 60);
-              if (min < 10) {
-                min = "0" + min;
-              }
-              let sec: string | number = lessonItem.duration % 60;
-              if (sec < 10) {
-                sec = "0" + sec;
-              }
               return (
                 <tr key={lessonItem.id}>
                   <td>{lessonItem.name}</td>
@@ -99,7 +92,7 @@ const LessonTable: FC<Props> = ({
                       ? "Доступ закрыт"
                       : "Доступ открыт"}
                   </td>
-                  <td>{min + ":" + sec}</td>
+                  <td>{formatTime(lessonItem.duration)}</td>
                   <td style={{ display: "flex", justifyContent: "center" }}>
                     <Button
                       variant="text"

@@ -5,13 +5,9 @@ import s from "./style.module.css";
 import { useRouter } from "next/navigation";
 import Button from "@/app/ui/Button/Button";
 import { BookOpen } from "lucide-react";
+import { CourseWithMetadata } from "@/@types/course";
 
-interface CourseCardProps {
-  id: number | string;
-  name: string;
-  description?: string | null;
-  moduleCount?: number;
-  lessonCount?: number;
+interface CourseCardProps extends CourseWithMetadata {
   progress?: {
     completed: number;
     total: number;
@@ -23,9 +19,9 @@ const CourseCard: FC<CourseCardProps> = ({
   name,
   description,
   id,
+  progress,
   moduleCount,
   lessonCount,
-  progress,
 }) => {
   const router = useRouter();
 
@@ -37,27 +33,6 @@ const CourseCard: FC<CourseCardProps> = ({
       </div>
       <div style={{ flex: 1 }}>
         {description && <p className={s.description}>{description}</p>}
-        {(moduleCount !== undefined || lessonCount !== undefined) && (
-          <p className={s.meta}>
-            {moduleCount !== undefined &&
-              `${moduleCount} ${
-                moduleCount === 1
-                  ? "модуль"
-                  : moduleCount < 5
-                  ? "модуля"
-                  : "модулей"
-              }`}
-            {moduleCount !== undefined && lessonCount !== undefined && " • "}
-            {lessonCount !== undefined &&
-              `${lessonCount} ${
-                lessonCount === 1
-                  ? "урок"
-                  : lessonCount < 5
-                  ? "урока"
-                  : "уроков"
-              }`}
-          </p>
-        )}
         {progress && (
           <div className={s.progressContainer}>
             <div className={s.progressBar}>
@@ -71,6 +46,25 @@ const CourseCard: FC<CourseCardProps> = ({
               {progress.percentage}%)
             </p>
           </div>
+        )}
+      </div>
+      <div style={{ textAlign: "end" }}>
+        {(moduleCount !== undefined || lessonCount !== undefined) && (
+          <p className={s.meta}>
+            {moduleCount !== undefined &&
+              `${moduleCount} ${
+                moduleCount === 1 ? "тема" : moduleCount < 5 ? "темы" : "тем"
+              }`}
+            {moduleCount !== undefined && lessonCount !== undefined && " • "}
+            {lessonCount !== undefined &&
+              `${lessonCount} ${
+                lessonCount === 1
+                  ? "урок"
+                  : lessonCount < 5
+                  ? "урока"
+                  : "уроков"
+              }`}
+          </p>
         )}
       </div>
       <Button onClick={() => router.push("/courses/" + id)}>
