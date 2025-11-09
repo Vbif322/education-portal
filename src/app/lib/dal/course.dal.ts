@@ -1,14 +1,8 @@
 import "server-only";
 
 import { db } from "@/db/db";
-import {
-  courses,
-  usersToCourses,
-  coursesToModules,
-  modulesToLessons,
-  usersToLessons,
-} from "@/db/schema";
-import { eq, and, sql, asc } from "drizzle-orm";
+import { courses, usersToCourses, coursesToModules } from "@/db/schema";
+import { eq, and, asc } from "drizzle-orm";
 import { getUser } from "../dal";
 
 export async function getAllCourses(

@@ -4,7 +4,7 @@ import { Lesson, LessonFormErrors } from "@/@types/course";
 import LessonForm from "@/app/components/forms/lesson-form";
 import Dialog from "@/app/ui/Dialog/Dialog";
 import { useRouter } from "next/navigation";
-import { FC, FormEvent, useState, useTransition } from "react";
+import { FC, FormEvent, useRef, useState, useTransition } from "react";
 
 type Props = {
   open: boolean;
@@ -12,14 +12,29 @@ type Props = {
   lesson?: Lesson;
 };
 
+const initialProgress = {
+  percentage: 0,
+  loaded: 0,
+  total: 0,
+};
+
 const LessonChangeModal: FC<Props> = ({ open, onClose, lesson }) => {
   const [errors, setErrors] = useState<LessonFormErrors>();
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(initialProgress);
   const router = useRouter();
   const [, startTransition] = useTransition();
+  const xhrRef = useRef<XMLHttpRequest | null>(null);
 
   const onCloseHandle = () => {
+    // Отменяем XMLHttpRequest, если загрузка активна
+    if (xhrRef.current) {
+      xhrRef.current.abort();
+      xhrRef.current = null;
+    }
+    setErrors(undefined);
+    setProgress(initialProgress);
+    setLoading(false);
     if (onClose) {
       onClose();
     }
@@ -33,28 +48,34 @@ const LessonChangeModal: FC<Props> = ({ open, onClose, lesson }) => {
 
     const formData = new FormData(e.currentTarget);
     const xhr = new XMLHttpRequest();
+    xhrRef.current = xhr;
 
     xhr.upload.addEventListener("progress", (event) => {
       if (event.lengthComputable) {
         const percentComplete = Math.round((event.loaded / event.total) * 100);
-        setProgress(percentComplete);
+        setProgress({
+          percentage: percentComplete,
+          loaded: +(event.loaded / 1024 / 1024).toFixed(1),
+          total: +(event.total / 1024 / 1024).toFixed(1),
+        });
       }
     });
 
     xhr.addEventListener("load", () => {
       setLoading(false);
+      xhrRef.current = null;
       if (xhr.status >= 200 && xhr.status < 300) {
         startTransition(() => {
           router.refresh();
         });
-        setProgress(0);
+        setProgress(initialProgress);
         setErrors(undefined);
         onCloseHandle();
       } else {
         // Обработка ошибок от сервера (например, файл уже существует)
         try {
           const response = JSON.parse(xhr.responseText);
-          setProgress(0);
+          setProgress(initialProgress);
           setErrors(response);
         } catch (e) {
           console.log(e);
@@ -66,7 +87,15 @@ const LessonChangeModal: FC<Props> = ({ open, onClose, lesson }) => {
     xhr.addEventListener("error", (e) => {
       console.log(e, "err");
       setLoading(false);
+      xhrRef.current = null;
+      setProgress(initialProgress);
       // setError("Произошла ошибка при загрузке файла.");
+    });
+
+    xhr.addEventListener("abort", () => {
+      setLoading(false);
+      xhrRef.current = null;
+      setProgress(initialProgress);
     });
 
     xhr.open(

@@ -12,8 +12,7 @@ const DashboardLayout: FC<
   const user = await getUser();
   return (
     <>
-      <Header />
-      <Navbar role={user?.role} />
+      <Header role={user?.role} />
       <Divider />
       <div
         style={{

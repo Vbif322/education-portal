@@ -11,10 +11,9 @@ import { eq } from "drizzle-orm";
 import { pipeline } from "stream/promises";
 import { Readable } from "stream";
 import { getVideoPath } from "@/app/utils/helpers";
-import { exec } from "child_process";
 
 // Максимальный размер файла: 1000 MB
-const MAX_FILE_SIZE = 1000 * 1024 * 1024;
+const MAX_FILE_SIZE = 1000;
 // Разрешенные расширения видео
 const ALLOWED_EXTENSIONS = [".mp4", ".webm", ".mov", ".avi", ".mkv"];
 
@@ -23,12 +22,10 @@ const ALLOWED_EXTENSIONS = [".mp4", ".webm", ".mov", ".avi", ".mkv"];
  */
 function validateVideoFile(file: File): { valid: boolean; error?: string } {
   // Проверка размера
-  if (file.size > MAX_FILE_SIZE) {
+  if (file.size > MAX_FILE_SIZE * 1024 * 1024) {
     return {
       valid: false,
-      error: `Размер файла превышает максимальный (${
-        MAX_FILE_SIZE / 1024 / 1024
-      } MB)`,
+      error: `Размер файла превышает максимальный (${MAX_FILE_SIZE} MB)`,
     };
   }
 
@@ -45,6 +42,9 @@ function validateVideoFile(file: File): { valid: boolean; error?: string } {
 
   return { valid: true };
 }
+
+const buff = Buffer.alloc(100);
+const header = Buffer.from("mvhd");
 
 export async function POST(request: NextRequest) {
   let tempFilepath: string | null = null;
@@ -100,9 +100,19 @@ export async function POST(request: NextRequest) {
     const stream = fields.data.file.stream();
     const writeStream = createWriteStream(filepath);
 
-    // ИСПРАВЛЕНИЕ: Сначала загружаем файл, потом записываем в БД
+    // Сначала загружаем файл, потом записываем в БД
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await pipeline(Readable.fromWeb(stream as any), writeStream);
+
+    const file = await fsp.open(filepath);
+    const { buffer } = await file.read(buff, 0, 100, 0);
+
+    await file.close();
+
+    const start = buffer.indexOf(header) + 16;
+    const timeScale = buffer.readUInt32BE(start);
+    const duration = buffer.readUInt32BE(start + 4);
+    const videoDuration = Math.floor(duration / timeScale);
 
     // Только после успешной загрузки файла записываем в БД
     await db.insert(lessons).values({
@@ -110,6 +120,7 @@ export async function POST(request: NextRequest) {
       status: fields.data.status,
       videoURL: path.basename(fields.data.file.name),
       description: fields.data.description,
+      duration: videoDuration,
     });
 
     return NextResponse.json({ success: true });

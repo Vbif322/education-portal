@@ -12,7 +12,7 @@ const LessonForm: FC<{
   isLoading?: boolean;
   title: string;
   data?: Lesson;
-  progress: number;
+  progress: { percentage: number; loaded: number; total: number };
 }> = ({ handleSubmit, errors, isLoading, title, data, progress }) => {
   return (
     <div className={s["form-container"]}>
@@ -111,7 +111,13 @@ const LessonForm: FC<{
             </span>
           }
         </div>
-        <Progress value={progress} style={{ marginBottom: "18px" }} />
+        <div className={s.progress}>
+          <Progress
+            value={progress.percentage}
+            style={{ marginBottom: "18px" }}
+          />
+          <span style={{ whiteSpace: "nowrap" }}>{`${progress.loaded} / ${progress.total} MB`}</span>
+        </div>
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Загрузка" : data?.name ? "Изменить" : "Добавить"}
         </Button>

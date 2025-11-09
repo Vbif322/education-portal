@@ -71,9 +71,14 @@ const Navbar: FC<Props> = ({ role }) => {
             Статистика
           </li> */}
           {role === "admin" && (
-            <li onClick={onTabClick} id="tab-3" role="tab" data-url="/admin">
-              Панель управления
-            </li>
+            <>
+              <li onClick={onTabClick} id="tab-3" role="tab" data-url="/admin">
+                Панель управления
+              </li>
+              <li onClick={onTabClick} id="tab-4" role="tab" data-url="/users">
+                Пользователи
+              </li>
+            </>
           )}
         </ul>
         <span className={s.indicator} style={indicatorPos}></span>

@@ -2,12 +2,18 @@
 
 import { FC } from "react";
 import s from "./style.module.css";
-import { LogOutIcon, User } from "lucide-react";
+import { LogOutIcon, UserIcon } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import IconButton from "@/app/ui/IconButton/IconButton";
 import Link from "next/link";
+import Navbar from "../navbar/Navbar";
+import { User } from "@/@types/user";
 
-const Header: FC = () => {
+type Props = {
+  role?: User["role"];
+};
+
+const Header: FC<Props> = ({ role }) => {
   return (
     <header className={s.header}>
       <div className={s.wrapper}>
@@ -16,7 +22,7 @@ const Header: FC = () => {
           <div style={{ display: "flex", gap: "16px" }}>
             <Link href={"/dashboard/profile"}>
               <IconButton>
-                <User />
+                <UserIcon />
               </IconButton>
             </Link>
             <IconButton onClick={logout}>
@@ -24,6 +30,7 @@ const Header: FC = () => {
             </IconButton>
           </div>
         </div>
+        <Navbar role={role} />
       </div>
     </header>
   );
