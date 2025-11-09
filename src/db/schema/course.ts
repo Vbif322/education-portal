@@ -1,4 +1,5 @@
 import {
+  boolean,
   integer,
   pgEnum,
   pgTable,
@@ -9,12 +10,6 @@ import { createdAt, updatedAt } from "../schemaHelpers";
 import { relations } from "drizzle-orm";
 import { coursesToModules } from "./coursesToModules";
 
-export const levelEnum = pgEnum("level", [
-  "beginner",
-  "intermediate",
-  "advanced",
-]);
-
 export const courses = pgTable("courses", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
@@ -22,6 +17,7 @@ export const courses = pgTable("courses", {
   privacy: varchar({ enum: ["private", "public"] })
     .notNull()
     .default("private"),
+  showOnLanding: boolean().default(false),
   createdAt,
   updatedAt,
 });

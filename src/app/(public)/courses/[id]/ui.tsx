@@ -7,23 +7,29 @@ import { useRouter } from "next/navigation";
 import { Skill } from "./subcomponents/Skill";
 import Chip from "@/app/ui/Chip/Chip";
 import { enrollUserInCourse } from "@/app/actions/courses";
+import { CourseWithMetadata } from "@/@types/course";
+import { pluralize } from "@/app/utils/helpers";
 
 type Props = {
-  id: string;
-  courseId: number;
-  courseName: string;
-  courseDescription: string | null;
-  skills: string[];
+  skills?: Array<{
+    skill: {
+      id: number;
+      name: string;
+      createdAt: Date;
+      updatedAt: Date;
+    };
+  }>;
   isEnrolled: boolean;
-};
+} & CourseWithMetadata;
 
 const UI: FC<Props> = ({
-  id,
-  courseId,
-  courseName,
-  courseDescription,
   skills,
   isEnrolled,
+  id,
+  name,
+  description,
+  moduleCount,
+  lessonCount,
 }) => {
   const router = useRouter();
   const [isEnrolling, setIsEnrolling] = useState(false);
@@ -31,7 +37,7 @@ const UI: FC<Props> = ({
   const handleEnroll = async () => {
     setIsEnrolling(true);
     try {
-      const result = await enrollUserInCourse(courseId);
+      const result = await enrollUserInCourse(id);
       if (result.success) {
         router.push(id + "/modules");
       } else {
@@ -56,9 +62,24 @@ const UI: FC<Props> = ({
   return (
     <div className={s.container}>
       <div className={s.blocks}>
-        <Block title="1 Урок" subtitle="Познакомьтесь с темой" />
-        <Block title="Уровень" subtitle="Начинающий" />
         <Block
+          title={`${moduleCount} ${pluralize(moduleCount, [
+            "модуль",
+            "модуля",
+            "модулей",
+          ])}`}
+          // subtitle="Познакомьтесь с темой"
+        />
+        <Block
+          title={`${lessonCount} ${pluralize(lessonCount, [
+            "урок",
+            "урока",
+            "уроков",
+          ])}`}
+          // subtitle="Начинающий"
+          lastElement
+        />
+        {/* <Block
           title={
             <div style={{ display: "flex", alignItems: "center" }}>
               4.6
@@ -68,12 +89,13 @@ const UI: FC<Props> = ({
             </div>
           }
           lastElement
-        />
+        /> */}
       </div>
       <div className={s.wrapper}>
-        <div>
+        <div className={s.hero}>
           <div className={s.background}></div>
-          <h4 className={s.title}>{courseName}</h4>
+          <h1 className={s.title}>{name}</h1>
+          {description && <p className={s.description}>{description}</p>}
           <button
             className={s.button}
             onClick={handleButtonClick}
@@ -87,8 +109,8 @@ const UI: FC<Props> = ({
           </button>
         </div>
         <div className={s.content}>
-          <h3>О курсе</h3>
-          <p className={s.content__subtitle}>Чему вы научитесь</p>
+          <h2 className={s.sectionTitle}>О курсе</h2>
+          <h3 className={s.content__subtitle}>Чему вы научитесь</h3>
           <div className={s.skills__container}>
             <Skill
               description={
@@ -97,7 +119,7 @@ const UI: FC<Props> = ({
             />
             <Skill
               description={
-                "Анализ бизнес-процессов “от начала до конца” и поиска узких мест"
+                "Анализ бизнес-процессов «от начала до конца» и поиска узких мест"
               }
             />
             <Skill
@@ -111,7 +133,7 @@ const UI: FC<Props> = ({
               }
             />
           </div>
-          <p className={s.content__subtitle}>Получаемые навыки</p>
+          <h3 className={s.content__subtitle}>Получаемые навыки</h3>
           <div
             style={{
               display: "flex",
@@ -120,9 +142,13 @@ const UI: FC<Props> = ({
               marginTop: "16px",
             }}
           >
-            {skills.map((skill) => {
-              return <Chip key={skill} text={skill} />;
-            })}
+            {skills && skills.length > 0 ? (
+              skills.map(({ skill }) => (
+                <Chip key={skill.id} text={skill.name} />
+              ))
+            ) : (
+              <p style={{ color: "#666" }}>Навыки не указаны</p>
+            )}
           </div>
         </div>
       </div>

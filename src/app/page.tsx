@@ -307,7 +307,7 @@ export default async function Home() {
         <section className={s.section} id="courses">
           <h3 className={s.sectionTitle}>Каталог курсов</h3>
           <div className={s.courseCardContainer}>
-            <CourseCard
+            {/* <CourseCard
               id="1"
               name="Стратегический менеджмент"
               description="Разработка и реализация стратегий развития компании"
@@ -321,7 +321,7 @@ export default async function Home() {
               id="3"
               name="Бережливое производство"
               description="Внедрение принципов Lean и повышение эффективности"
-            />
+            /> */}
           </div>
         </section>
         <section className={s.section} id="testimonials">

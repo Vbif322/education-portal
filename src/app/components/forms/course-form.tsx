@@ -5,13 +5,20 @@ import s from "./course-form.module.css";
 import { Module, Course } from "@/@types/course";
 import Button from "@/app/ui/Button/Button";
 import { useRouter } from "next/navigation";
+import { Skill } from "@/app/lib/dal/skill.dal";
+import AddSkillModal from "@/app/components/modals/AddSkillModal";
+import { createSkill } from "@/app/actions/skills";
 
 type Props = {
   modules: Module[];
+  skills?: Skill[];
   course?: Course & {
     modules: Array<{
       order: number;
       module: Module;
+    }>;
+    skills?: Array<{
+      skill: Skill;
     }>;
   };
   title: string;
@@ -20,12 +27,15 @@ type Props = {
     name: string;
     description?: string;
     privacy: "public" | "private";
+    showOnLanding: boolean;
     modules: { moduleId: number; order: number }[];
+    skills: number[];
   }) => Promise<{ success: boolean; error?: string }>;
 };
 
 const CourseForm: FC<Props> = ({
   modules,
+  skills,
   course,
   title,
   submitButtonText,
@@ -34,13 +44,24 @@ const CourseForm: FC<Props> = ({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [privacy, setPrivacy] = useState<"public" | "private">("private");
+  const [showOnLanding, setShowOnLanding] = useState(false);
   const [selectedModules, setSelectedModules] = useState<
     { module: Module; order: number }[]
   >([]);
+  const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
+  const [availableSkills, setAvailableSkills] = useState<Skill[]>(skills || []);
+  const [isSkillModalOpen, setIsSkillModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
 
   const router = useRouter();
+
+  // Обновление списка навыков при изменении prop
+  useEffect(() => {
+    if (skills) {
+      setAvailableSkills(skills);
+    }
+  }, [skills]);
 
   // Предзаполнение формы при редактировании
   useEffect(() => {
@@ -48,6 +69,7 @@ const CourseForm: FC<Props> = ({
       setName(course.name);
       setDescription(course.description || "");
       setPrivacy(course.privacy as "public" | "private");
+      setShowOnLanding(course.showOnLanding || false);
       if (course.modules) {
         setSelectedModules(
           course.modules.map((cm) => ({
@@ -55,6 +77,9 @@ const CourseForm: FC<Props> = ({
             order: cm.order,
           }))
         );
+      }
+      if (course.skills) {
+        setSelectedSkills(course.skills.map((cs) => cs.skill.id));
       }
     }
   }, [course]);
@@ -68,10 +93,12 @@ const CourseForm: FC<Props> = ({
         name,
         description,
         privacy,
+        showOnLanding,
         modules: selectedModules.map((sm) => ({
           moduleId: sm.module.id,
           order: sm.order,
         })),
+        skills: selectedSkills,
       });
 
       if (!result.success) {
@@ -131,6 +158,28 @@ const CourseForm: FC<Props> = ({
     setSelectedModules(reordered);
   };
 
+  const handleToggleSkill = (skillId: number) => {
+    if (selectedSkills.includes(skillId)) {
+      setSelectedSkills(selectedSkills.filter((id) => id !== skillId));
+    } else {
+      setSelectedSkills([...selectedSkills, skillId]);
+    }
+  };
+
+  const handleAddSkill = async (name: string) => {
+    const result = await createSkill(name);
+
+    if (result.success && result.skill) {
+      // Добавляем новый навык в список доступных
+      setAvailableSkills([...availableSkills, result.skill]);
+      // Автоматически выбираем только что созданный навык
+      setSelectedSkills([...selectedSkills, result.skill.id]);
+      return { success: true };
+    }
+
+    return { success: false, error: result.error };
+  };
+
   const availableModules = modules.filter(
     (module) => !selectedModules.some((sm) => sm.module.id === module.id)
   );
@@ -169,7 +218,7 @@ const CourseForm: FC<Props> = ({
 
         <div className={s.formGroup}>
           <label htmlFor="privacy">
-            Видимость<span className={s.required}>*</span>
+            Видимость (пока неактуально)<span className={s.required}>*</span>
           </label>
           <select
             id="privacy"
@@ -181,6 +230,51 @@ const CourseForm: FC<Props> = ({
             <option value="private">Приватный</option>
             <option value="public">Публичный</option>
           </select>
+        </div>
+
+        <div className={s.formGroup}>
+          <label className={s.checkboxLabel}>
+            <input
+              type="checkbox"
+              checked={showOnLanding}
+              onChange={(e) => setShowOnLanding(e.target.checked)}
+              className={s.checkbox}
+            />
+            Показывать на главной странице
+          </label>
+        </div>
+
+        <div className={s.skillsSection}>
+          <div className={s.skillsHeader}>
+            <h3>Навыки</h3>
+            <Button
+              type="button"
+              variant="text"
+              onClick={() => setIsSkillModalOpen(true)}
+            >
+              + Добавить навык
+            </Button>
+          </div>
+          {availableSkills && availableSkills.length > 0 ? (
+            <div className={s.skillsList}>
+              {availableSkills.map((skill) => (
+                <label key={skill.id} className={s.skillItem}>
+                  <input
+                    type="checkbox"
+                    checked={selectedSkills.includes(skill.id)}
+                    onChange={() => handleToggleSkill(skill.id)}
+                    className={s.checkbox}
+                  />
+                  <span>{skill.name}</span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <p className={s.emptyMessage}>
+              Навыки не созданы. Нажмите кнопку выше, чтобы добавить первый
+              навык.
+            </p>
+          )}
         </div>
 
         <div className={s.modulesSection}>
@@ -273,6 +367,12 @@ const CourseForm: FC<Props> = ({
           </Button>
         </div>
       </form>
+
+      <AddSkillModal
+        isOpen={isSkillModalOpen}
+        onClose={() => setIsSkillModalOpen(false)}
+        onAdd={handleAddSkill}
+      />
     </div>
   );
 };

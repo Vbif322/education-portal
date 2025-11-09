@@ -7,10 +7,39 @@ import {
   coursesToModules,
   modules,
   modulesToLessons,
+  skillsToCourses,
+  skills,
 } from "@/db/schema";
 import { eq, and, asc, count, sql } from "drizzle-orm";
 import { getUser } from "../dal";
 import { Course, CourseWithMetadata } from "@/@types/course";
+
+// Helper functions to create reusable subqueries
+function createModuleCountSubquery() {
+  return db
+    .select({
+      courseId: coursesToModules.courseId,
+      moduleCount: count(coursesToModules.moduleId).as("module_count"),
+    })
+    .from(coursesToModules)
+    .groupBy(coursesToModules.courseId)
+    .as("module_counts");
+}
+
+function createLessonCountSubquery() {
+  return db
+    .select({
+      courseId: coursesToModules.courseId,
+      lessonCount: count(modulesToLessons.lessonId).as("lesson_count"),
+    })
+    .from(coursesToModules)
+    .leftJoin(
+      modulesToLessons,
+      eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+    )
+    .groupBy(coursesToModules.courseId)
+    .as("lesson_counts");
+}
 
 // Function overloads for better type inference
 export async function getAllCourses(
@@ -35,27 +64,8 @@ export async function getAllCourses(
 ): Promise<Course[] | CourseWithMetadata[]> {
   try {
     if (config?.withMetadata) {
-      const moduleCountSubquery = db
-        .select({
-          courseId: coursesToModules.courseId,
-          moduleCount: count(coursesToModules.moduleId).as("module_count"),
-        })
-        .from(coursesToModules)
-        .groupBy(coursesToModules.courseId)
-        .as("module_counts");
-
-      const lessonCountSubquery = db
-        .select({
-          courseId: coursesToModules.courseId,
-          lessonCount: count(modulesToLessons.lessonId).as("lesson_count"),
-        })
-        .from(coursesToModules)
-        .leftJoin(
-          modulesToLessons,
-          eq(coursesToModules.moduleId, modulesToLessons.moduleId)
-        )
-        .groupBy(coursesToModules.courseId)
-        .as("lesson_counts");
+      const moduleCountSubquery = createModuleCountSubquery();
+      const lessonCountSubquery = createLessonCountSubquery();
 
       let query = db
         .select({
@@ -67,6 +77,7 @@ export async function getAllCourses(
           updatedAt: courses.updatedAt,
           moduleCount: sql<number>`COALESCE(${moduleCountSubquery.moduleCount}, 0)`,
           lessonCount: sql<number>`COALESCE(${lessonCountSubquery.lessonCount}, 0)`,
+          showOnLanding: courses.showOnLanding,
         })
         .from(courses)
         .leftJoin(
@@ -102,8 +113,74 @@ export async function getAllCourses(
   }
 }
 
-export async function getCourseById(id: number) {
+// Function overloads for getCourseById
+export async function getCourseById(
+  id: number,
+  config: { withMetadata: true }
+): Promise<CourseWithMetadata | null>;
+export async function getCourseById(
+  id: number,
+  config?: { withMetadata?: false }
+): Promise<
+  | (Course & {
+      modules: {
+        order: number;
+        courseId: number;
+        moduleId: number;
+        module: typeof modules.$inferSelect;
+      }[];
+    })
+  | null
+>;
+export async function getCourseById(
+  id: number,
+  config?: { withMetadata?: boolean }
+): Promise<any> {
   try {
+    if (config?.withMetadata) {
+      const moduleCountSubquery = createModuleCountSubquery();
+      const lessonCountSubquery = createLessonCountSubquery();
+
+      const [result] = await db
+        .select({
+          id: courses.id,
+          name: courses.name,
+          description: courses.description,
+          privacy: courses.privacy,
+          createdAt: courses.createdAt,
+          updatedAt: courses.updatedAt,
+          moduleCount: sql<number>`COALESCE(${moduleCountSubquery.moduleCount}, 0)`,
+          lessonCount: sql<number>`COALESCE(${lessonCountSubquery.lessonCount}, 0)`,
+        })
+        .from(courses)
+        .leftJoin(
+          moduleCountSubquery,
+          eq(courses.id, moduleCountSubquery.courseId)
+        )
+        .leftJoin(
+          lessonCountSubquery,
+          eq(courses.id, lessonCountSubquery.courseId)
+        )
+        .where(eq(courses.id, id))
+        .limit(1);
+
+      if (!result) return null;
+
+      // Get skills for the course
+      const skillsData = await db
+        .select({
+          skill: skills,
+        })
+        .from(skillsToCourses)
+        .innerJoin(skills, eq(skillsToCourses.skillId, skills.id))
+        .where(eq(skillsToCourses.courseId, id));
+
+      return {
+        ...result,
+        skills: skillsData,
+      };
+    }
+
     const course = await db.query.courses.findFirst({
       where: eq(courses.id, id),
       with: {
@@ -112,6 +189,11 @@ export async function getCourseById(id: number) {
             module: true,
           },
           orderBy: asc(coursesToModules.order),
+        },
+        skillsToCourses: {
+          with: {
+            skill: true,
+          },
         },
       },
     });
@@ -159,27 +241,8 @@ export async function getUserCourses() {
   const user = await getUser();
   if (!user) return [];
   try {
-    const moduleCountSubquery = db
-      .select({
-        courseId: coursesToModules.courseId,
-        moduleCount: count(coursesToModules.moduleId).as("module_count"),
-      })
-      .from(coursesToModules)
-      .groupBy(coursesToModules.courseId)
-      .as("module_counts");
-
-    const lessonCountSubquery = db
-      .select({
-        courseId: coursesToModules.courseId,
-        lessonCount: count(modulesToLessons.lessonId).as("lesson_count"),
-      })
-      .from(coursesToModules)
-      .leftJoin(
-        modulesToLessons,
-        eq(coursesToModules.moduleId, modulesToLessons.moduleId)
-      )
-      .groupBy(coursesToModules.courseId)
-      .as("lesson_counts");
+    const moduleCountSubquery = createModuleCountSubquery();
+    const lessonCountSubquery = createLessonCountSubquery();
 
     const result = await db
       .select({
@@ -208,7 +271,6 @@ export async function getUserCourses() {
         eq(courses.id, lessonCountSubquery.courseId)
       )
       .where(eq(usersToCourses.userId, user.id));
-
     return result;
   } catch (error) {
     console.error("Ошибка при получении курсов пользователя:", error);

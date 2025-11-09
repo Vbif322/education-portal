@@ -1,5 +1,6 @@
 import CourseForm from "@/app/components/forms/course-form";
 import { getAllModules } from "@/app/lib/dal/module.dal";
+import { getAllSkills } from "@/app/lib/dal/skill.dal";
 import { getCourseById } from "@/app/lib/dal/course.dal";
 import { updateCourse } from "@/app/actions/courses";
 import { notFound } from "next/navigation";
@@ -16,8 +17,9 @@ export default async function EditCoursePage({ params }: Props) {
     notFound();
   }
 
-  const [modules, course] = await Promise.all([
+  const [modules, skills, course] = await Promise.all([
     getAllModules(),
+    getAllSkills(),
     getCourseById(courseId),
   ]);
 
@@ -38,6 +40,7 @@ export default async function EditCoursePage({ params }: Props) {
   return (
     <CourseForm
       modules={modules}
+      skills={skills}
       course={course}
       title="Редактирование курса"
       submitButtonText="Сохранить изменения"
