@@ -2,8 +2,7 @@ import "server-only";
 
 import { db } from "@/db/db";
 import { skills } from "@/db/schema";
-
-export type Skill = typeof skills.$inferSelect;
+import { Skill } from "@/@types/course";
 
 export async function getAllSkills(): Promise<Skill[]> {
   try {

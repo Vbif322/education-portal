@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db/db";
-import { courses, coursesToModules } from "@/db/schema";
+import { courses, coursesToModules, skillsToCourses } from "@/db/schema";
 import { getUser } from "@/app/lib/dal";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
@@ -17,13 +17,17 @@ const courseSchema = z.object({
       order: z.number(),
     })
   ),
+  showOnLanding: z.boolean().optional(),
+  skills: z.array(z.number()),
 });
 
 export async function createCourse(data: {
   name: string;
   description?: string;
   privacy: "public" | "private";
+  showOnLanding: boolean;
   modules: { moduleId: number; order: number }[];
+  skills: number[];
 }) {
   try {
     const user = await getUser();
@@ -40,7 +44,14 @@ export async function createCourse(data: {
       };
     }
 
-    const { name, description, privacy, modules: modulesList } = validation.data;
+    const {
+      name,
+      description,
+      privacy,
+      showOnLanding,
+      modules: modulesList,
+      skills: skillsList,
+    } = validation.data;
 
     // Создаем курс
     const [newCourse] = await db
@@ -49,6 +60,7 @@ export async function createCourse(data: {
         name,
         description: description || null,
         privacy,
+        showOnLanding: showOnLanding || false,
       })
       .returning();
 
@@ -59,6 +71,16 @@ export async function createCourse(data: {
           courseId: newCourse.id,
           moduleId: module.moduleId,
           order: module.order,
+        }))
+      );
+    }
+
+    // Связываем курс с навыками
+    if (skillsList && skillsList.length > 0) {
+      await db.insert(skillsToCourses).values(
+        skillsList.map((skillId) => ({
+          courseId: newCourse.id,
+          skillId,
         }))
       );
     }
@@ -78,6 +100,8 @@ export async function updateCourse(
     description?: string;
     privacy: "public" | "private";
     modules: { moduleId: number; order: number }[];
+    skills: number[];
+    showOnLanding: boolean;
   }
 ) {
   try {
@@ -95,7 +119,14 @@ export async function updateCourse(
       };
     }
 
-    const { name, description, privacy, modules: modulesList } = validation.data;
+    const {
+      name,
+      description,
+      privacy,
+      showOnLanding,
+      modules: modulesList,
+      skills: skillsList,
+    } = validation.data;
 
     // Проверяем существование курса
     const existingCourse = await db.query.courses.findFirst({
@@ -113,6 +144,7 @@ export async function updateCourse(
         name,
         description: description || null,
         privacy,
+        showOnLanding: showOnLanding || false,
       })
       .where(eq(courses.id, courseId));
 
@@ -121,13 +153,28 @@ export async function updateCourse(
       .delete(coursesToModules)
       .where(eq(coursesToModules.courseId, courseId));
 
-    // Создаем новые связи
+    // Создаем новые связи с модулями
     if (modulesList.length > 0) {
       await db.insert(coursesToModules).values(
         modulesList.map((module) => ({
           courseId,
           moduleId: module.moduleId,
           order: module.order,
+        }))
+      );
+    }
+
+    // Удаляем старые связи с навыками
+    await db
+      .delete(skillsToCourses)
+      .where(eq(skillsToCourses.courseId, courseId));
+
+    // Создаем новые связи с навыками
+    if (skillsList && skillsList.length > 0) {
+      await db.insert(skillsToCourses).values(
+        skillsList.map((skillId) => ({
+          courseId,
+          skillId,
         }))
       );
     }

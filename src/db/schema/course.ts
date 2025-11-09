@@ -1,7 +1,6 @@
 import {
   boolean,
   integer,
-  pgEnum,
   pgTable,
   primaryKey,
   varchar,

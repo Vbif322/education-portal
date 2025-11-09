@@ -2,10 +2,9 @@
 
 import { FC, FormEvent, useState, useEffect } from "react";
 import s from "./course-form.module.css";
-import { Module, Course } from "@/@types/course";
+import { Module, Course, Skill } from "@/@types/course";
 import Button from "@/app/ui/Button/Button";
 import { useRouter } from "next/navigation";
-import { Skill } from "@/app/lib/dal/skill.dal";
 import AddSkillModal from "@/app/components/modals/AddSkillModal";
 import { createSkill } from "@/app/actions/skills";
 

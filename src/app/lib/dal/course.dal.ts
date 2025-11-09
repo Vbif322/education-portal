@@ -113,6 +113,13 @@ export async function getAllCourses(
   }
 }
 
+export async function getLandingCourses() {
+  const result = await db.query.courses.findMany({
+    where: eq(courses.showOnLanding, true),
+  });
+  return result;
+}
+
 // Function overloads for getCourseById
 export async function getCourseById(
   id: number,

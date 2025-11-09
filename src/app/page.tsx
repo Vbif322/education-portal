@@ -4,7 +4,6 @@ import Kirill from "../../public/Kirill.webp";
 import Footer from "./components/footer/Footer";
 import TestimonialCard from "./components/testimonial-card/TestimonialCard";
 import Link from "next/link";
-import LessonCard from "./components/lesson-card/LessonCard";
 import FeatureCard from "./components/feature-card/FeatureCard";
 import {
   ChartNoAxesColumnIncreasing,
@@ -24,6 +23,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import CourseCard from "./components/course-card/CourseCard";
+import { getLandingCourses } from "./lib/dal/course.dal";
 
 const testimonials = [
   {
@@ -50,6 +50,8 @@ const testimonials = [
 ];
 
 export default async function Home() {
+  const courses = await getLandingCourses();
+  console.log(courses);
   return (
     <div className={s.page}>
       <header className={s.header}>
