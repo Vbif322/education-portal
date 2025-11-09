@@ -43,7 +43,7 @@ const testimonials = [
   {
     id: 3,
     description:
-      '"Этот курс — не просто набор инструментов, а полноценная система для выстраивания стратегии на уровне всей компании. Редкая возможность поучиться у практика такого масштаба"',
+      '"Этот курс - не просто набор инструментов, а полноценная система для выстраивания стратегии на уровне всей компании. Редкая возможность поучиться у практика такого масштаба"',
     name: "Игорь",
     appointment: "Предприниматель",
   },
@@ -79,7 +79,7 @@ export default async function Home() {
         <section className={s.mainSection}>
           <div className={s.mainBlock}>
             <h1 className={s.title}>
-              Онлайн-курсы по бизнесу от{" "}
+              Онлайн-курсы по бизнесу от <br />
               <span className={s.titleAccent}>Кирилла Месеняшина</span>
             </h1>
             <span className={s.subtitle}>
@@ -89,15 +89,15 @@ export default async function Home() {
             <div className={s.benefits}>
               <div className={s.benefitItem}>
                 <Check className={s.checkIcon} />
-                <span>Практические задания с реальными кейсами</span>
+                <span>Стратегический менеджмент</span>
               </div>
               <div className={s.benefitItem}>
                 <Check className={s.checkIcon} />
-                <span>Поддержка 24/7</span>
+                <span>Операционный менеджмент</span>
               </div>
               <div className={s.benefitItem}>
                 <Check className={s.checkIcon} />
-                <span>Сертификат по окончанию обучения</span>
+                <span>Бережливое производство</span>
               </div>
             </div>
 
@@ -150,20 +150,16 @@ export default async function Home() {
             <div className={s.aboutHeader}>
               <h2 className={s.aboutName}>Кирилл Месеняшин</h2>
               <p className={s.aboutRole}>
-                Эксперт-практик в области операционного совершенства
+                Эксперт-практик с 20-летним опытом в области организационного
+                развития и совершенствования систем управления
               </p>
             </div>
-
             <div className={s.aboutBio}>
-              <p>
-                Эксперт-практик с 20-летним опытом в области организационного
-                развития и совершенствования систем управления.
-              </p>
               <p>
                 Основатель и генеральный директор консалтинговой компании
                 «ОПТИМУМ». Возглавлял ряд крупных производственных компаний в
-                Санкт-Петербурге, специализируется на внедрении Lean-методологии
-                и оптимизации бизнес-процессов.
+                Санкт-Петербурге, в том числе с задачами вывода компаний из
+                убытков в прибыль
               </p>
             </div>
 
@@ -186,7 +182,7 @@ export default async function Home() {
                   <div className={s.specializationIcon}>
                     <Settings size={24} />
                   </div>
-                  <span>Оптимизация производственных процессов</span>
+                  <span>Оптимизация бизнес-процессов</span>
                 </div>
                 <div className={s.specializationItem}>
                   <div className={s.specializationIcon}>
@@ -213,7 +209,8 @@ export default async function Home() {
                   • Академия Внешней Торговли (ВАВТ)
                 </div>
                 <div className={s.schoolItem}>
-                  • AMI (Advanced Management Institution)
+                  • ИБДА (РАНХиГС, Институт бизнеса и делового
+                  администрирования)
                 </div>
                 <div className={s.schoolItem}>• Московская Бизнес-Школа</div>
               </div>
@@ -228,8 +225,7 @@ export default async function Home() {
                   </div>
                   <p>
                     Прошёл путь от инженера по качеству до руководителя группы
-                    заводов: Ford, Toyota, Magna, Grupo Antolin, TI Automotive и
-                    Heinz
+                    заводов: Ford, Toyota, Magna, Heinz
                   </p>
                 </div>
                 <div className={s.highlightItem}>
@@ -303,7 +299,7 @@ export default async function Home() {
             <FeatureCard
               icon={<LayoutDashboard />}
               title="Удобный личный кабинет"
-              description="Подписка позволяет сотрудникам в удобное время получать знания"
+              description="Подписка позволяет сотрудникам получать знания в удобное время"
               color="rgb(168 85 247)"
             />
           </div>
@@ -313,23 +309,23 @@ export default async function Home() {
           <div className={s.courseCardContainer}>
             <CourseCard
               id="1"
-              title="Стратегический менеджмент"
+              name="Стратегический менеджмент"
               description="Разработка и реализация стратегий развития компании"
             />
             <CourseCard
               id="2"
-              title="Операционный менеджмент"
+              name="Операционный менеджмент"
               description="Оптимизация бизнес-процессов и управление операциями"
             />
             <CourseCard
               id="3"
-              title="Бережливое производство"
+              name="Бережливое производство"
               description="Внедрение принципов Lean и повышение эффективности"
             />
           </div>
         </section>
         <section className={s.section} id="testimonials">
-          <h3 className={s.testimonial__title}>Что говорят студенты</h3>
+          <h3 className={s.testimonial__title}>Что говорят слушатели</h3>
           <p className={s.testimonial__subtitle}>
             Реальные истории успеха от тех, кто уже прошел обучение
           </p>
