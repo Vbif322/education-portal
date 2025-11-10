@@ -1,9 +1,9 @@
-import { integer, pgTable, varchar } from "drizzle-orm/pg-core";
-import { createdAt, updatedAt } from "../schemaHelpers";
+import { integer, varchar } from "drizzle-orm/pg-core";
+import { createdAt, updatedAt, prodSchema } from "../schemaHelpers";
 import { relations } from "drizzle-orm";
 import { coursesToModules } from "./coursesToModules";
 
-export const modules = pgTable("module", {
+export const modules = prodSchema.table("module", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
   description: varchar({ length: 256 }),

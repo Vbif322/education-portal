@@ -1,9 +1,10 @@
-import { integer, pgTable, primaryKey } from "drizzle-orm/pg-core";
+import { integer, primaryKey } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { modules } from "./module";
 import { lessons } from "./lesson";
+import { prodSchema } from "../schemaHelpers";
 
-export const modulesToLessons = pgTable(
+export const modulesToLessons = prodSchema.table(
   "modules_to_lessons",
   {
     moduleId: integer("module_id")
