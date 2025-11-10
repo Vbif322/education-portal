@@ -1,13 +1,13 @@
 import { relations } from "drizzle-orm";
 import {
   integer,
-  pgTable,
   timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import { prodSchema } from "../schemaHelpers";
 
-export const users = pgTable("users", {
+export const users = prodSchema.table("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: varchar({ length: 255 }).notNull().unique(),
   password: varchar({ length: 255 }).notNull(),
@@ -17,7 +17,7 @@ export const users = pgTable("users", {
     .default("user"),
 });
 
-export const subscription = pgTable("subscription", {
+export const subscription = prodSchema.table("subscription", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   type: varchar({ enum: ["Ознакомительная", "Все включено"] }).default(
     "Ознакомительная"

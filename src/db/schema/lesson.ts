@@ -1,34 +1,27 @@
-import {
-  integer,
-  pgEnum,
-  pgTable,
-  primaryKey,
-  text,
-  varchar,
-} from "drizzle-orm/pg-core";
-import { createdAt, updatedAt } from "../schemaHelpers";
+import { integer, primaryKey, text, varchar } from "drizzle-orm/pg-core";
+import { createdAt, updatedAt, prodSchema } from "../schemaHelpers";
 import { relations } from "drizzle-orm";
 
-export const statusEnum = pgEnum("statuses", ["public", "private"]);
-
-export const lessons = pgTable("lessons", {
+export const lessons = prodSchema.table("lessons", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
   description: varchar({ length: 256 }),
   duration: integer().notNull(),
-  status: statusEnum().notNull().default("private"),
+  status: varchar({ length: 20, enum: ["public", "private"] })
+    .notNull()
+    .default("private"),
   videoURL: text().notNull(),
   createdAt,
   updatedAt,
 });
 
-export const materials = pgTable("lesson_materials", {
+export const materials = prodSchema.table("lesson_materials", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 64 }).notNull(),
   url: text().notNull(),
 });
 
-export const lessonsToMaterials = pgTable(
+export const lessonsToMaterials = prodSchema.table(
   "lessons_to_materials",
   {
     lessonId: integer("lesson_id")

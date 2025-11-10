@@ -1,15 +1,10 @@
-import {
-  integer,
-  pgTable,
-  primaryKey,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { integer, primaryKey, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./users";
 import { lessons } from "./lesson";
 import { relations } from "drizzle-orm";
+import { prodSchema } from "../schemaHelpers";
 
-export const usersToLessons = pgTable(
+export const usersToLessons = prodSchema.table(
   "users_to_lessons",
   {
     userId: uuid("user_id")

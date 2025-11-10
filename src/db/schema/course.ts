@@ -1,15 +1,9 @@
-import {
-  boolean,
-  integer,
-  pgTable,
-  primaryKey,
-  varchar,
-} from "drizzle-orm/pg-core";
-import { createdAt, updatedAt } from "../schemaHelpers";
+import { boolean, integer, primaryKey, varchar } from "drizzle-orm/pg-core";
+import { createdAt, updatedAt, prodSchema } from "../schemaHelpers";
 import { relations } from "drizzle-orm";
 import { coursesToModules } from "./coursesToModules";
 
-export const courses = pgTable("courses", {
+export const courses = prodSchema.table("courses", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
   description: varchar({ length: 256 }),
@@ -21,7 +15,7 @@ export const courses = pgTable("courses", {
   updatedAt,
 });
 
-export const skills = pgTable("skills", {
+export const skills = prodSchema.table("skills", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
   createdAt,
@@ -37,7 +31,7 @@ export const courseRelations = relations(courses, ({ many }) => ({
   modules: many(coursesToModules),
 }));
 
-export const skillsToCourses = pgTable(
+export const skillsToCourses = prodSchema.table(
   "skills_to_courses",
   {
     courseId: integer("course_id")
