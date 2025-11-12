@@ -1,1 +1,0 @@
-ALTER TABLE "courses" ADD COLUMN "privacy" varchar DEFAULT 'private' NOT NULL;
