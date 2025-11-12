@@ -42,4 +42,4 @@ next-env.d.ts
 
 *.mp4
 *.lock
-/drizzle/
+/drizzle
