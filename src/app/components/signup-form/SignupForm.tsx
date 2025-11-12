@@ -7,6 +7,7 @@ import Button from "@/app/ui/Button/Button";
 
 export default function SignupForm() {
   const [state, action, pending] = useActionState(signin, undefined);
+  console.log(state);
   return (
     <form action={action} className={s.form}>
       <div>
@@ -17,7 +18,13 @@ export default function SignupForm() {
           type="email"
           placeholder="Email"
           defaultValue={state?.fields.email}
+          className={state?.properties?.email ? s.inputError : ""}
         />
+        {state?.properties?.email && (
+          <span className={s.errorMessage}>
+            {state.properties.email.errors.join(", ")}
+          </span>
+        )}
       </div>
       <div>
         <label htmlFor="password">Пароль</label>
@@ -27,13 +34,23 @@ export default function SignupForm() {
           type="password"
           placeholder="Пароль"
           defaultValue={state?.fields.password}
+          className={state?.properties?.password ? s.inputError : ""}
         />
+        {state?.properties?.password && (
+          <span className={s.errorMessage}>
+            {state.properties.password.errors.join(", ")}
+          </span>
+        )}
       </div>
-      <div>
-        <span style={{ color: "rgb(211 47 47 / 0.5)" }}>
-          {state?.errors || " "}
-        </span>
-      </div>
+      {state?.errors && state.errors.length > 0 && (
+        <div className={s.generalError}>
+          {Array.isArray(state.errors)
+            ? state.errors.map((error, index) => (
+                <span key={index}>{error}</span>
+              ))
+            : state.errors}
+        </div>
+      )}
       <Button type="submit" disabled={pending}>
         Войти
       </Button>
