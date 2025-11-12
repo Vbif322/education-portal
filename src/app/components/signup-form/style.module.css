@@ -38,3 +38,29 @@
   background-color: rgb(29 78 216);
   transform: translateY(-2px);
 }
+
+.errorMessage {
+  color: rgb(220 38 38);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  margin-top: 0.25rem;
+}
+
+.inputError {
+  border-color: rgb(220 38 38) !important;
+  outline: 2px solid rgb(220 38 38 / 0.2);
+}
+
+.generalError {
+  background-color: rgb(254 242 242);
+  border: 1px solid rgb(252 165 165);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: rgb(153 27 27);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.generalError span {
+  display: block;
+}

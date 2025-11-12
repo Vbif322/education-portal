@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 export const signupFormSchema = z.object({
-  email: z.email({ message: "Please enter a valid email." }).trim(),
+  email: z.email({ message: "Введите email в формате email@email.ru" }).trim(),
   password: z
     .string()
-    .min(5, { message: "Be at least 5 characters long" })
+    .min(5, { message: "Пароль не должен быть меньше 5 символов" })
     // .regex(/[a-zA-Z]/, { message: "Contain at least one letter." })
     // .regex(/[0-9]/, { message: "Contain at least one number." })
     // .regex(/[^a-zA-Z0-9]/, {
