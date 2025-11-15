@@ -1,7 +1,7 @@
 import { FC } from "react";
 import UI from "./ui";
 import {
-  getCourseById,
+  getCourseMetadataById,
   isUserEnrolledInCourse,
 } from "@/app/lib/dal/course.dal";
 import { notFound } from "next/navigation";
@@ -18,7 +18,7 @@ const CoursePage: FC<Props> = async ({ params }) => {
     notFound();
   }
 
-  const course = await getCourseById(courseId, { withMetadata: true });
+  const course = await getCourseMetadataById(courseId);
   if (!course) {
     notFound();
   }

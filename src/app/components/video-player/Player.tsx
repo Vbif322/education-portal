@@ -10,6 +10,7 @@ import {
   useState,
   VideoHTMLAttributes,
 } from "react";
+import s from "./Player.module.css";
 
 type Props = {
   // source: SourceHTMLAttributes<HTMLSourceElement>;
@@ -19,8 +20,6 @@ type Props = {
 const Player: FC<Props> = ({
   // source,
   videoId,
-  width = "1080",
-  height = "720",
   ...props
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -170,26 +169,29 @@ const Player: FC<Props> = ({
   }
 
   return (
-    <video
-      width={width}
-      height={height}
-      ref={videoRef}
-      controls
-      controlsList="nodownload"
-      // onTimeUpdate={handleTimeUpdate}
-      // onLoadedMetadata={handleLoadedMetadata}
-      // onPause={handlePause}
-      // onEnded={saveProgress}
-      // onWaiting={handleWaiting}
-      // onPlaying={handlePlaying}
-      // onCanPlay={handleCanPlay}
-      preload="metadata"
-      {...props}
-    >
-      {/* <source src="/videos/Управление задачами 12.mp4" type="video/mp4" /> */}
-      <source src={`/api/videos?name=${videoId}`} type="video/mp4" />
-      Ваш браузер не поддерживает видео
-    </video>
+    <div className={s.container}>
+      <div className={s.videoWrapper}>
+        <video
+          className={s.video}
+          ref={videoRef}
+          controls
+          controlsList="nodownload"
+          // onTimeUpdate={handleTimeUpdate}
+          // onLoadedMetadata={handleLoadedMetadata}
+          // onPause={handlePause}
+          // onEnded={saveProgress}
+          // onWaiting={handleWaiting}
+          // onPlaying={handlePlaying}
+          // onCanPlay={handleCanPlay}
+          preload="metadata"
+          {...props}
+        >
+          {/* <source src="/videos/Управление задачами 12.mp4" type="video/mp4" /> */}
+          <source src={`/api/videos?name=${videoId}`} type="video/mp4" />
+          Ваш браузер не поддерживает видео
+        </video>
+      </div>
+    </div>
   );
 };
 

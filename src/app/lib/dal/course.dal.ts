@@ -124,71 +124,81 @@ export async function getLandingCourses() {
   return result;
 }
 
-// Function overloads for getCourseById
-export async function getCourseById(
-  id: number,
-  config: { withMetadata: true }
-): Promise<CourseWithMetadata | null>;
-export async function getCourseById(
-  id: number,
-  config?: { withMetadata?: false }
-): Promise<CourseWithModules | null>;
-export async function getCourseById(
-  id: number,
-  config?: { withMetadata?: boolean }
-): Promise<CourseWithMetadata | CourseWithModules | null> {
+// Get course metadata by ID (moduleCount, lessonCount, skills)
+export async function getCourseMetadataById(
+  id: number
+): Promise<CourseWithMetadata | null> {
   try {
-    if (config?.withMetadata) {
-      const moduleCountSubquery = createModuleCountSubquery();
-      const lessonCountSubquery = createLessonCountSubquery();
+    const moduleCountSubquery = createModuleCountSubquery();
+    const lessonCountSubquery = createLessonCountSubquery();
 
-      const [result] = await db
-        .select({
-          id: courses.id,
-          name: courses.name,
-          description: courses.description,
-          privacy: courses.privacy,
-          createdAt: courses.createdAt,
-          updatedAt: courses.updatedAt,
-          showOnLanding: courses.showOnLanding,
-          moduleCount: sql<number>`COALESCE(${moduleCountSubquery.moduleCount}, 0)`,
-          lessonCount: sql<number>`COALESCE(${lessonCountSubquery.lessonCount}, 0)`,
-        })
-        .from(courses)
-        .leftJoin(
-          moduleCountSubquery,
-          eq(courses.id, moduleCountSubquery.courseId)
-        )
-        .leftJoin(
-          lessonCountSubquery,
-          eq(courses.id, lessonCountSubquery.courseId)
-        )
-        .where(eq(courses.id, id))
-        .limit(1);
+    const [result] = await db
+      .select({
+        id: courses.id,
+        name: courses.name,
+        description: courses.description,
+        privacy: courses.privacy,
+        createdAt: courses.createdAt,
+        updatedAt: courses.updatedAt,
+        showOnLanding: courses.showOnLanding,
+        moduleCount: sql<number>`COALESCE(${moduleCountSubquery.moduleCount}, 0)`,
+        lessonCount: sql<number>`COALESCE(${lessonCountSubquery.lessonCount}, 0)`,
+      })
+      .from(courses)
+      .leftJoin(
+        moduleCountSubquery,
+        eq(courses.id, moduleCountSubquery.courseId)
+      )
+      .leftJoin(
+        lessonCountSubquery,
+        eq(courses.id, lessonCountSubquery.courseId)
+      )
+      .where(eq(courses.id, id))
+      .limit(1);
 
-      if (!result) return null;
+    if (!result) return null;
 
-      // Get skills for the course
-      const skillsData = await db
-        .select({
-          skill: skills,
-        })
-        .from(skillsToCourses)
-        .innerJoin(skills, eq(skillsToCourses.skillId, skills.id))
-        .where(eq(skillsToCourses.courseId, id));
+    // Get skills for the course
+    const skillsData = await db
+      .select({
+        skill: skills,
+      })
+      .from(skillsToCourses)
+      .innerJoin(skills, eq(skillsToCourses.skillId, skills.id))
+      .where(eq(skillsToCourses.courseId, id));
 
-      return {
-        ...result,
-        skills: skillsData,
-      };
-    }
+    return {
+      ...result,
+      skills: skillsData,
+    };
+  } catch (error) {
+    console.error("Ошибка при получении метаданных курса:", error);
+    return null;
+  }
+}
 
+export async function getCourseById(
+  id: number
+): Promise<CourseWithModules | null> {
+  try {
     const course = await db.query.courses.findFirst({
       where: eq(courses.id, id),
       with: {
         modules: {
+          columns: {},
           with: {
-            module: true,
+            module: {
+              with: {
+                lessons: {
+                  columns: {
+                    order: true,
+                  },
+                  with: {
+                    lesson: true,
+                  },
+                },
+              },
+            },
           },
           orderBy: asc(coursesToModules.order),
         },
