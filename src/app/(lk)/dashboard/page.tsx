@@ -42,7 +42,13 @@ export default async function Dashboard() {
           <h3 className={s.title}>Мои курсы</h3>
           <div className={s.card__container}>
             {userCourses.map(({ course }) => {
-              return <CourseCard key={course.id} {...course} />;
+              return (
+                <CourseCard
+                  key={course.id}
+                  {...course}
+                  link={`/courses/${course.id}/lessons`}
+                />
+              );
             })}
           </div>
         </div>

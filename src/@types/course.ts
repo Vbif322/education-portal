@@ -30,6 +30,13 @@ export type CourseWithModules = Course & {
   modules: { module: ModuleWithLessons; order: CoursesToModules["order"] }[];
 };
 
+export type CourseFulldata = CourseWithModules & {
+  skillsToCourses: SkillsToCourses &
+    {
+      skill: Skill;
+    }[];
+};
+
 export type UserCourseEnrollment = {
   courseId: number;
   userId: string;

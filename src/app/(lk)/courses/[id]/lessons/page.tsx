@@ -1,6 +1,9 @@
 import { FC } from "react";
 import { notFound, redirect } from "next/navigation";
-import { getCourseById } from "@/app/lib/dal/course.dal";
+import {
+  getCourseById,
+  getCompletedLessonIds,
+} from "@/app/lib/dal/course.dal";
 
 interface LessonsPageProps {
   params: Promise<{
@@ -10,24 +13,39 @@ interface LessonsPageProps {
 
 const LessonsPage: FC<LessonsPageProps> = async ({ params }) => {
   const { id } = await params;
-  const course = await getCourseById(Number(id));
+  const courseId = Number(id);
+  const course = await getCourseById(courseId);
 
   if (!course) {
     notFound();
   }
 
-  // Находим первый урок в первом модуле
-  const firstModule = course.modules[0];
-  if (!firstModule || !firstModule.module.lessons.length) {
-    // Если нет уроков, показываем 404
+  // Проверяем, что есть модули с уроками
+  if (!course.modules.length || !course.modules[0].module.lessons.length) {
     notFound();
   }
-  //TODO: делать редирект на первый ннезвершенный урок
-  const firstLesson = firstModule.module.lessons[0];
-  const firstLessonId = firstLesson.lesson.id;
 
-  // Редирект на первый урок
-  redirect(`/courses/${id}/lessons/${firstLessonId}`);
+  // Получаем список завершенных уроков
+  const completedLessons = await getCompletedLessonIds(courseId);
+
+  // Создаем плоский список всех уроков в правильном порядке
+  const allLessons: number[] = [];
+  for (const moduleWrapper of course.modules) {
+    const sortedLessons = moduleWrapper.module.lessons
+      .sort((a, b) => a.order - b.order)
+      .map((lessonWrapper) => lessonWrapper.lesson.id);
+    allLessons.push(...sortedLessons);
+  }
+
+  // Находим первый незавершенный урок
+  const firstIncompleteLesson = allLessons.find(
+    (lessonId) => !completedLessons.has(lessonId)
+  );
+
+  // Если все уроки завершены, редиректим на последний урок
+  const targetLessonId = firstIncompleteLesson ?? allLessons[allLessons.length - 1];
+
+  redirect(`/courses/${id}/lessons/${targetLessonId}`);
 };
 
 export default LessonsPage;

@@ -14,6 +14,7 @@ import { eq, and, asc, count, sql, inArray } from "drizzle-orm";
 import { getUser } from "../dal";
 import {
   Course,
+  CourseFulldata,
   CourseWithMetadata,
   CourseWithModules,
   SkillsToCourses,
@@ -181,7 +182,7 @@ export async function getCourseMetadataById(
 
 export async function getCourseById(
   id: number
-): Promise<(CourseWithModules & SkillsToCourses) | null> {
+): Promise<CourseFulldata | null> {
   try {
     const course = await db.query.courses.findFirst({
       where: eq(courses.id, id),
@@ -204,16 +205,14 @@ export async function getCourseById(
           },
           orderBy: asc(coursesToModules.order),
         },
-        // skillsToCourses: {
-        //   with: {
-        //     skill: true,
-        //   },
-        // },
+        skillsToCourses: {
+          with: {
+            skill: true,
+          },
+        },
       },
     });
-    return (
-      (course as (CourseWithModules & SkillsToCourses) | undefined) ?? null
-    );
+    return (course as CourseFulldata | undefined) ?? null;
   } catch (error) {
     console.error("Ошибка при получении курса:", error);
     return null;

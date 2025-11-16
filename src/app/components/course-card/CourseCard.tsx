@@ -13,6 +13,7 @@ interface CourseCardProps extends Partial<CourseWithMetadata> {
     total: number;
     percentage: number;
   };
+  link?: string;
 }
 
 const CourseCard: FC<CourseCardProps> = ({
@@ -22,6 +23,7 @@ const CourseCard: FC<CourseCardProps> = ({
   progress,
   moduleCount,
   lessonCount,
+  link,
 }) => {
   const router = useRouter();
 
@@ -29,7 +31,9 @@ const CourseCard: FC<CourseCardProps> = ({
     <div className={s.card}>
       <div className={s.titleContainer}>
         <BookOpen className={s.icon} size={20} />
-        <p className={s.title}>{name}</p>
+        <p className={s.title} title={name}>
+          {name}
+        </p>
       </div>
       <div style={{ flex: 1 }}>
         {description && <p className={s.description}>{description}</p>}
@@ -67,7 +71,7 @@ const CourseCard: FC<CourseCardProps> = ({
           </p>
         )}
       </div>
-      <Button onClick={() => router.push("/courses/" + id)}>
+      <Button onClick={() => router.push(link ? link : "/courses/" + id)}>
         {progress ? "Продолжить курс" : "Записаться"}
       </Button>
     </div>
