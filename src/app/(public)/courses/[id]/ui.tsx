@@ -38,7 +38,7 @@ const UI: FC<Props> = ({
     try {
       const result = await enrollUserInCourse(id);
       if (result.success) {
-        router.push(id + "/modules");
+        router.push(id + "/lessons");
       } else {
         alert(result.error || "Не удалось записаться на курс");
       }
@@ -52,7 +52,7 @@ const UI: FC<Props> = ({
 
   const handleButtonClick = () => {
     if (isEnrolled) {
-      router.push(id + "/modules");
+      router.push(id + "/lessons");
     } else {
       handleEnroll();
     }

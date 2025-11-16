@@ -1,0 +1,27 @@
+.container {
+  display: grid;
+  grid-template-columns: var(--aside-width) 1fr;
+  background-color: rgb(243 244 246);
+  min-height: 100vh;
+}
+
+.main {
+  width: 100%;
+  padding: 32px;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .main {
+    padding: 24px 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .main {
+    padding: 16px;
+  }
+}

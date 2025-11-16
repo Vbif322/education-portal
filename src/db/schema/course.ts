@@ -6,7 +6,7 @@ import { coursesToModules } from "./coursesToModules";
 export const courses = prodSchema.table("courses", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
-  description: varchar({ length: 256 }),
+  description: varchar({ length: 1024 }),
   privacy: varchar({ enum: ["private", "public"] })
     .notNull()
     .default("private"),

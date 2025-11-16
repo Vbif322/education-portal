@@ -15,6 +15,8 @@ export const usersToLessons = prodSchema.table(
       .references(() => lessons.id, { onDelete: "cascade" }),
     startedAt: timestamp("started_at").notNull().defaultNow(),
     completedAt: timestamp("completed_at"),
+    currentTime: integer("current_time").default(0), // Текущая позиция просмотра видео в секундах
+    duration: integer("duration"), // Длительность видео в секундах
   },
   (t) => [primaryKey({ columns: [t.userId, t.lessonId] })]
 );

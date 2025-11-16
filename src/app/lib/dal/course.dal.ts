@@ -8,13 +8,14 @@ import {
   modulesToLessons,
   skillsToCourses,
   skills,
+  usersToLessons,
 } from "@/db/schema";
-import { eq, and, asc, count, sql } from "drizzle-orm";
+import { eq, and, asc, count, sql, inArray } from "drizzle-orm";
 import { getUser } from "../dal";
 import {
   Course,
+  CourseFulldata,
   CourseWithMetadata,
-  CourseWithModules,
   UserCourseEnrollment,
 } from "@/@types/course";
 
@@ -124,71 +125,81 @@ export async function getLandingCourses() {
   return result;
 }
 
-// Function overloads for getCourseById
-export async function getCourseById(
-  id: number,
-  config: { withMetadata: true }
-): Promise<CourseWithMetadata | null>;
-export async function getCourseById(
-  id: number,
-  config?: { withMetadata?: false }
-): Promise<CourseWithModules | null>;
-export async function getCourseById(
-  id: number,
-  config?: { withMetadata?: boolean }
-): Promise<CourseWithMetadata | CourseWithModules | null> {
+// Get course metadata by ID (moduleCount, lessonCount, skills)
+export async function getCourseMetadataById(
+  id: number
+): Promise<CourseWithMetadata | null> {
   try {
-    if (config?.withMetadata) {
-      const moduleCountSubquery = createModuleCountSubquery();
-      const lessonCountSubquery = createLessonCountSubquery();
+    const moduleCountSubquery = createModuleCountSubquery();
+    const lessonCountSubquery = createLessonCountSubquery();
 
-      const [result] = await db
-        .select({
-          id: courses.id,
-          name: courses.name,
-          description: courses.description,
-          privacy: courses.privacy,
-          createdAt: courses.createdAt,
-          updatedAt: courses.updatedAt,
-          showOnLanding: courses.showOnLanding,
-          moduleCount: sql<number>`COALESCE(${moduleCountSubquery.moduleCount}, 0)`,
-          lessonCount: sql<number>`COALESCE(${lessonCountSubquery.lessonCount}, 0)`,
-        })
-        .from(courses)
-        .leftJoin(
-          moduleCountSubquery,
-          eq(courses.id, moduleCountSubquery.courseId)
-        )
-        .leftJoin(
-          lessonCountSubquery,
-          eq(courses.id, lessonCountSubquery.courseId)
-        )
-        .where(eq(courses.id, id))
-        .limit(1);
+    const [result] = await db
+      .select({
+        id: courses.id,
+        name: courses.name,
+        description: courses.description,
+        privacy: courses.privacy,
+        createdAt: courses.createdAt,
+        updatedAt: courses.updatedAt,
+        showOnLanding: courses.showOnLanding,
+        moduleCount: sql<number>`COALESCE(${moduleCountSubquery.moduleCount}, 0)`,
+        lessonCount: sql<number>`COALESCE(${lessonCountSubquery.lessonCount}, 0)`,
+      })
+      .from(courses)
+      .leftJoin(
+        moduleCountSubquery,
+        eq(courses.id, moduleCountSubquery.courseId)
+      )
+      .leftJoin(
+        lessonCountSubquery,
+        eq(courses.id, lessonCountSubquery.courseId)
+      )
+      .where(eq(courses.id, id))
+      .limit(1);
 
-      if (!result) return null;
+    if (!result) return null;
 
-      // Get skills for the course
-      const skillsData = await db
-        .select({
-          skill: skills,
-        })
-        .from(skillsToCourses)
-        .innerJoin(skills, eq(skillsToCourses.skillId, skills.id))
-        .where(eq(skillsToCourses.courseId, id));
+    // Get skills for the course
+    const skillsData = await db
+      .select({
+        skill: skills,
+      })
+      .from(skillsToCourses)
+      .innerJoin(skills, eq(skillsToCourses.skillId, skills.id))
+      .where(eq(skillsToCourses.courseId, id));
 
-      return {
-        ...result,
-        skills: skillsData,
-      };
-    }
+    return {
+      ...result,
+      skills: skillsData,
+    };
+  } catch (error) {
+    console.error("Ошибка при получении метаданных курса:", error);
+    return null;
+  }
+}
 
+export async function getCourseById(
+  id: number
+): Promise<CourseFulldata | null> {
+  try {
     const course = await db.query.courses.findFirst({
       where: eq(courses.id, id),
       with: {
         modules: {
+          columns: { order: true },
           with: {
-            module: true,
+            module: {
+              with: {
+                lessons: {
+                  columns: {
+                    order: true,
+                  },
+                  with: {
+                    lesson: true,
+                  },
+                },
+              },
+            },
           },
           orderBy: asc(coursesToModules.order),
         },
@@ -199,7 +210,7 @@ export async function getCourseById(
         },
       },
     });
-    return (course as CourseWithModules | undefined) ?? null;
+    return (course as CourseFulldata | undefined) ?? null;
   } catch (error) {
     console.error("Ошибка при получении курса:", error);
     return null;
@@ -281,50 +292,154 @@ export async function getUserCourses(): Promise<UserCourseEnrollment[]> {
   }
 }
 
-// export async function getCourseProgress(courseId: number) {
-//   const user = await getUser();
-//   if (!user) return { completed: 0, total: 0, percentage: 0 };
+export async function getCourseProgress(courseId: number) {
+  const user = await getUser();
+  if (!user) return { completed: 0, total: 0, percentage: 0 };
 
-//   try {
-//     // Get all lesson IDs in this course
-//     const courseLessons = await db
-//       .select({ lessonId: modulesToLessons.lessonId })
-//       .from(coursesToModules)
-//       .innerJoin(
-//         modulesToLessons,
-//         eq(coursesToModules.moduleId, modulesToLessons.moduleId)
-//       )
-//       .where(eq(coursesToModules.courseId, courseId));
+  try {
+    // Получаем все ID уроков в курсе
+    const courseLessons = await db
+      .select({ lessonId: modulesToLessons.lessonId })
+      .from(coursesToModules)
+      .innerJoin(
+        modulesToLessons,
+        eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+      )
+      .where(eq(coursesToModules.courseId, courseId));
 
-//     const lessonIds = courseLessons.map((l) => l.lessonId);
-//     const totalLessons = lessonIds.length;
+    const lessonIds = courseLessons.map((l) => l.lessonId);
+    const totalLessons = lessonIds.length;
 
-//     if (totalLessons === 0) {
-//       return { completed: 0, total: 0, percentage: 0 };
-//     }
+    if (totalLessons === 0) {
+      return { completed: 0, total: 0, percentage: 0 };
+    }
 
-//     // Get completed lessons count
-//     const completedLessons = await db
-//       .select({ count: sql<number>`count(*)` })
-//       .from(usersToLessons)
-//       .where(
-//         and(
-//           eq(usersToLessons.userId, user.id),
-//           sql`${usersToLessons.lessonId} = ANY(${lessonIds})`,
-//           sql`${usersToLessons.completedAt} IS NOT NULL`
-//         )
-//       );
+    // Получаем количество завершенных уроков пользователя в этом курсе
+    const completedLessons = await db
+      .select({ lessonId: usersToLessons.lessonId })
+      .from(usersToLessons)
+      .where(
+        and(
+          eq(usersToLessons.userId, user.id),
+          inArray(usersToLessons.lessonId, lessonIds),
+          sql`${usersToLessons.completedAt} IS NOT NULL`
+        )
+      );
 
-//     const completed = Number(completedLessons[0]?.count || 0);
-//     const percentage = Math.round((completed / totalLessons) * 100);
+    const completed = completedLessons.length;
+    const percentage = Math.round((completed / totalLessons) * 100);
 
-//     return {
-//       completed,
-//       total: totalLessons,
-//       percentage,
-//     };
-//   } catch (error) {
-//     console.error("Ошибка при расчете прогресса курса:", error);
-//     return { completed: 0, total: 0, percentage: 0 };
-//   }
-// }
+    return {
+      completed,
+      total: totalLessons,
+      percentage,
+    };
+  } catch (error) {
+    console.error("Ошибка при расчете прогресса курса:", error);
+    return { completed: 0, total: 0, percentage: 0 };
+  }
+}
+
+export async function getCompletedLessonIds(courseId: number) {
+  const user = await getUser();
+  if (!user) return new Set<number>();
+
+  try {
+    // Получаем все ID уроков в курсе
+    const courseLessons = await db
+      .select({ lessonId: modulesToLessons.lessonId })
+      .from(coursesToModules)
+      .innerJoin(
+        modulesToLessons,
+        eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+      )
+      .where(eq(coursesToModules.courseId, courseId));
+
+    const lessonIds = courseLessons.map((l) => l.lessonId);
+
+    if (lessonIds.length === 0) {
+      return new Set<number>();
+    }
+
+    // Получаем завершенные уроки пользователя в этом курсе
+    const completedLessons = await db
+      .select({ lessonId: usersToLessons.lessonId })
+      .from(usersToLessons)
+      .where(
+        and(
+          eq(usersToLessons.userId, user.id),
+          inArray(usersToLessons.lessonId, lessonIds),
+          sql`${usersToLessons.completedAt} IS NOT NULL`
+        )
+      );
+
+    return new Set(completedLessons.map((l) => l.lessonId));
+  } catch (error) {
+    console.error("Ошибка при получении завершенных уроков:", error);
+    return new Set<number>();
+  }
+}
+
+export async function getNextLesson(
+  courseId: number,
+  currentLessonId: number
+): Promise<number | null> {
+  try {
+    const course = await getCourseById(courseId);
+    if (!course) return null;
+
+    // Создаем плоский список всех уроков с учетом порядка модулей и уроков
+    const allLessons: number[] = [];
+
+    for (const moduleWrapper of course.modules) {
+      const sortedLessons = moduleWrapper.module.lessons
+        .sort((a, b) => a.order - b.order)
+        .map((lessonWrapper) => lessonWrapper.lesson.id);
+      allLessons.push(...sortedLessons);
+    }
+
+    // Находим индекс текущего урока
+    const currentIndex = allLessons.indexOf(currentLessonId);
+
+    if (currentIndex === -1 || currentIndex === allLessons.length - 1) {
+      return null; // Урок не найден или это последний урок
+    }
+
+    return allLessons[currentIndex + 1];
+  } catch (error) {
+    console.error("Ошибка при получении следующего урока:", error);
+    return null;
+  }
+}
+
+export async function getPreviousLesson(
+  courseId: number,
+  currentLessonId: number
+): Promise<number | null> {
+  try {
+    const course = await getCourseById(courseId);
+    if (!course) return null;
+
+    // Создаем плоский список всех уроков с учетом порядка модулей и уроков
+    const allLessons: number[] = [];
+
+    for (const moduleWrapper of course.modules) {
+      const sortedLessons = moduleWrapper.module.lessons
+        .sort((a, b) => a.order - b.order)
+        .map((lessonWrapper) => lessonWrapper.lesson.id);
+      allLessons.push(...sortedLessons);
+    }
+
+    // Находим индекс текущего урока
+    const currentIndex = allLessons.indexOf(currentLessonId);
+
+    if (currentIndex === -1 || currentIndex === 0) {
+      return null; // Урок не найден или это первый урок
+    }
+
+    return allLessons[currentIndex - 1];
+  } catch (error) {
+    console.error("Ошибка при получении предыдущего урока:", error);
+    return null;
+  }
+}

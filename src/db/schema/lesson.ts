@@ -5,7 +5,7 @@ import { relations } from "drizzle-orm";
 export const lessons = prodSchema.table("lessons", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
-  description: varchar({ length: 256 }),
+  description: varchar({ length: 1024 }),
   duration: integer().notNull(),
   status: varchar({ length: 20, enum: ["public", "private"] })
     .notNull()

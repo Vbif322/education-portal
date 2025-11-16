@@ -4,7 +4,7 @@ import { db } from "@/db/db";
 import { getUser } from "../dal";
 import { Lesson } from "@/@types/course";
 import { lessons, usersToLessons } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export async function getLesson(id: Lesson["id"]) {
   try {
@@ -91,5 +91,120 @@ export async function addLessonToUser(lessonId: Lesson["id"]) {
     return res;
   } catch (error) {
     return error;
+  }
+}
+
+export async function getLessonProgress(lessonId: Lesson["id"]) {
+  const user = await getUser();
+  if (!user) return null;
+
+  try {
+    const progress = await db.query.usersToLessons.findFirst({
+      where: and(
+        eq(usersToLessons.userId, user.id),
+        eq(usersToLessons.lessonId, lessonId)
+      ),
+    });
+
+    return progress || null;
+  } catch (error) {
+    console.error("Ошибка при получении прогресса урока:", error);
+    return null;
+  }
+}
+
+export async function updateLessonProgress(
+  lessonId: Lesson["id"],
+  currentTime: number,
+  duration: number
+) {
+  const user = await getUser();
+  if (!user) return null;
+
+  try {
+    // Сначала проверяем, есть ли уже запись
+    const existing = await db.query.usersToLessons.findFirst({
+      where: and(
+        eq(usersToLessons.userId, user.id),
+        eq(usersToLessons.lessonId, lessonId)
+      ),
+    });
+
+    if (existing) {
+      // Обновляем существующую запись
+      const updated = await db
+        .update(usersToLessons)
+        .set({ currentTime, duration })
+        .where(
+          and(
+            eq(usersToLessons.userId, user.id),
+            eq(usersToLessons.lessonId, lessonId)
+          )
+        )
+        .returning();
+      return updated[0] || null;
+    } else {
+      // Создаем новую запись
+      const created = await db
+        .insert(usersToLessons)
+        .values({
+          userId: user.id,
+          lessonId,
+          currentTime,
+          duration,
+        })
+        .returning();
+      return created[0] || null;
+    }
+  } catch (error) {
+    console.error("Ошибка при обновлении прогресса урока:", error);
+    return null;
+  }
+}
+
+export async function completeLessonProgress(lessonId: Lesson["id"]) {
+  const user = await getUser();
+  if (!user) return null;
+
+  try {
+    // Проверяем, есть ли уже запись
+    const existing = await db.query.usersToLessons.findFirst({
+      where: and(
+        eq(usersToLessons.userId, user.id),
+        eq(usersToLessons.lessonId, lessonId)
+      ),
+    });
+
+    if (existing) {
+      // Обновляем completedAt, если еще не завершен
+      if (!existing.completedAt) {
+        const updated = await db
+          .update(usersToLessons)
+          .set({ completedAt: new Date() })
+          .where(
+            and(
+              eq(usersToLessons.userId, user.id),
+              eq(usersToLessons.lessonId, lessonId)
+            )
+          )
+          .returning();
+        return updated[0] || null;
+      }
+      return existing;
+    } else {
+      // Создаем новую запись с completedAt
+      const created = await db
+        .insert(usersToLessons)
+        .values({
+          userId: user.id,
+          lessonId,
+          completedAt: new Date(),
+        })
+        .returning();
+      return created[0] || null;
+    }
+  } catch (error) {
+    console.error("Ошибка при завершении урока:", error);
+    return null;
   }
 }

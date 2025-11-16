@@ -19,7 +19,9 @@ const LessonCard: FC<Lesson & { progress?: boolean }> = ({
     <div className={s.card}>
       <div className={s.titleContainer}>
         <PlayCircle className={s.icon} size={20} />
-        <p className={s.title}>{name}</p>
+        <p className={s.title} title={name}>
+          {name}
+        </p>
       </div>
       <div style={{ flex: 1 }}>
         {description && <p className={s.description}>{description}</p>}

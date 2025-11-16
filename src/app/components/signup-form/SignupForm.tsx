@@ -7,7 +7,6 @@ import Button from "@/app/ui/Button/Button";
 
 export default function SignupForm() {
   const [state, action, pending] = useActionState(signin, undefined);
-  console.log(state);
   return (
     <form action={action} className={s.form}>
       <div>

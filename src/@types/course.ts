@@ -1,10 +1,19 @@
-import { courses, modules, lessons, skills, coursesToModules, skillsToCourses } from "@/db/schema";
+import {
+  courses,
+  modules,
+  lessons,
+  skills,
+  coursesToModules,
+  skillsToCourses,
+  modulesToLessons,
+} from "@/db/schema";
 
 export type Skill = typeof skills.$inferSelect;
 export type Lesson = typeof lessons.$inferSelect;
 export type Module = typeof modules.$inferSelect;
 export type Course = typeof courses.$inferSelect;
 export type CoursesToModules = typeof coursesToModules.$inferSelect;
+export type ModulesToLessons = typeof modulesToLessons.$inferSelect;
 export type SkillsToCourses = typeof skillsToCourses.$inferSelect;
 
 export type CourseWithMetadata = Course & {
@@ -13,9 +22,19 @@ export type CourseWithMetadata = Course & {
   skills?: { skill: Skill }[];
 };
 
+export type ModuleWithLessons = Module & {
+  lessons: { lesson: Lesson; order: ModulesToLessons["order"] }[];
+};
+
 export type CourseWithModules = Course & {
-  modules: (CoursesToModules & { module: Module })[];
-  skillsToCourses: (SkillsToCourses & { skill: Skill })[];
+  modules: { module: ModuleWithLessons; order: CoursesToModules["order"] }[];
+};
+
+export type CourseFulldata = CourseWithModules & {
+  skillsToCourses: SkillsToCourses &
+    {
+      skill: Skill;
+    }[];
 };
 
 export type UserCourseEnrollment = {

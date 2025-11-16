@@ -36,6 +36,7 @@ export default async function EditCoursePage({ params }: Props) {
     showOnLanding: boolean;
   }) => {
     "use server";
+    console.log(data);
     return updateCourse(courseId, data);
   };
 

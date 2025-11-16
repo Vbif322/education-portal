@@ -1,0 +1,40 @@
+.pageContainer {
+  width: 100%;
+}
+
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.description {
+  margin: 32px 0;
+  padding: 24px;
+  background-color: rgb(249 250 251);
+  border-left: 4px solid #2563eb;
+  border-radius: 8px;
+}
+
+.descriptionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: #1a1a1a;
+}
+
+.descriptionText {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgb(55 65 81);
+}
+
+@media (max-width: 768px) {
+  .content {
+    max-width: 100%;
+  }
+
+  .description {
+    padding: 16px;
+  }
+}

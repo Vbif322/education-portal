@@ -5,7 +5,6 @@ import React from "react";
 export default async function ProfilePage() {
   const user = await getUser();
   const userSub = await getUserSubscription();
-  console.log(userSub);
 
   if (user === null || userSub === null) {
     return;
