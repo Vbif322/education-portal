@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { FileText, Download, Image, FileArchive } from "lucide-react";
+import { FileText, Download, ImageIcon, FileArchive } from "lucide-react";
 import s from "./LessonMaterials.module.css";
 
 export interface Material {
@@ -22,7 +22,7 @@ const LessonMaterials: FC<LessonMaterialsProps> = ({ materials }) => {
       case "presentation":
         return <FileText size={20} className={s.icon} />;
       case "image":
-        return <Image size={20} className={s.icon} />;
+        return <ImageIcon size={20} className={s.icon} />;
       case "archive":
         return <FileArchive size={20} className={s.icon} />;
       default:

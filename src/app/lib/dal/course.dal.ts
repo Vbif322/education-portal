@@ -16,8 +16,6 @@ import {
   Course,
   CourseFulldata,
   CourseWithMetadata,
-  CourseWithModules,
-  SkillsToCourses,
   UserCourseEnrollment,
 } from "@/@types/course";
 
