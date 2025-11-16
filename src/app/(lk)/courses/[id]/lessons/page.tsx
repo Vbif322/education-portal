@@ -22,7 +22,7 @@ const LessonsPage: FC<LessonsPageProps> = async ({ params }) => {
     // Если нет уроков, показываем 404
     notFound();
   }
-
+  //TODO: делать редирект на первый ннезвершенный урок
   const firstLesson = firstModule.module.lessons[0];
   const firstLessonId = firstLesson.lesson.id;
 

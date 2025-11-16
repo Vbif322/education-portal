@@ -3,9 +3,8 @@
 import {
   DetailedHTMLProps,
   FC,
-  // SourceHTMLAttributes,
-  // useCallback,
-  // useEffect,
+  useCallback,
+  useEffect,
   useRef,
   useState,
   VideoHTMLAttributes,
@@ -13,150 +12,113 @@ import {
 import s from "./Player.module.css";
 
 type Props = {
-  // source: SourceHTMLAttributes<HTMLSourceElement>;
   videoId: string;
+  lessonId: number;
 } & DetailedHTMLProps<VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>;
 
-const Player: FC<Props> = ({
-  // source,
-  videoId,
-  ...props
-}) => {
+const Player: FC<Props> = ({ videoId, lessonId, ...props }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  // const [streamUrl, setStreamUrl] = useState<string>("");
-  // const [loading, setLoading] = useState(true);
   const [error] = useState<string>("");
-  // const [progress, setProgress] = useState(0);
-  // const [buffering, setBuffering] = useState(false);
-  // const [savedProgress, setSavedProgress] = useState(0);
-  // const progressSaveInterval = useRef<NodeJS.Timeout>(null);
+  const [savedProgress, setSavedProgress] = useState(0);
+  const [hasAutoCompleted, setHasAutoCompleted] = useState(false);
+  const lastSaveTime = useRef<number>(0);
 
-  // useEffect(() => {
-  //   fetchStreamUrl();
-  //   // fetchSavedProgress();
+  // Загрузка сохраненного прогресса при монтировании
+  useEffect(() => {
+    const fetchSavedProgress = async () => {
+      try {
+        const response = await fetch(`/api/lessons/${lessonId}/progress`);
+        if (response.ok) {
+          const data = await response.json();
+          setSavedProgress(data.currentTime || 0);
+          setHasAutoCompleted(data.completed || false);
+        }
+      } catch (err) {
+        console.error("Error fetching progress:", err);
+      }
+    };
 
-  //   return () => {
-  //     if (progressSaveInterval.current) {
-  //       clearInterval(progressSaveInterval.current);
-  //     }
-  //   };
-  // }, [videoId]);
-
-  // const fetchStreamUrl = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const response = await fetch("/api/videos/?name=" + videoId);
-  //     if (!response.ok) {
-  //       throw new Error("Не удалось загрузить видео");
-  //     }
-  //     const data = await response.json();
-  //     console.log(data, "data");
-  //     setStreamUrl(data.streamUrl);
-  //   } catch (err: any) {
-  //     console.log(err);
-  //     setError(err.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // const fetchSavedProgress = async () => {
-  //   try {
-  //     const response = await fetch(`/api/videos/${videoId}/progress`);
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       setSavedProgress(data.currentTime || 0);
-  //     }
-  //   } catch (err) {
-  //     console.error("Error fetching progress:", err);
-  //   }
-  // };
+    fetchSavedProgress();
+  }, [lessonId]);
 
   // Сохранение прогресса
-  // const saveProgress = useCallback(async () => {
-  //   if (!videoRef.current) return;
+  const saveProgress = useCallback(
+    async (forceComplete = false) => {
+      if (!videoRef.current) return;
 
-  //   const currentTime = videoRef.current.currentTime;
-  //   const duration = videoRef.current.duration;
+      const currentTime = videoRef.current.currentTime;
+      const duration = videoRef.current.duration;
 
-  //   if (isNaN(duration) || duration === 0) return;
+      if (isNaN(duration) || duration === 0) return;
 
-  //   const completed = currentTime / duration > 0.9;
+      const watchedPercentage = currentTime / duration;
+      const completed = forceComplete || watchedPercentage >= 0.9;
 
-  //   // try {
-  //   //   await fetch(`/api/videos/${videoId}/progress`, {
-  //   //     method: "POST",
-  //   //     headers: { "Content-Type": "application/json" },
-  //   //     body: JSON.stringify({
-  //   //       currentTime,
-  //   //       duration,
-  //   //       completed,
-  //   //     }),
-  //   //   });
-  //   // } catch (err) {
-  //   //   console.error("Error saving progress:", err);
-  //   // }
-  //   console.log(
-  //     {
-  //       currentTime,
-  //       duration,
-  //       completed,
-  //     },
-  //     "save"
-  //   );
-  // }, [videoId]);
+      try {
+        await fetch(`/api/lessons/${lessonId}/progress`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            currentTime: Math.floor(currentTime),
+            duration: Math.floor(duration),
+            completed: completed && !hasAutoCompleted,
+          }),
+        });
+
+        // Отмечаем, что автозавершение произошло
+        if (completed && !hasAutoCompleted) {
+          setHasAutoCompleted(true);
+        }
+      } catch (err) {
+        console.error("Error saving progress:", err);
+      }
+    },
+    [lessonId, hasAutoCompleted]
+  );
 
   // Восстановление прогресса при загрузке видео
-  // const handleLoadedMetadata = () => {
-  //   if (videoRef.current && savedProgress > 0) {
-  //     videoRef.current.currentTime = savedProgress;
-  //   }
-  // };
+  const handleLoadedMetadata = () => {
+    if (videoRef.current && savedProgress > 0) {
+      videoRef.current.currentTime = savedProgress;
+    }
+  };
 
   // Обновление прогресса
-  // const handleTimeUpdate = () => {
-  //   if (!videoRef.current) return;
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
 
-  //   const currentTime = videoRef.current.currentTime;
-  //   const duration = videoRef.current.duration;
+    const currentTime = videoRef.current.currentTime;
+    const duration = videoRef.current.duration;
 
-  //   if (!isNaN(duration) && duration > 0) {
-  //     setProgress((currentTime / duration) * 100);
+    if (!isNaN(duration) && duration > 0) {
+      const watchedPercentage = currentTime / duration;
 
-  //     // Сохраняем прогресс каждые 10 секунд
-  //     if (Math.floor(currentTime) % 10 === 0) {
-  //       saveProgress();
-  //     }
-  //   }
-  // };
+      // Сохраняем прогресс каждые 10 секунд
+      if (Math.floor(currentTime) - lastSaveTime.current >= 10) {
+        lastSaveTime.current = Math.floor(currentTime);
+        saveProgress();
+      }
 
-  // Обработка буферизации
-  // const handleWaiting = () => setBuffering(true);
-  // const handlePlaying = () => setBuffering(false);
-  // const handleCanPlay = () => setBuffering(false);
+      // Автоматическая отметка при достижении 90%
+      if (watchedPercentage >= 0.9 && !hasAutoCompleted) {
+        saveProgress(true);
+      }
+    }
+  };
 
   // Сохранение прогресса при паузе или закрытии
-  // const handlePause = () => saveProgress();
+  const handlePause = () => saveProgress();
+  const handleEnded = () => saveProgress(true);
 
-  // useEffect(() => {
-  //   const handleBeforeUnload = () => saveProgress();
-  //   window.addEventListener("beforeunload", handleBeforeUnload);
+  useEffect(() => {
+    const handleBeforeUnload = () => saveProgress();
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //     saveProgress();
-  //   };
-  // }, [saveProgress]);
-
-  // if (loading) {
-  //   return (
-  //     <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
-  //       <div className="absolute inset-0 flex items-center justify-center">
-  //         <div className="text-white">Загрузка видео...</div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      saveProgress();
+    };
+  }, [saveProgress]);
 
   if (error) {
     return (
@@ -176,17 +138,13 @@ const Player: FC<Props> = ({
           ref={videoRef}
           controls
           controlsList="nodownload"
-          // onTimeUpdate={handleTimeUpdate}
-          // onLoadedMetadata={handleLoadedMetadata}
-          // onPause={handlePause}
-          // onEnded={saveProgress}
-          // onWaiting={handleWaiting}
-          // onPlaying={handlePlaying}
-          // onCanPlay={handleCanPlay}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onPause={handlePause}
+          onEnded={handleEnded}
           preload="metadata"
           {...props}
         >
-          {/* <source src="/videos/Управление задачами 12.mp4" type="video/mp4" /> */}
           <source src={`/api/videos?name=${videoId}`} type="video/mp4" />
           Ваш браузер не поддерживает видео
         </video>

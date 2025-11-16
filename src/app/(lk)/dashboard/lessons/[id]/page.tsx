@@ -33,7 +33,7 @@ export default async function LessonPage({
             </Paper>
           </div>
         )}
-        <Player videoId={forbidden ? "" : lesson.videoURL} />
+        <Player videoId={forbidden ? "" : lesson.videoURL} lessonId={lesson.id} />
         <p className={s.title}>{lesson.name}</p>
         <Paper style={{ width: "100%" }}>
           <p className={s.title}>Описание</p>

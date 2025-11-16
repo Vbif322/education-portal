@@ -3,7 +3,11 @@ import Header from "@/app/components/header/Header";
 import { getUser } from "@/app/lib/dal";
 import Aside from "../../../../components/aside/Aside";
 import s from "./layout.module.css";
-import { getCourseById } from "@/app/lib/dal/course.dal";
+import {
+  getCourseById,
+  getCourseProgress,
+  getCompletedLessonIds,
+} from "@/app/lib/dal/course.dal";
 import { notFound } from "next/navigation";
 
 const ModuleLayout: FC<
@@ -14,7 +18,13 @@ const ModuleLayout: FC<
 > = async ({ children, params }) => {
   const user = await getUser();
   const { id } = await params;
-  const course = await getCourseById(Number(id));
+  const courseId = Number(id);
+
+  const [course, progress, completedLessonIds] = await Promise.all([
+    getCourseById(courseId),
+    getCourseProgress(courseId),
+    getCompletedLessonIds(courseId),
+  ]);
 
   if (!course) {
     notFound();
@@ -24,7 +34,11 @@ const ModuleLayout: FC<
     <>
       <Header variant="private" role={user?.role} />
       <div className={s.container}>
-        <Aside progress={25} modules={course.modules} />
+        <Aside
+          progress={progress.percentage}
+          course={course}
+          completedLessonIds={completedLessonIds}
+        />
         <main className={s.main}>{children}</main>
       </div>
     </>

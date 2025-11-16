@@ -2,7 +2,7 @@
 
 import { FC, FormEvent, useState, useEffect } from "react";
 import s from "./course-form.module.css";
-import { Module, Course, Skill } from "@/@types/course";
+import { Module, Skill, CourseWithModules } from "@/@types/course";
 import Button from "@/app/ui/Button/Button";
 import { useRouter } from "next/navigation";
 import AddSkillModal from "@/app/components/modals/AddSkillModal";
@@ -11,15 +11,7 @@ import { createSkill } from "@/app/actions/skills";
 type Props = {
   modules: Module[];
   skills?: Skill[];
-  course?: Course & {
-    modules: Array<{
-      order: number;
-      module: Module;
-    }>;
-    skills?: Array<{
-      skill: Skill;
-    }>;
-  };
+  course?: CourseWithModules;
   title: string;
   submitButtonText: string;
   onSubmit: (data: {
@@ -62,6 +54,8 @@ const CourseForm: FC<Props> = ({
     }
   }, [skills]);
 
+  console.log(course);
+
   // Предзаполнение формы при редактировании
   useEffect(() => {
     if (course) {
@@ -77,8 +71,8 @@ const CourseForm: FC<Props> = ({
           }))
         );
       }
-      if (course.skills) {
-        setSelectedSkills(course.skills.map((cs) => cs.skill.id));
+      if (course) {
+        // setSelectedSkills(course.skillToCourses.map((cs) => cs.skill.id));
       }
     }
   }, [course]);

@@ -27,7 +27,7 @@ export type ModuleWithLessons = Module & {
 };
 
 export type CourseWithModules = Course & {
-  modules: { module: ModuleWithLessons }[];
+  modules: { module: ModuleWithLessons; order: CoursesToModules["order"] }[];
 };
 
 export type UserCourseEnrollment = {
