@@ -8,6 +8,7 @@ import Chip from "@/app/ui/Chip/Chip";
 import { enrollUserInCourse } from "@/app/actions/courses";
 import { CourseWithMetadata } from "@/@types/course";
 import { pluralize } from "@/app/utils/helpers";
+import Dialog from "@/app/ui/Dialog/Dialog";
 
 type Props = {
   skills?: Array<{
@@ -19,6 +20,11 @@ type Props = {
     };
   }>;
   isEnrolled: boolean;
+  user: {
+    id: string;
+    email: string;
+    role: "user" | "admin";
+  } | null;
 } & CourseWithMetadata;
 
 const UI: FC<Props> = ({
@@ -29,10 +35,12 @@ const UI: FC<Props> = ({
   description,
   moduleCount,
   lessonCount,
-  program
+  program,
+  user
 }) => {
   const router = useRouter();
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleEnroll = async () => {
     setIsEnrolling(true);
@@ -52,14 +60,39 @@ const UI: FC<Props> = ({
   };
 
   const handleButtonClick = () => {
-    if (isEnrolled) {
-      router.push(id + "/lessons");
+    if (!user || user.role !== 'admin') {
+      setOpen(true)
     } else {
-      handleEnroll();
+      if (isEnrolled) {
+        router.push(id + "/lessons");
+      } else {
+        handleEnroll();
+      }
     }
+
   };
 
   return (
+    <>
+    <Dialog open={open} onClose={()=>setOpen(false)}>
+    {/* <div>
+      <h3 style={{fontWeight: 'normal'}}>Для доступа необходимо связаться по почте <b>mesenyashin@mail.ru</b> или по телефону <b>+7 812 467-34-67</b></h3>
+    </div> */}
+     <div className={s.contactDialog}>
+    <h3 className={s.dialogTitle}>Для доступа к курсу</h3>
+    <p className={s.dialogText}>
+      Пожалуйста, свяжитесь с нами одним из способов:
+    </p>
+    <div className={s.contactMethods}>
+      <p className={s.contactLink}>
+        📧 mesenyashin@mail.ru
+      </p>
+      <p className={s.contactLink}>
+        📞 +7 812 467-34-67
+      </p>
+    </div>
+  </div>
+    </Dialog>
     <div className={s.container}>
       <div className={s.blocks}>
         <Block
@@ -68,7 +101,7 @@ const UI: FC<Props> = ({
             "модуля",
             "модулей",
           ])}`}
-          // subtitle="Познакомьтесь с темой"
+        // subtitle="Познакомьтесь с темой"
         />
         <Block
           title={`${lessonCount} ${pluralize(lessonCount, [
@@ -104,8 +137,8 @@ const UI: FC<Props> = ({
             {isEnrolling
               ? "Записываемся..."
               : isEnrolled
-              ? "Начать обучение"
-              : "Записаться на курс"}
+                ? "Начать обучение"
+                : "Записаться на курс"}
           </button>
         </div>
         <div className={s.content}>
@@ -152,11 +185,12 @@ const UI: FC<Props> = ({
           </div>
           {program && <div>
             <h3 className={s.content__subtitle}>Программа курса</h3>
-            <p style={{marginTop: '16px'}}>{program}</p>
+            <p style={{ marginTop: '16px' }}>{program}</p>
           </div>}
         </div>
       </div>
     </div>
+    </>
   );
 };
 

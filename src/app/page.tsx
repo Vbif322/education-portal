@@ -15,7 +15,6 @@ import {
   Award,
   Check,
   ArrowRight,
-  Info,
   Target,
   TrendingUp,
   Settings,
@@ -24,6 +23,7 @@ import {
 } from "lucide-react";
 import CourseCard from "./components/course-card/CourseCard";
 import { getLandingCourses } from "./lib/dal/course.dal";
+import VideoModal from "./components/video-modal/VideoModal";
 
 // const testimonials = [
 //   {
@@ -83,9 +83,9 @@ export default async function Home() {
               Библиотека курсов по бизнесу от <br />
               <span className={s.titleAccent}>Кирилла Месеняшина</span>
             </h1>
-            <span className={s.subtitle}>
+            {/* <span className={s.subtitle}>
              Получите доступ к платформе для онлайн-обучения
-            </span>
+            </span> */}
 
             <div className={s.benefits}>
               <div className={s.benefitItem}>
@@ -109,12 +109,10 @@ export default async function Home() {
                   <ArrowRight size={20} />
                 </button>
               </Link>
-              <Link href={"#about"}>
-                <button className={s.ctaSecondary}>
-                  <Info size={20} />
-                  Узнать больше
-                </button>
-              </Link>
+              <VideoModal
+                videoSrc="/videos/Приветственный ролик.mp4"
+                buttonClassName={s.ctaSecondary}
+              />
             </div>
 
             <div className={s.trustBadges}>
@@ -163,6 +161,29 @@ export default async function Home() {
                 убытков в прибыль
               </p>
             </div>
+            
+            <div className={s.aboutSection}>
+              <h4 className={s.aboutSectionTitle}>
+                Преподавательская деятельность
+              </h4>
+              <p className={s.aboutText}>
+                Преподаватель ряда ведущих российских бизнес-школ:
+              </p>
+              <div className={s.schoolsList}>
+                <div className={s.schoolItem}>• Высшая Школа Менеджмента</div>
+                <div className={s.schoolItem}>
+                  • Московская Школа Управления «Сколково»
+                </div>
+                <div className={s.schoolItem}>
+                  • Академия Внешней Торговли (ВАВТ)
+                </div>
+                <div className={s.schoolItem}>
+                  • ИБДА (РАНХиГС, Институт бизнеса и делового
+                  администрирования)
+                </div>
+                <div className={s.schoolItem}>• Московская Бизнес-Школа</div>
+              </div>
+            </div>
 
             <div className={s.aboutSection}>
               <h4 className={s.aboutSectionTitle}>Специализация</h4>
@@ -191,29 +212,6 @@ export default async function Home() {
                   </div>
                   <span>Системы качества и непрерывных улучшений</span>
                 </div>
-              </div>
-            </div>
-
-            <div className={s.aboutSection}>
-              <h4 className={s.aboutSectionTitle}>
-                Преподавательская деятельность
-              </h4>
-              <p className={s.aboutText}>
-                Преподаватель ряда ведущих российских бизнес-школ:
-              </p>
-              <div className={s.schoolsList}>
-                <div className={s.schoolItem}>• Высшая Школа Менеджмента</div>
-                <div className={s.schoolItem}>
-                  • Московская Школа Управления «Сколково»
-                </div>
-                <div className={s.schoolItem}>
-                  • Академия Внешней Торговли (ВАВТ)
-                </div>
-                <div className={s.schoolItem}>
-                  • ИБДА (РАНХиГС, Институт бизнеса и делового
-                  администрирования)
-                </div>
-                <div className={s.schoolItem}>• Московская Бизнес-Школа</div>
               </div>
             </div>
 

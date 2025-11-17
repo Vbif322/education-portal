@@ -92,3 +92,41 @@
   grid-template-columns: repeat(2, 420px);
   gap: 16px;
 }
+
+.contactDialog {
+  padding: 24px;
+  max-width: 500px;
+}
+
+.dialogTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1a1a1a;
+}
+
+.dialogText {
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.contactMethods {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contactLink {
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  color: #0056d2;
+  text-decoration: none;
+  transition: background 0.2s;
+  font-weight: 500;
+}
+
+.contactLink:hover {
+  background: #e8e8e8;
+}
