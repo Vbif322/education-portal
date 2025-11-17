@@ -3,7 +3,7 @@ import { FC, useState } from "react";
 import { Block } from "./subcomponents/Block";
 import s from "./style.module.css";
 import { useRouter } from "next/navigation";
-import { Skill } from "./subcomponents/Skill";
+// import { Skill } from "./subcomponents/Skill";
 import Chip from "@/app/ui/Chip/Chip";
 import { enrollUserInCourse } from "@/app/actions/courses";
 import { CourseWithMetadata } from "@/@types/course";
