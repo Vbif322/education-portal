@@ -5,6 +5,7 @@ import {
   isUserEnrolledInCourse,
 } from "@/app/lib/dal/course.dal";
 import { notFound } from "next/navigation";
+import { getUser } from "@/app/lib/dal";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -13,6 +14,7 @@ type Props = {
 const CoursePage: FC<Props> = async ({ params }) => {
   const { id } = await params;
   const courseId = parseInt(id);
+  const user = await getUser()
 
   if (isNaN(courseId)) {
     notFound();
@@ -24,7 +26,7 @@ const CoursePage: FC<Props> = async ({ params }) => {
   }
   const isEnrolled = await isUserEnrolledInCourse(courseId);
 
-  return <UI {...course} isEnrolled={isEnrolled} />;
+  return <UI {...course} user={user} isEnrolled={isEnrolled} />;
 };
 
 export default CoursePage;
