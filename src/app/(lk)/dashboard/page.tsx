@@ -3,6 +3,11 @@ import LessonCard from "@/app/components/lesson-card/LessonCard";
 import CourseCard from "@/app/components/course-card/CourseCard";
 import { getAllLessons, getUserLessons } from "@/app/lib/dal/lesson.dal";
 import { getUserCourses, getAllCourses } from "@/app/lib/dal/course.dal";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: 'Главная',
+}
 
 export default async function Dashboard() {
   const [allLessons, userLessons, userCourses, allCourses] = await Promise.all([

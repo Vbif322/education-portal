@@ -17,6 +17,7 @@ type Props = {
   onSubmit: (data: {
     name: string;
     description?: string;
+    program?: string;
     privacy: "public" | "private";
     showOnLanding: boolean;
     modules: { moduleId: number; order: number }[];
@@ -34,6 +35,7 @@ const CourseForm: FC<Props> = ({
 }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [program, setProgram] = useState('')
   const [privacy, setPrivacy] = useState<"public" | "private">("private");
   const [showOnLanding, setShowOnLanding] = useState(false);
   const [selectedModules, setSelectedModules] = useState<
@@ -81,6 +83,7 @@ const CourseForm: FC<Props> = ({
       const result = await onSubmit({
         name,
         description,
+        program,
         privacy,
         showOnLanding,
         modules: selectedModules.map((sm) => ({
@@ -202,6 +205,18 @@ const CourseForm: FC<Props> = ({
             placeholder="Введите описание курса"
             className={s.textarea}
             rows={4}
+          />
+        </div>
+
+        <div className={s.formGroup}>
+          <label htmlFor="program">Программа</label>
+          <textarea
+            id="program"
+            value={program}
+            onChange={(e) => setProgram(e.target.value)}
+            placeholder="Введите программу курса"
+            className={s.textarea}
+            rows={12}
           />
         </div>
 

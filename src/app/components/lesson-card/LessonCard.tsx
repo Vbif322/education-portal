@@ -2,11 +2,11 @@
 
 import { FC } from "react";
 import s from "./style.module.css";
-import { redirect } from "next/navigation";
 import { Lesson } from "@/@types/course";
 import Button from "@/app/ui/Button/Button";
 import { PlayCircle, Clock } from "lucide-react";
 import { formatTime } from "@/app/utils/helpers";
+import { useRouter } from "next/navigation";
 
 const LessonCard: FC<Lesson & { progress?: boolean }> = ({
   name,
@@ -15,6 +15,9 @@ const LessonCard: FC<Lesson & { progress?: boolean }> = ({
   progress,
   duration,
 }) => {
+
+  const router = useRouter()
+
   return (
     <div className={s.card}>
       <div className={s.titleContainer}>
@@ -30,7 +33,7 @@ const LessonCard: FC<Lesson & { progress?: boolean }> = ({
         <Clock className={s.durationIcon} size={16} />
         <span className={s.durationText}>{formatTime(duration)}</span>
       </div>
-      <Button onClick={() => redirect("/dashboard/lessons/" + id)}>
+      <Button onClick={() => router.push("/dashboard/lessons/" + id)}>
         {progress ? "Продолжить" : "Смотреть"}
       </Button>
     </div>

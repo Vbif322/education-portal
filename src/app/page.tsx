@@ -2,7 +2,7 @@ import s from "./page.module.css";
 import Image from "next/image";
 import Kirill from "../../public/Kirill.webp";
 import Footer from "./components/footer/Footer";
-import TestimonialCard from "./components/testimonial-card/TestimonialCard";
+// import TestimonialCard from "./components/testimonial-card/TestimonialCard";
 import Link from "next/link";
 import FeatureCard from "./components/feature-card/FeatureCard";
 import {
@@ -25,29 +25,29 @@ import {
 import CourseCard from "./components/course-card/CourseCard";
 import { getLandingCourses } from "./lib/dal/course.dal";
 
-const testimonials = [
-  {
-    id: 1,
-    description:
-      '"Наконец-то я увидел, как теория бережливого производства работает на практике, а не только в книгах. Ценнейший опыт, который можно сразу применять в своей компании"',
-    name: "Алексей",
-    appointment: "Руководитель производственного отдела",
-  },
-  {
-    id: 2,
-    description:
-      '"Материал подается очень структурированно, сложнейшие концепции операционного менеджмента раскладываются по полочкам. Видно, что за плечами преподавателя колоссальный управленческий опыт"',
-    name: "Светлана",
-    appointment: "Менеджер проектов",
-  },
-  {
-    id: 3,
-    description:
-      '"Этот курс - не просто набор инструментов, а полноценная система для выстраивания стратегии на уровне всей компании. Редкая возможность поучиться у практика такого масштаба"',
-    name: "Игорь",
-    appointment: "Предприниматель",
-  },
-];
+// const testimonials = [
+//   {
+//     id: 1,
+//     description:
+//       '"Наконец-то я увидел, как теория бережливого производства работает на практике, а не только в книгах. Ценнейший опыт, который можно сразу применять в своей компании"',
+//     name: "Алексей",
+//     appointment: "Руководитель производственного отдела",
+//   },
+//   {
+//     id: 2,
+//     description:
+//       '"Материал подается очень структурированно, сложнейшие концепции операционного менеджмента раскладываются по полочкам. Видно, что за плечами преподавателя колоссальный управленческий опыт"',
+//     name: "Светлана",
+//     appointment: "Менеджер проектов",
+//   },
+//   {
+//     id: 3,
+//     description:
+//       '"Этот курс - не просто набор инструментов, а полноценная система для выстраивания стратегии на уровне всей компании. Редкая возможность поучиться у практика такого масштаба"',
+//     name: "Игорь",
+//     appointment: "Предприниматель",
+//   },
+// ];
 
 export default async function Home() {
   const courses = await getLandingCourses();
@@ -80,11 +80,11 @@ export default async function Home() {
         <section className={s.mainSection}>
           <div className={s.mainBlock}>
             <h1 className={s.title}>
-              Онлайн-курсы по бизнесу от <br />
+              Библиотека курсов по бизнесу от <br />
               <span className={s.titleAccent}>Кирилла Месеняшина</span>
             </h1>
             <span className={s.subtitle}>
-              Пошаговые программы для запуска и развития бизнеса
+             Получите доступ к платформе для онлайн-обучения
             </span>
 
             <div className={s.benefits}>
@@ -270,7 +270,7 @@ export default async function Home() {
                 </div>
                 <div className={s.certificateBadge}>
                   <Award size={20} />
-                  <span>Сертифицированный эксперт Lean Production</span>
+                  <span>Дипломированный преподаватель в сфере профессионального образования</span>
                 </div>
               </div>
             </div>
@@ -313,7 +313,7 @@ export default async function Home() {
             })}
           </div>
         </section>
-        <section className={s.section} id="testimonials">
+        {/*<section className={s.section} id="testimonials">
           <h3 className={s.testimonial__title}>Что говорят слушатели</h3>
           <p className={s.testimonial__subtitle}>
             Реальные истории успеха от тех, кто уже прошел обучение
@@ -323,7 +323,7 @@ export default async function Home() {
               <TestimonialCard key={id} {...props} />
             ))}
           </div>
-        </section>
+        </section> **/}
       </main>
       <Footer />
     </div>
