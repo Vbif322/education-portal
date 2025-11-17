@@ -10,6 +10,7 @@ import { z } from "zod";
 const courseSchema = z.object({
   name: z.string().min(1, "Название курса обязательно"),
   description: z.string().optional(),
+  program: z.string().optional(),
   privacy: z.enum(["public", "private"]),
   modules: z.array(
     z.object({
@@ -24,6 +25,7 @@ const courseSchema = z.object({
 export async function createCourse(data: {
   name: string;
   description?: string;
+  program?:string;
   privacy: "public" | "private";
   showOnLanding: boolean;
   modules: { moduleId: number; order: number }[];
@@ -47,6 +49,7 @@ export async function createCourse(data: {
     const {
       name,
       description,
+      program,
       privacy,
       showOnLanding,
       modules: modulesList,
@@ -59,6 +62,7 @@ export async function createCourse(data: {
       .values({
         name,
         description: description || null,
+        program,
         privacy,
         showOnLanding: showOnLanding || false,
       })
@@ -98,6 +102,7 @@ export async function updateCourse(
   data: {
     name: string;
     description?: string;
+    program?: string;
     privacy: "public" | "private";
     modules: { moduleId: number; order: number }[];
     skills: number[];
@@ -122,6 +127,7 @@ export async function updateCourse(
     const {
       name,
       description,
+      program,
       privacy,
       showOnLanding,
       modules: modulesList,
@@ -143,6 +149,7 @@ export async function updateCourse(
       .set({
         name,
         description: description || null,
+        program,
         privacy,
         showOnLanding: showOnLanding || false,
       })

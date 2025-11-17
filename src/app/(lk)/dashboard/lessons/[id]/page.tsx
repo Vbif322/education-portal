@@ -3,6 +3,27 @@ import s from "./style.module.css";
 import Player from "@/app/components/video-player/Player";
 import { addLessonToUser, getLesson } from "@/app/lib/dal/lesson.dal";
 import Button from "@/app/ui/Button/Button";
+import { cache } from "react";
+
+const getLessonCached = cache(getLesson);
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params;
+  const lesson = await getLessonCached(Number(id))
+  if (!lesson) {
+    return {
+      title: 'Урок не найден',
+    }
+  }
+  return {
+    title: lesson.name,
+    description: lesson.description,
+  }
+}
 
 export default async function LessonPage({
   params,
@@ -11,7 +32,7 @@ export default async function LessonPage({
 }) {
   const { id } = await params;
 
-  const lesson = await getLesson(Number(id));
+  const lesson = await getLessonCached(Number(id));
   if (!lesson) {
     return <p>Такой урок не найден</p>;
   }

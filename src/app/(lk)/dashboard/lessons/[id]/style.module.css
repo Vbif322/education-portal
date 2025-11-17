@@ -36,7 +36,7 @@
 
 .forbidden {
   position: absolute;
-  background-color: rgb(0 0 0 / 45%);
+  /* background-color: rgb(0 0 0 / 45%); */
   z-index: 15;
   left: 0;
   right: 0;

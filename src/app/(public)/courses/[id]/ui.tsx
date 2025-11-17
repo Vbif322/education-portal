@@ -29,6 +29,7 @@ const UI: FC<Props> = ({
   description,
   moduleCount,
   lessonCount,
+  program
 }) => {
   const router = useRouter();
   const [isEnrolling, setIsEnrolling] = useState(false);
@@ -149,6 +150,10 @@ const UI: FC<Props> = ({
               <p style={{ color: "#666" }}>Навыки не указаны</p>
             )}
           </div>
+          {program && <div>
+            <h3 className={s.content__subtitle}>Программа курса</h3>
+            <p style={{marginTop: '16px'}}>{program}</p>
+          </div>}
         </div>
       </div>
     </div>
