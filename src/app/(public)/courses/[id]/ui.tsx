@@ -143,7 +143,7 @@ const UI: FC<Props> = ({
         </div>
         <div className={s.content}>
           <h2 className={s.sectionTitle}>О курсе</h2>
-          <h3 className={s.content__subtitle}>Чему вы научитесь</h3>
+          {/* <h3 className={s.content__subtitle}>Чему вы научитесь</h3>
           <div className={s.skills__container}>
             <Skill
               description={
@@ -165,7 +165,11 @@ const UI: FC<Props> = ({
                 "Способность мотивировать сотрудников, формировать культуру непрерывных улучшений"
               }
             />
-          </div>
+          </div> */}
+          {program && <div className={s.wrapper}>
+            <h3 className={s.content__subtitle}>Программа курса</h3>
+            <p style={{ marginTop: '16px', whiteSpace: 'pre-line' }}>{program}</p>
+          </div>}
           <h3 className={s.content__subtitle}>Получаемые навыки</h3>
           <div
             style={{
@@ -173,6 +177,7 @@ const UI: FC<Props> = ({
               flexWrap: "wrap",
               gap: "8px",
               marginTop: "16px",
+              marginBottom: '32px'
             }}
           >
             {skills && skills.length > 0 ? (
@@ -183,10 +188,6 @@ const UI: FC<Props> = ({
               <p style={{ color: "#666" }}>Навыки не указаны</p>
             )}
           </div>
-          {program && <div>
-            <h3 className={s.content__subtitle}>Программа курса</h3>
-            <p style={{ marginTop: '16px' }}>{program}</p>
-          </div>}
         </div>
       </div>
     </div>
