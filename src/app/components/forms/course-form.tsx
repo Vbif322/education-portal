@@ -61,6 +61,7 @@ const CourseForm: FC<Props> = ({
     if (course) {
       setName(course.name);
       setDescription(course.description || "");
+      setProgram(course.program || '')
       setPrivacy(course.privacy);
       setShowOnLanding(course.showOnLanding || false);
       if (course.modules) {
