@@ -168,7 +168,7 @@ const UI: FC<Props> = ({
           </div> */}
           {program && <div className={s.wrapper}>
             <h3 className={s.content__subtitle}>Программа курса</h3>
-            <p style={{ marginTop: '16px', whiteSpace: 'pre-line' }}>{program}</p>
+            <p style={{ marginTop: '16px', whiteSpace: 'pre-wrap' }}>{program}</p>
           </div>}
           <h3 className={s.content__subtitle}>Получаемые навыки</h3>
           <div
