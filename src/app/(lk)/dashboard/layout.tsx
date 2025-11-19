@@ -14,7 +14,7 @@ const DashboardLayout: FC<
       <div
         style={{
           padding: 32,
-          maxWidth: "1200px",
+          maxWidth: "1264px",
           margin: "auto",
         }}
       >

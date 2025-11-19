@@ -2,12 +2,12 @@
   border-color: #e5e7eb;
   border-radius: 0.5rem;
   padding: 1.5rem;
-  max-width: 360px;
+  max-width: 364px;
   min-width: 240px;
   height: 278px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: grid;
+  grid-template-rows: 48px 1fr 32px 36px;
+  gap: 16px;
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.25),
     0 4px 6px -4px rgb(0 0 0 / 0.2);
 }
@@ -21,6 +21,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  height: 48px;
 }
 
 .icon {
@@ -30,6 +31,7 @@
 
 .title {
   font-size: 1.25rem;
+  line-height: 1.5rem;
   font-weight: 600;
   margin: 0;
   display: -webkit-box;
@@ -45,6 +47,8 @@
   line-height: 1.25rem;
   color: rgb(75 85 99);
   margin-top: 8px;
+  margin-bottom: 0;
+  height: 3.75rem;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   line-clamp: 3;
