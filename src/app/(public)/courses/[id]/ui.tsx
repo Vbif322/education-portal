@@ -97,9 +97,9 @@ const UI: FC<Props> = ({
       <div className={s.blocks}>
         <Block
           title={`${moduleCount} ${pluralize(moduleCount, [
-            "модуль",
-            "модуля",
-            "модулей",
+            "тема",
+            "темы",
+            "тем",
           ])}`}
         // subtitle="Познакомьтесь с темой"
         />
@@ -170,7 +170,7 @@ const UI: FC<Props> = ({
             <h3 className={s.content__subtitle}>Программа курса</h3>
             <p style={{ marginTop: '16px', whiteSpace: 'pre-wrap' }}>{program}</p>
           </div>}
-          <h3 className={s.content__subtitle}>Получаемые навыки</h3>
+          <h3 className={s.content__subtitle}>Приобретаемые навыки</h3>
           <div
             style={{
               display: "flex",
