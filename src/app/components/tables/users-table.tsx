@@ -68,9 +68,9 @@ const UsersTable: FC<Props> = ({ data }) => {
                   <Button variant="text" disabled>
                     Изменить
                   </Button>
-                  <Button color="error" disabled>
+                  {/* <Button color="error" disabled>
                     Удалить
-                  </Button>
+                  </Button> */}
                 </td>
               </tr>
             );
