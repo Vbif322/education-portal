@@ -9,6 +9,8 @@ import {
   skillsToCourses,
   skills,
   usersToLessons,
+  courseAccess,
+  lessons,
 } from "@/db/schema";
 import { eq, and, asc, count, sql, inArray } from "drizzle-orm";
 import { getUser } from "../dal";
@@ -444,5 +446,50 @@ export async function getPreviousLesson(
   } catch (error) {
     console.error("Ошибка при получении предыдущего урока:", error);
     return null;
+  }
+}
+
+export async function getUserCourseAccess(userId: string) {
+  try {
+    const access = await db
+      .select({
+        courseId: courseAccess.courseId,
+        courseName: courses.name,
+        grantedAt: courseAccess.grantedAt,
+        expiresAt: courseAccess.expiresAt,
+      })
+      .from(courseAccess)
+      .innerJoin(courses, eq(courseAccess.courseId, courses.id))
+      .where(eq(courseAccess.userId, userId));
+    return access;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+export async function getAllLessonsFromCourse(courseId: Course['id']) {
+  try {
+    const courseLessons = await db
+      .select({
+        id: lessons.id,
+        name: lessons.name,
+        description: lessons.description,
+        duration: lessons.duration,
+        status: lessons.status,
+        videoURL: lessons.videoURL,
+        createdAt: lessons.createdAt,
+        updatedAt: lessons.updatedAt,
+      })
+      .from(coursesToModules)
+      .innerJoin(modulesToLessons, eq(coursesToModules.moduleId, modulesToLessons.moduleId))
+      .innerJoin(lessons, eq(modulesToLessons.lessonId, lessons.id))
+      .where(eq(coursesToModules.courseId, courseId))
+      .orderBy(asc(coursesToModules.order), asc(modulesToLessons.order));
+
+    return courseLessons;
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 }

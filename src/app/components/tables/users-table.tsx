@@ -1,6 +1,7 @@
 "use client";
 
 import { FC } from "react";
+import { useRouter } from "next/navigation";
 import s from "./style.module.css";
 import Button from "@/app/ui/Button/Button";
 import { UserWithSubscription } from "@/@types/user";
@@ -10,6 +11,8 @@ type Props = {
 };
 
 const UsersTable: FC<Props> = ({ data }) => {
+  const router = useRouter();
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("ru-RU", {
       day: "2-digit",
@@ -65,12 +68,12 @@ const UsersTable: FC<Props> = ({ data }) => {
                   )}
                 </td>
                 <td style={{ display: "flex", justifyContent: "center" }}>
-                  <Button variant="text" disabled>
-                    Изменить
+                  <Button
+                    variant="text"
+                    onClick={() => router.push(`/dashboard/users/${user.id}`)}
+                  >
+                    Перейти
                   </Button>
-                  {/* <Button color="error" disabled>
-                    Удалить
-                  </Button> */}
                 </td>
               </tr>
             );

@@ -74,7 +74,7 @@ export default async function Dashboard() {
       {/* Available Courses */}
       {otherCourses.length > 0 && (
         <div style={{ marginTop: "3rem" }}>
-          <h3 className={s.title}>Доступные курсы</h3>
+          <h3 className={s.title}>Все курсы</h3>
           <div className={s.card__container}>
             {otherCourses.map((course) => {
               return <CourseCard key={course.id} {...course} />;

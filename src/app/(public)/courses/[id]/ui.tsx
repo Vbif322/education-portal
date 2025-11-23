@@ -20,6 +20,7 @@ type Props = {
     };
   }>;
   isEnrolled: boolean;
+  hasAccess: boolean;
   user: {
     id: string;
     email: string;
@@ -30,6 +31,7 @@ type Props = {
 const UI: FC<Props> = ({
   skills,
   isEnrolled,
+  hasAccess,
   id,
   name,
   description,
@@ -60,7 +62,7 @@ const UI: FC<Props> = ({
   };
 
   const handleButtonClick = () => {
-    if (!user || user.role !== 'admin') {
+    if (!user || (user.role !== 'admin' && !hasAccess)) {
       setOpen(true)
     } else {
       if (isEnrolled) {
@@ -69,7 +71,6 @@ const UI: FC<Props> = ({
         handleEnroll();
       }
     }
-
   };
 
   return (

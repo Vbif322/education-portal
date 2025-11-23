@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
+import { getUser } from "@/app/lib/dal";
 
 const stat = promisify(fs.stat);
 
 export async function GET(req: NextRequest) {
   try {
+    const user = await getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const filename = req.nextUrl.searchParams.get("name");
     if (!filename) {
       return NextResponse.json(
@@ -14,8 +20,19 @@ export async function GET(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Санитизация пути для защиты от Path Traversal
+    const videosDir = path.join(process.cwd(), "src", "videos");
+    const filepath = path.resolve(videosDir, filename);
+
+    if (!filepath.startsWith(videosDir + path.sep)) {
+      return NextResponse.json(
+        { error: "Недопустимый путь к файлу" },
+        { status: 400 }
+      );
+    }
+
     const range = req.headers.get("range");
-    const filepath = path.join(process.cwd(), "src", "videos", filename);
     const stats = await stat(filepath);
     if (range) {
       // Range запрос (для перемотки и частичной загрузки)
