@@ -19,6 +19,8 @@
   align-items: center;
   max-width: 1200px;
   gap: 32px;
+  width: 100%;
+  padding-top: 32px;
 }
 
 .title {

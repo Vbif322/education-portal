@@ -1,6 +1,7 @@
 .container {
   width: 100%;
   margin-bottom: 32px;
+  min-width: 320px;
 }
 
 .videoWrapper {
