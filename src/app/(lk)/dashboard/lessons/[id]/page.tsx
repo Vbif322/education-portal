@@ -2,9 +2,7 @@ import Paper from "@/app/ui/Paper/Paper";
 import s from "./style.module.css";
 import Player from "@/app/components/video-player/Player";
 import { addLessonToUser, getLesson } from "@/app/lib/dal/lesson.dal";
-import Button from "@/app/ui/Button/Button";
 import { cache } from "react";
-import ContactDialog from "@/app/components/dialogs/contact-dialog";
 import ContactModal from "./contact-modal";
 
 const getLessonCached = cache(getLesson);

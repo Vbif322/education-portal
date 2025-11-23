@@ -8,8 +8,8 @@ import Chip from "@/app/ui/Chip/Chip";
 import { enrollUserInCourse } from "@/app/actions/courses";
 import { CourseWithMetadata } from "@/@types/course";
 import { pluralize } from "@/app/utils/helpers";
-import Dialog from "@/app/ui/Dialog/Dialog";
 import ContactDialog from "@/app/components/dialogs/contact-dialog";
+import { User } from "@/@types/user";
 
 type Props = {
   skills?: Array<{
@@ -22,11 +22,7 @@ type Props = {
   }>;
   isEnrolled: boolean;
   hasAccess: boolean;
-  user: {
-    id: string;
-    email: string;
-    role: "user" | "admin";
-  } | null;
+  user: Pick<User, "email" | "id" | "role"> | null;
 } & CourseWithMetadata;
 
 const UI: FC<Props> = ({
@@ -39,7 +35,7 @@ const UI: FC<Props> = ({
   moduleCount,
   lessonCount,
   program,
-  user
+  user,
 }) => {
   const router = useRouter();
   const [isEnrolling, setIsEnrolling] = useState(false);
@@ -63,8 +59,8 @@ const UI: FC<Props> = ({
   };
 
   const handleButtonClick = () => {
-    if (!user || (user.role !== 'admin' && !hasAccess)) {
-      setOpen(true)
+    if (!user || (user.role !== "admin" && !hasAccess)) {
+      setOpen(true);
     } else {
       if (isEnrolled) {
         router.push(id + "/lessons");
@@ -76,27 +72,27 @@ const UI: FC<Props> = ({
 
   return (
     <>
-    <ContactDialog open={open} onClose={()=>setOpen(false)}/>
-    <div className={s.container}>
-      <div className={s.blocks}>
-        <Block
-          title={`${moduleCount} ${pluralize(moduleCount, [
-            "тема",
-            "темы",
-            "тем",
-          ])}`}
-        // subtitle="Познакомьтесь с темой"
-        />
-        <Block
-          title={`${lessonCount} ${pluralize(lessonCount, [
-            "урок",
-            "урока",
-            "уроков",
-          ])}`}
-          // subtitle="Начинающий"
-          lastElement
-        />
-        {/* <Block
+      <ContactDialog open={open} onClose={() => setOpen(false)} />
+      <div className={s.container}>
+        <div className={s.blocks}>
+          <Block
+            title={`${moduleCount} ${pluralize(moduleCount, [
+              "тема",
+              "темы",
+              "тем",
+            ])}`}
+            // subtitle="Познакомьтесь с темой"
+          />
+          <Block
+            title={`${lessonCount} ${pluralize(lessonCount, [
+              "урок",
+              "урока",
+              "уроков",
+            ])}`}
+            // subtitle="Начинающий"
+            lastElement
+          />
+          {/* <Block
           title={
             <div style={{ display: "flex", alignItems: "center" }}>
               4.6
@@ -107,27 +103,27 @@ const UI: FC<Props> = ({
           }
           lastElement
         /> */}
-      </div>
-      <div className={s.wrapper}>
-        <div className={s.hero}>
-          <div className={s.background}></div>
-          <h1 className={s.title}>{name}</h1>
-          {description && <p className={s.description}>{description}</p>}
-          <button
-            className={s.button}
-            onClick={handleButtonClick}
-            disabled={isEnrolling}
-          >
-            {isEnrolling
-              ? "Записываемся..."
-              : isEnrolled
+        </div>
+        <div className={s.wrapper}>
+          <div className={s.hero}>
+            <div className={s.background}></div>
+            <h1 className={s.title}>{name}</h1>
+            {description && <p className={s.description}>{description}</p>}
+            <button
+              className={s.button}
+              onClick={handleButtonClick}
+              disabled={isEnrolling}
+            >
+              {isEnrolling
+                ? "Записываемся..."
+                : isEnrolled
                 ? "Начать обучение"
                 : "Записаться на курс"}
-          </button>
-        </div>
-        <div className={s.content}>
-          <h2 className={s.sectionTitle}>О курсе</h2>
-          {/* <h3 className={s.content__subtitle}>Чему вы научитесь</h3>
+            </button>
+          </div>
+          <div className={s.content}>
+            <h2 className={s.sectionTitle}>О курсе</h2>
+            {/* <h3 className={s.content__subtitle}>Чему вы научитесь</h3>
           <div className={s.skills__container}>
             <Skill
               description={
@@ -150,31 +146,35 @@ const UI: FC<Props> = ({
               }
             />
           </div> */}
-          {program && <div className={s.wrapper}>
-            <h3 className={s.content__subtitle}>Программа курса</h3>
-            <p style={{ marginTop: '16px', whiteSpace: 'pre-wrap' }}>{program}</p>
-          </div>}
-          <h3 className={s.content__subtitle}>Приобретаемые навыки</h3>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "8px",
-              marginTop: "16px",
-              marginBottom: '32px'
-            }}
-          >
-            {skills && skills.length > 0 ? (
-              skills.map(({ skill }) => (
-                <Chip key={skill.id} text={skill.name} />
-              ))
-            ) : (
-              <p style={{ color: "#666" }}>Навыки не указаны</p>
+            {program && (
+              <div className={s.wrapper}>
+                <h3 className={s.content__subtitle}>Программа курса</h3>
+                <p style={{ marginTop: "16px", whiteSpace: "pre-wrap" }}>
+                  {program}
+                </p>
+              </div>
             )}
+            <h3 className={s.content__subtitle}>Приобретаемые навыки</h3>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "8px",
+                marginTop: "16px",
+                marginBottom: "32px",
+              }}
+            >
+              {skills && skills.length > 0 ? (
+                skills.map(({ skill }) => (
+                  <Chip key={skill.id} text={skill.name} />
+                ))
+              ) : (
+                <p style={{ color: "#666" }}>Навыки не указаны</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 };
