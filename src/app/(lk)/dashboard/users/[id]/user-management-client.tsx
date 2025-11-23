@@ -6,7 +6,12 @@ import Button from "@/app/ui/Button/Button";
 import Chip from "@/app/ui/Chip/Chip";
 import Dialog from "@/app/ui/Dialog/Dialog";
 import s from "./style.module.css";
-import { Subscription, UserWithSubscription } from "@/@types/user";
+import {
+  ROLE_LABELS,
+  Subscription,
+  User,
+  UserWithSubscription,
+} from "@/@types/user";
 import {
   updateSubscription,
   grantCourseAccess,
@@ -38,7 +43,7 @@ type Props = {
   lessonAccess: LessonAccess[];
   allCourses: Course[];
   allLessons: Lesson[];
-  lessonsFromCourses: {lessons: Lesson[], courseId: Course['id']}[]
+  lessonsFromCourses: { lessons: Lesson[]; courseId: Course["id"] }[];
 };
 
 const UserManagementClient: FC<Props> = ({
@@ -47,7 +52,7 @@ const UserManagementClient: FC<Props> = ({
   lessonAccess,
   allCourses,
   allLessons,
-  lessonsFromCourses
+  lessonsFromCourses,
 }) => {
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const [courseDialogOpen, setCourseDialogOpen] = useState(false);
@@ -55,9 +60,9 @@ const UserManagementClient: FC<Props> = ({
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
 
   // Subscription form state
-  const [subscriptionType, setSubscriptionType] = useState<Subscription['type']>(
-    user.subscription?.type
-  );
+  const [subscriptionType, setSubscriptionType] = useState<
+    Subscription["type"]
+  >(user.subscription?.type);
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<string>(
     user.subscription?.endedAt
       ? new Date(user.subscription.endedAt).toISOString().split("T")[0]
@@ -73,7 +78,7 @@ const UserManagementClient: FC<Props> = ({
   const [lessonExpiresAt, setLessonExpiresAt] = useState<string>("");
 
   // Role form state
-  const [selectedRole, setSelectedRole] = useState<string>(user.role);
+  const [selectedRole, setSelectedRole] = useState<User["role"]>(user.role);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("ru-RU", {
@@ -90,7 +95,11 @@ const UserManagementClient: FC<Props> = ({
   const handleSubscriptionSubmit = async () => {
     if (!subscriptionEndDate) return;
     if (subscriptionType === null) return;
-    await updateSubscription(user.id, subscriptionType, new Date(subscriptionEndDate));
+    await updateSubscription(
+      user.id,
+      subscriptionType,
+      new Date(subscriptionEndDate)
+    );
     setSubscriptionDialogOpen(false);
     window.location.reload();
   };
@@ -146,7 +155,7 @@ const UserManagementClient: FC<Props> = ({
   };
 
   const handleRoleChange = async () => {
-    await changeUserRole(user.id, selectedRole as "user" | "admin");
+    await changeUserRole(user.id, selectedRole);
     setRoleDialogOpen(false);
     window.location.reload();
   };
@@ -161,10 +170,13 @@ const UserManagementClient: FC<Props> = ({
   );
 
   // Filter out lessons that user already has access to and lessons from courses
-  const lessonIdsFromCourses = lessonsFromCourses.flatMap(({ lessons }) => lessons.map(l => l.id));
+  const lessonIdsFromCourses = lessonsFromCourses.flatMap(({ lessons }) =>
+    lessons.map((l) => l.id)
+  );
   const availableLessons = allLessons.filter(
-    (lesson) => !lessonAccess.some((access) => access.lessonId === lesson.id) &&
-                !lessonIdsFromCourses.includes(lesson.id)
+    (lesson) =>
+      !lessonAccess.some((access) => access.lessonId === lesson.id) &&
+      !lessonIdsFromCourses.includes(lesson.id)
   );
 
   return (
@@ -175,9 +187,9 @@ const UserManagementClient: FC<Props> = ({
       <Paper className={s.section}>
         <div className={s.section__header}>
           <h2 className={s.section__title}>Основная информация</h2>
-          {/* <Button variant="text" onClick={() => setRoleDialogOpen(true)}>
+          <Button variant="text" onClick={() => setRoleDialogOpen(true)}>
             Изменить роль
-          </Button> */}
+          </Button>
         </div>
         <div className={s.info__grid}>
           <div className={s.info__item}>
@@ -187,8 +199,20 @@ const UserManagementClient: FC<Props> = ({
           <div className={s.info__item}>
             <span className={s.info__label}>Роль</span>
             <Chip
-              text={user.role === "admin" ? "Администратор" : "Пользователь"}
-              backgroundColor={user.role === "admin" ? "#fef3c7" : "#e8eef7"}
+              text={
+                user.role === "admin"
+                  ? "Администратор"
+                  : user.role === "manager"
+                  ? "Менеджер"
+                  : "Пользователь"
+              }
+              backgroundColor={
+                user.role === "admin"
+                  ? "#fef3c7"
+                  : user.role === "manager"
+                  ? "#dbeafe"
+                  : "#e8eef7"
+              }
             />
           </div>
         </div>
@@ -198,7 +222,10 @@ const UserManagementClient: FC<Props> = ({
       <Paper className={s.section}>
         <div className={s.section__header}>
           <h2 className={s.section__title}>Подписка</h2>
-          <Button variant="text" onClick={() => setSubscriptionDialogOpen(true)}>
+          <Button
+            variant="text"
+            onClick={() => setSubscriptionDialogOpen(true)}
+          >
             {user.subscription ? "Изменить" : "Добавить"}
           </Button>
         </div>
@@ -209,7 +236,9 @@ const UserManagementClient: FC<Props> = ({
               <Chip
                 text={user.subscription.type || "Ознакомительная"}
                 backgroundColor={
-                  user.subscription.type === "Все включено" ? "#d1fae5" : "#e8eef7"
+                  user.subscription.type === "Все включено"
+                    ? "#d1fae5"
+                    : "#e8eef7"
                 }
               />
             </div>
@@ -248,7 +277,8 @@ const UserManagementClient: FC<Props> = ({
                   <span className={s.access__name}>{access.courseName}</span>
                   <span className={s.access__date}>
                     Выдан: {formatDate(access.grantedAt)}
-                    {access.expiresAt && ` • До: ${formatDate(access.expiresAt)}`}
+                    {access.expiresAt &&
+                      ` • До: ${formatDate(access.expiresAt)}`}
                     {!access.expiresAt && " • Бессрочно"}
                   </span>
                 </div>
@@ -263,7 +293,9 @@ const UserManagementClient: FC<Props> = ({
             ))}
           </div>
         ) : (
-          <p className={s.empty__text}>Индивидуальные доступы к курсам отсутствуют</p>
+          <p className={s.empty__text}>
+            Индивидуальные доступы к курсам отсутствуют
+          </p>
         )}
       </Paper>
 
@@ -279,7 +311,9 @@ const UserManagementClient: FC<Props> = ({
         {/* Individual lesson access */}
         {lessonAccess.length > 0 && (
           <div className={s.access__subsection}>
-            <h3 className={s.access__subsection__title}>Индивидуальный доступ</h3>
+            <h3 className={s.access__subsection__title}>
+              Индивидуальный доступ
+            </h3>
             <div className={s.access__list}>
               {lessonAccess.map((access) => (
                 <div key={access.lessonId} className={s.access__item}>
@@ -287,7 +321,8 @@ const UserManagementClient: FC<Props> = ({
                     <span className={s.access__name}>{access.lessonName}</span>
                     <span className={s.access__date}>
                       Выдан: {formatDate(access.grantedAt)}
-                      {access.expiresAt && ` • До: ${formatDate(access.expiresAt)}`}
+                      {access.expiresAt &&
+                        ` • До: ${formatDate(access.expiresAt)}`}
                       {!access.expiresAt && " • Бессрочно"}
                     </span>
                   </div>
@@ -303,44 +338,52 @@ const UserManagementClient: FC<Props> = ({
             </div>
           </div>
         )}
-        
-        {/* Lessons from courses */}
-        {lessonsFromCourses.filter(({ lessons }) => lessons.length > 0).map(({ lessons, courseId }) => {
-          const course = allCourses.find(c => c.id === courseId);
-          return (
-            <div key={courseId} className={s.access__subsection}>
-              <h3 className={s.access__subsection__title}>
-                {course?.name || `Курс ${courseId}`}
-              </h3>
-              <div className={s.access__list}>
-                {lessons.map((lesson) => (
-                  <div key={lesson.id} className={s.access__item}>
-                    <div className={s.access__info}>
-                      <span className={s.access__name}>{lesson.name}</span>
-                      <span className={s.access__date}>Доступ из курса</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
 
-        {lessonsFromCourses.every(({ lessons }) => lessons.length === 0) && lessonAccess.length === 0 && (
-          <p className={s.empty__text}>Доступы к урокам отсутствуют</p>
-        )}
+        {/* Lessons from courses */}
+        {lessonsFromCourses
+          .filter(({ lessons }) => lessons.length > 0)
+          .map(({ lessons, courseId }) => {
+            const course = allCourses.find((c) => c.id === courseId);
+            return (
+              <div key={courseId} className={s.access__subsection}>
+                <h3 className={s.access__subsection__title}>
+                  {course?.name || `Курс ${courseId}`}
+                </h3>
+                <div className={s.access__list}>
+                  {lessons.map((lesson) => (
+                    <div key={lesson.id} className={s.access__item}>
+                      <div className={s.access__info}>
+                        <span className={s.access__name}>{lesson.name}</span>
+                        <span className={s.access__date}>Доступ из курса</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+
+        {lessonsFromCourses.every(({ lessons }) => lessons.length === 0) &&
+          lessonAccess.length === 0 && (
+            <p className={s.empty__text}>Доступы к урокам отсутствуют</p>
+          )}
       </Paper>
 
       {/* Subscription Dialog */}
-      <Dialog open={subscriptionDialogOpen} onClose={() => setSubscriptionDialogOpen(false)}>
+      <Dialog
+        open={subscriptionDialogOpen}
+        onClose={() => setSubscriptionDialogOpen(false)}
+      >
         <div className={s.dialog__content}>
           <h3 className={s.dialog__title}>Управление подпиской</h3>
           <div className={s.form__group}>
             <label className={s.form__label}>Тип подписки</label>
             <select
               className={s.form__select}
-              value={subscriptionType || 'Не указано'}
-              onChange={(e) => setSubscriptionType(e.target.value as Subscription['type'])}
+              value={subscriptionType || "Не указано"}
+              onChange={(e) =>
+                setSubscriptionType(e.target.value as Subscription["type"])
+              }
             >
               <option value="Ознакомительная">Ознакомительная</option>
               <option value="Все включено">Все включено</option>
@@ -356,7 +399,10 @@ const UserManagementClient: FC<Props> = ({
             />
           </div>
           <div className={s.dialog__actions}>
-            <Button variant="text" onClick={() => setSubscriptionDialogOpen(false)}>
+            <Button
+              variant="text"
+              onClick={() => setSubscriptionDialogOpen(false)}
+            >
               Отмена
             </Button>
             <Button onClick={handleSubscriptionSubmit}>Сохранить</Button>
@@ -403,10 +449,13 @@ const UserManagementClient: FC<Props> = ({
             <select
               className={s.form__select}
               value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
+              onChange={(e) => setSelectedRole(e.target.value as User["role"])}
             >
-              <option value="user">Пользователь</option>
-              <option value="admin">Администратор</option>
+              {(Object.keys(ROLE_LABELS) as User["role"][]).map((roleKey) => (
+                <option key={roleKey} value={roleKey}>
+                  {ROLE_LABELS[roleKey]}
+                </option>
+              ))}
             </select>
           </div>
           <div className={s.dialog__actions}>

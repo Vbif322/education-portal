@@ -70,7 +70,7 @@ const Navbar: FC<Props> = ({ role }) => {
           {/* <li onClick={onTabClick} id="tab-2" role="tab" data-url="/statistics">
             Статистика
           </li> */}
-          {role === "admin" && (
+          {(role === "admin" || role === "manager") && (
             <>
               <li onClick={onTabClick} id="tab-3" role="tab" data-url="/admin">
                 Панель управления

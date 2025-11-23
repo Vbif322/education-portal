@@ -12,7 +12,7 @@ export const users = prodSchema.table("users", {
   email: varchar({ length: 255 }).notNull().unique(),
   password: varchar({ length: 255 }).notNull(),
   sessionID: uuid("session_id").unique(),
-  role: varchar({ enum: ["user", "admin"] })
+  role: varchar({ enum: ["user", "manager", "admin"] })
     .notNull()
     .default("user"),
 });

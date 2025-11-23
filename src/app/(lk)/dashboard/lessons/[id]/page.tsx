@@ -4,25 +4,27 @@ import Player from "@/app/components/video-player/Player";
 import { addLessonToUser, getLesson } from "@/app/lib/dal/lesson.dal";
 import Button from "@/app/ui/Button/Button";
 import { cache } from "react";
+import ContactDialog from "@/app/components/dialogs/contact-dialog";
+import ContactModal from "./contact-modal";
 
 const getLessonCached = cache(getLesson);
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const lesson = await getLessonCached(Number(id))
+  const lesson = await getLessonCached(Number(id));
   if (!lesson) {
     return {
-      title: 'Урок не найден',
-    }
+      title: "Урок не найден",
+    };
   }
   return {
     title: lesson.name,
     description: lesson.description,
-  }
+  };
 }
 
 export default async function LessonPage({
@@ -43,40 +45,38 @@ export default async function LessonPage({
   }
 
   return (
-    <div className={s.container}>
-      <div className={s.bg}></div>
-      <div className={s.wrapper}>
-        {forbidden && (
-          <div className={s.forbidden}>
-            <Paper className={s.modal}>
-              <p>Для просмотра требуется подписка</p>
-              <Button>Открыть доступ</Button>
-            </Paper>
-          </div>
-        )}
-        <Player videoId={forbidden ? "" : lesson.videoURL} lessonId={lesson.id} />
-        <p className={s.title}>{lesson.name}</p>
-        <Paper style={{ width: "100%" }}>
-          <p className={s.title}>Описание</p>
-          <p className={s.text}>{lesson.description}</p>
-        </Paper>
-        {"materials" in lesson &&
-          Array.isArray(lesson.materials) &&
-          lesson.materials.length > 0 &&
-          forbidden && (
-            <Paper>
-              <p className={s.title}>Материалы</p>
-              <div className={s.material__container}>
-                <a href="#" className="link">
-                  Презентация
-                </a>
-                <a href="#" className="link">
-                  Контрольный лист
-                </a>
-              </div>
-            </Paper>
-          )}
+    <>
+      <div className={s.container}>
+        <div className={s.bg}></div>
+        <div className={s.wrapper}>
+          {forbidden && <ContactModal />}
+          <Player
+            videoId={forbidden ? "" : lesson.videoURL}
+            lessonId={lesson.id}
+          />
+          <p className={s.title}>{lesson.name}</p>
+          <Paper style={{ width: "100%" }}>
+            <p className={s.title}>Описание</p>
+            <p className={s.text}>{lesson.description}</p>
+          </Paper>
+          {"materials" in lesson &&
+            Array.isArray(lesson.materials) &&
+            lesson.materials.length > 0 &&
+            forbidden && (
+              <Paper>
+                <p className={s.title}>Материалы</p>
+                <div className={s.material__container}>
+                  <a href="#" className="link">
+                    Презентация
+                  </a>
+                  <a href="#" className="link">
+                    Контрольный лист
+                  </a>
+                </div>
+              </Paper>
+            )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

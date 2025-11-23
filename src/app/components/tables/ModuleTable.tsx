@@ -10,6 +10,7 @@ import DeleteDialog from "../dialogs/delete-dialog";
 type Props = {
   data: Module[];
   handleDelete: (arg01: Module["id"]) => void;
+  canDelete?: boolean;
 };
 
 function reducer(
@@ -36,7 +37,7 @@ function reducer(
   }
 }
 
-const ModuleTable: FC<Props> = ({ data, handleDelete }) => {
+const ModuleTable: FC<Props> = ({ data, handleDelete, canDelete = true }) => {
   const router = useRouter();
 
   const [modalDeleteState, dispatch] = useReducer(reducer, {
@@ -86,14 +87,16 @@ const ModuleTable: FC<Props> = ({ data, handleDelete }) => {
                     >
                       Изменить
                     </Button>
-                    <Button
-                      color="error"
-                      onClick={() =>
-                        dispatch({ type: "open", value: moduleItem.id })
-                      }
-                    >
-                      Удалить
-                    </Button>
+                    {canDelete && (
+                      <Button
+                        color="error"
+                        onClick={() =>
+                          dispatch({ type: "open", value: moduleItem.id })
+                        }
+                      >
+                        Удалить
+                      </Button>
+                    )}
                   </td>
                 </tr>
               );

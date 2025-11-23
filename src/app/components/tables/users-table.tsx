@@ -48,7 +48,11 @@ const UsersTable: FC<Props> = ({ data }) => {
               <tr key={user.id}>
                 <td>{user.email}</td>
                 <td>
-                  {user.role === "admin" ? "Администратор" : "Пользователь"}
+                  {user.role === "admin"
+                    ? "Администратор"
+                    : user.role === "manager"
+                    ? "Менеджер"
+                    : "Пользователь"}
                 </td>
                 <td>{user.subscription?.type || ""}</td>
                 <td>

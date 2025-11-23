@@ -8,7 +8,7 @@ import { eq } from "drizzle-orm";
 
 export async function getAllUsers() {
   const user = await getUser();
-  if (!user || user.role !== "admin") return [];
+  if (!user || user.role === "user") return [];
   try {
     const allUsers = await db.query.users.findMany({
       with: {
@@ -24,7 +24,7 @@ export async function getAllUsers() {
 
 export async function getUserById(userId: string): Promise<UserWithSubscription | null>  {
   const currentUser = await getUser();
-  if (!currentUser || currentUser.role !== "admin") return null;
+  if (!currentUser || currentUser.role === "user") return null;
 
   try {
     const user = await db.query.users.findFirst({

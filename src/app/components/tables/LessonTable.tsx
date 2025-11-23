@@ -13,6 +13,7 @@ type Props = {
   handleChange: (arg01: Lesson["id"]) => void;
   handleAttach: (arg01: Lesson["id"]) => void;
   handleDelete: (arg01: Lesson["id"]) => void;
+  canDelete?: boolean;
 };
 
 function reducer(
@@ -44,6 +45,7 @@ const LessonTable: FC<Props> = ({
   handleChange,
   handleAttach,
   handleDelete,
+  canDelete = true,
 }) => {
   const [modalState, setModalState] = useState<{
     open: boolean;
@@ -107,14 +109,16 @@ const LessonTable: FC<Props> = ({
                     >
                       Прикрепить материалы
                     </Button>
-                    <Button
-                      color="error"
-                      onClick={() =>
-                        dispatch({ type: "open", value: lessonItem.id })
-                      }
-                    >
-                      Удалить
-                    </Button>
+                    {canDelete && (
+                      <Button
+                        color="error"
+                        onClick={() =>
+                          dispatch({ type: "open", value: lessonItem.id })
+                        }
+                      >
+                        Удалить
+                      </Button>
+                    )}
                   </td>
                 </tr>
               );

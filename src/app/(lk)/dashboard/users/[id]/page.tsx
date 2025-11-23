@@ -15,7 +15,7 @@ export default async function UserManagementPage({
   const { id } = await params;
 
   const currentUser = await getUser();
-  if (!currentUser || currentUser.role !== "admin") {
+  if (!currentUser || (currentUser.role !== "admin" && currentUser.role !== "manager")) {
     redirect("/dashboard");
   }
 

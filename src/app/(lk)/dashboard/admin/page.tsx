@@ -17,9 +17,11 @@ import { deleteLesson } from "@/app/actions/lessons";
 
 export default async function AdminPage() {
   const user = await getUser();
-  if (!user || user.role !== "admin") {
+  if (!user || (user.role !== "admin" && user.role !== "manager")) {
     notFound();
   }
+
+  const isAdmin = user.role === "admin";
 
   const [lessons, modules, courses] = await Promise.all([
     getAllLessons(),
@@ -50,7 +52,7 @@ export default async function AdminPage() {
         </Link>
       </div>
       <div>
-        <CourseTable data={courses} handleDelete={deleteCourse} />
+        <CourseTable data={courses} handleDelete={deleteCourse} canDelete={isAdmin} />
       </div>
       <h4 style={{ marginTop: "64px" }}>Темы</h4>
       <div
@@ -66,7 +68,7 @@ export default async function AdminPage() {
         </Link>
       </div>
       <div>
-        <ModuleTable data={modules} handleDelete={deleteModule} />
+        <ModuleTable data={modules} handleDelete={deleteModule} canDelete={isAdmin} />
       </div>
       <h4 style={{ marginTop: "64px" }}>Уроки</h4>
       <div
@@ -85,6 +87,7 @@ export default async function AdminPage() {
           handleAttach={handleAttach}
           handleChange={handleChange}
           handleDelete={deleteLesson}
+          canDelete={isAdmin}
         />
       </div>
     </div>

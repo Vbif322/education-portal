@@ -5,7 +5,7 @@ import { getUser } from "@/app/lib/dal";
 import { subscription, courseAccess, lessonAccess, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { Subscription } from "@/@types/user";
+import { Subscription, User } from "@/@types/user";
 
 export async function updateSubscription(
   userId: string,
@@ -148,7 +148,7 @@ export async function revokeLessonAccess(userId: string, lessonId: number) {
   }
 }
 
-export async function changeUserRole(userId: string, role: "user" | "admin") {
+export async function changeUserRole(userId: string, role: User['role']) {
   const currentUser = await getUser();
   if (!currentUser || currentUser.role !== "admin") {
     throw new Error("Unauthorized");
