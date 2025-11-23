@@ -3,7 +3,7 @@ import "server-only";
 import { db } from "@/db/db";
 import { getUser } from "../dal";
 import { Lesson } from "@/@types/course";
-import { lessons, usersToLessons } from "@/db/schema";
+import { lessonAccess, lessons, usersToLessons } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
 export async function getLesson(id: Lesson["id"]) {
@@ -27,13 +27,28 @@ export async function getLesson(id: Lesson["id"]) {
       });
       if (sub?.type === "Все включено") {
         return lesson;
-      } else {
-        return {
-          ...lesson,
-          forbidden: true,
-          videoURL: "",
-        };
       }
+
+      // Проверка индивидуального доступа к уроку
+      const access = await db.query.lessonAccess.findFirst({
+        where: and(
+          eq(lessonAccess.userId, user.id),
+          eq(lessonAccess.lessonId, id)
+        ),
+      });
+
+      if (access) {
+        // Проверка срока действия доступа
+        if (!access.expiresAt || new Date(access.expiresAt) > new Date()) {
+          return lesson;
+        }
+      }
+
+      return {
+        ...lesson,
+        forbidden: true,
+        videoURL: "",
+      };
     }
   } catch (error) {
     console.error(error);
@@ -206,5 +221,24 @@ export async function completeLessonProgress(lessonId: Lesson["id"]) {
   } catch (error) {
     console.error("Ошибка при завершении урока:", error);
     return null;
+  }
+}
+
+export async function getUserLessonAccess(userId: string) {
+  try {
+    const access = await db
+      .select({
+        lessonId: lessonAccess.lessonId,
+        lessonName: lessons.name,
+        grantedAt: lessonAccess.grantedAt,
+        expiresAt: lessonAccess.expiresAt,
+      })
+      .from(lessonAccess)
+      .innerJoin(lessons, eq(lessonAccess.lessonId, lessons.id))
+      .where(eq(lessonAccess.userId, userId));
+    return access;
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 }

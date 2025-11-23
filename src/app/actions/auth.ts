@@ -49,7 +49,7 @@ export async function signin(_: unknown, formData: FormData) {
   }
 
   if (isUserExist.length === 1) {
-    const isMatch = await bcrypt.compare(password, hashedPassword);
+    const isMatch = await bcrypt.compare(password, isUserExist[0].password);
     if (isMatch) {
       const user = await db
         .update(users)

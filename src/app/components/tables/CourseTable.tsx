@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 type Props = {
   data: Course[];
   handleDelete: (arg01: Course["id"]) => void;
+  canDelete?: boolean;
 };
 
 function reducer(
@@ -36,7 +37,7 @@ function reducer(
   }
 }
 
-const CourseTable: FC<Props> = ({ data, handleDelete }) => {
+const CourseTable: FC<Props> = ({ data, handleDelete, canDelete = true }) => {
   const router = useRouter();
 
   const [modalDeleteState, dispatch] = useReducer(reducer, {
@@ -84,14 +85,16 @@ const CourseTable: FC<Props> = ({ data, handleDelete }) => {
                     >
                       Изменить
                     </Button>
-                    <Button
-                      color="error"
-                      onClick={() =>
-                        dispatch({ type: "open", value: courseItem.id })
-                      }
-                    >
-                      Удалить
-                    </Button>
+                    {canDelete && (
+                      <Button
+                        color="error"
+                        onClick={() =>
+                          dispatch({ type: "open", value: courseItem.id })
+                        }
+                      >
+                        Удалить
+                      </Button>
+                    )}
                   </td>
                 </tr>
               );

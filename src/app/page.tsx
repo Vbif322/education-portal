@@ -110,7 +110,7 @@ export default async function Home() {
                 </button>
               </Link>
               <VideoModal
-                videoSrc="/videos/Приветственный ролик.mp4"
+                videoSrc="/videos/privet.mp4"
                 buttonClassName={s.ctaSecondary}
               />
             </div>

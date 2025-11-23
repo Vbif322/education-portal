@@ -13,15 +13,17 @@
 }
 
 .text {
-  color: black;
+  color: #000;
 }
 
 .error {
   background-color: #d32f2f;
+  color: #FFF;
 }
 
 .text:hover {
   background-color: #efefef;
+  color: #000;
 }
 
 .text:active {
