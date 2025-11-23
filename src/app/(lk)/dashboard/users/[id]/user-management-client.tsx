@@ -187,9 +187,11 @@ const UserManagementClient: FC<Props> = ({
       <Paper className={s.section}>
         <div className={s.section__header}>
           <h2 className={s.section__title}>Основная информация</h2>
-          <Button variant="text" onClick={() => setRoleDialogOpen(true)}>
-            Изменить роль
-          </Button>
+          {user.role === "admin" && (
+            <Button variant="text" onClick={() => setRoleDialogOpen(true)}>
+              Изменить роль
+            </Button>
+          )}
         </div>
         <div className={s.info__grid}>
           <div className={s.info__item}>
@@ -199,13 +201,7 @@ const UserManagementClient: FC<Props> = ({
           <div className={s.info__item}>
             <span className={s.info__label}>Роль</span>
             <Chip
-              text={
-                user.role === "admin"
-                  ? "Администратор"
-                  : user.role === "manager"
-                  ? "Менеджер"
-                  : "Пользователь"
-              }
+              text={ROLE_LABELS[user.role]}
               backgroundColor={
                 user.role === "admin"
                   ? "#fef3c7"
