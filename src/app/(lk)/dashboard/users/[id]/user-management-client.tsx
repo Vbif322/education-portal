@@ -39,6 +39,7 @@ type LessonAccess = {
 
 type Props = {
   user: UserWithSubscription;
+  currentUserRole: User["role"];
   courseAccess: CourseAccess[];
   lessonAccess: LessonAccess[];
   allCourses: Course[];
@@ -48,6 +49,7 @@ type Props = {
 
 const UserManagementClient: FC<Props> = ({
   user,
+  currentUserRole,
   courseAccess,
   lessonAccess,
   allCourses,
@@ -101,7 +103,6 @@ const UserManagementClient: FC<Props> = ({
       new Date(subscriptionEndDate)
     );
     setSubscriptionDialogOpen(false);
-    window.location.reload();
   };
 
   const handleGrantCourseAccess = async () => {
@@ -113,7 +114,6 @@ const UserManagementClient: FC<Props> = ({
     setCourseDialogOpen(false);
     setSelectedCourses([]);
     setCourseExpiresAt("");
-    window.location.reload();
   };
 
   const handleCourseCheckboxChange = (courseId: number, checked: boolean) => {
@@ -126,7 +126,6 @@ const UserManagementClient: FC<Props> = ({
 
   const handleRevokeCourseAccess = async (courseId: number) => {
     await revokeCourseAccess(user.id, courseId);
-    window.location.reload();
   };
 
   const handleGrantLessonAccess = async () => {
@@ -138,7 +137,6 @@ const UserManagementClient: FC<Props> = ({
     setLessonDialogOpen(false);
     setSelectedLessons([]);
     setLessonExpiresAt("");
-    window.location.reload();
   };
 
   const handleLessonCheckboxChange = (lessonId: number, checked: boolean) => {
@@ -151,13 +149,11 @@ const UserManagementClient: FC<Props> = ({
 
   const handleRevokeLessonAccess = async (lessonId: number) => {
     await revokeLessonAccess(user.id, lessonId);
-    window.location.reload();
   };
 
   const handleRoleChange = async () => {
     await changeUserRole(user.id, selectedRole);
     setRoleDialogOpen(false);
-    window.location.reload();
   };
 
   const hasActiveSubscription = user.subscription
@@ -187,7 +183,7 @@ const UserManagementClient: FC<Props> = ({
       <Paper className={s.section}>
         <div className={s.section__header}>
           <h2 className={s.section__title}>Основная информация</h2>
-          {user.role === "admin" && (
+          {currentUserRole === "admin" && (
             <Button variant="text" onClick={() => setRoleDialogOpen(true)}>
               Изменить роль
             </Button>
