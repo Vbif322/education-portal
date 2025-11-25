@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import YandexMetrika from "./components/yandex-metrika";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,12 +24,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const yandexMetrikaId = process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID;
   return (
     <html lang="ru" data-scroll-behavior="smooth">
       <body
         className={`${geistSans.variable} ${geistMono.variable}`}
         style={{ minHeight: "100vh" }}
       >
+        {yandexMetrikaId && process.env.NODE_ENV === "production" && (
+          <YandexMetrika yid={yandexMetrikaId} />
+        )}
         {children}
       </body>
     </html>

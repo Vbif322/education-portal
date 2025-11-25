@@ -6,6 +6,7 @@ import { getUser } from "@/app/lib/dal";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { canManage } from "../utils/permissions";
 
 const courseSchema = z.object({
   name: z.string().min(1, "Название курса обязательно"),
@@ -111,7 +112,7 @@ export async function updateCourse(
 ) {
   try {
     const user = await getUser();
-    if (!user || user.role !== "admin") {
+    if (!canManage(user)) {
       return { success: false, error: "Недостаточно прав" };
     }
 

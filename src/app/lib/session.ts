@@ -1,7 +1,7 @@
 import "server-only";
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { User } from "../../@types/user";
+import { User, UserFull } from "../../@types/user";
 
 const secretKey = process.env.SESSION_SECRET;
 const encodedKey = new TextEncoder().encode(secretKey);
@@ -20,9 +20,9 @@ export async function decrypt(session: string | undefined = "") {
       algorithms: ["HS256"],
     });
     return payload as JWTPayload & {
-      userId: User["id"];
-      role: User["role"];
-      sessionID: User["sessionID"];
+      userId: UserFull["id"];
+      role: UserFull["role"];
+      sessionID: UserFull["sessionID"];
     };
   } catch (error) {
     console.log("Failed to verify session", error);
@@ -30,9 +30,9 @@ export async function decrypt(session: string | undefined = "") {
 }
 
 export async function createSession(
-  userId: User["id"],
-  role: User["role"],
-  sessionID: User["sessionID"]
+  userId: UserFull["id"],
+  role: UserFull["role"],
+  sessionID: UserFull["sessionID"]
 ) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const session = await encrypt({ userId, expiresAt, role, sessionID });

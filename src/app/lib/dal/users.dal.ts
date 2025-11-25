@@ -5,12 +5,18 @@ import { getUser } from "../dal";
 import { UserWithSubscription } from "@/@types/user";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { canManage } from "@/app/utils/permissions";
 
 export async function getAllUsers() {
   const user = await getUser();
-  if (!user || user.role === "user") return [];
+  if (!canManage(user)) return [];
   try {
     const allUsers = await db.query.users.findMany({
+      columns: {
+        id: true,
+        email: true,
+        role: true
+      },
       with: {
         subscription: true,
       },
@@ -24,16 +30,21 @@ export async function getAllUsers() {
 
 export async function getUserById(userId: string): Promise<UserWithSubscription | null>  {
   const currentUser = await getUser();
-  if (!currentUser || currentUser.role === "user") return null;
+  if (!canManage(currentUser)) return null;
 
   try {
     const user = await db.query.users.findFirst({
       where: eq(users.id, userId),
+      columns: {
+        id: true,
+        email: true,
+        role: true
+      },
       with: {
         subscription: true,
       },
     });
-    return (user as UserWithSubscription) || null;
+    return user as UserWithSubscription;
   } catch (error) {
     console.error(error);
     return null;

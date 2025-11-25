@@ -5,6 +5,7 @@ import { getUser } from "../dal";
 import { Lesson } from "@/@types/course";
 import { lessonAccess, lessons, usersToLessons } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
+import { canManage } from "../../utils/permissions";
 
 export async function getLesson(id: Lesson["id"]) {
   try {
@@ -19,7 +20,7 @@ export async function getLesson(id: Lesson["id"]) {
     if (!lesson) {
       return null;
     }
-    if (lesson.status === "public" || user.role === "admin") {
+    if (lesson.status === "public" || canManage(user)) {
       return lesson;
     } else {
       const sub = await db.query.subscription.findFirst({

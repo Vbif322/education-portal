@@ -4,12 +4,13 @@ import { FC, MouseEvent, useEffect, useRef, useState } from "react";
 import s from "./style.module.css";
 import { useRouter } from "next/navigation";
 import { User } from "@/@types/user";
+import { canManage } from "@/app/utils/permissions";
 
 type Props = {
-  role?: User["role"];
+  user?: User;
 };
 
-const Navbar: FC<Props> = ({ role }) => {
+const Navbar: FC<Props> = ({ user }) => {
   const router = useRouter();
   const [indicatorPos, setIndicatorPos] = useState<{
     left: number;
@@ -70,7 +71,7 @@ const Navbar: FC<Props> = ({ role }) => {
           {/* <li onClick={onTabClick} id="tab-2" role="tab" data-url="/statistics">
             Статистика
           </li> */}
-          {(role === "admin" || role === "manager") && (
+          {canManage(user) && (
             <>
               <li onClick={onTabClick} id="tab-3" role="tab" data-url="/admin">
                 Панель управления

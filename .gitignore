@@ -47,3 +47,6 @@ next-env.d.ts
 
 # security
 SECURITY_AUDIT.md
+
+# documentation (internal)
+/docs

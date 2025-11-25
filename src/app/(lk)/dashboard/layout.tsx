@@ -10,7 +10,7 @@ const DashboardLayout: FC<
   const user = await getUser();
   return (
     <>
-      <Header variant="private" role={user?.role} />
+      <Header variant="private" user={user || undefined} />
       <div
         style={{
           padding: 32,
