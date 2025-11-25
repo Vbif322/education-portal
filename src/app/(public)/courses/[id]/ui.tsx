@@ -10,6 +10,7 @@ import { CourseWithMetadata } from "@/@types/course";
 import { pluralize } from "@/app/utils/helpers";
 import ContactDialog from "@/app/components/dialogs/contact-dialog";
 import { User } from "@/@types/user";
+import { canManage } from "@/app/utils/permissions";
 
 type Props = {
   skills?: Array<{
@@ -59,7 +60,7 @@ const UI: FC<Props> = ({
   };
 
   const handleButtonClick = () => {
-    if (!user || (user.role !== "admin" && !hasAccess)) {
+    if (!canManage(user) && !hasAccess) {
       setOpen(true);
     } else {
       if (isEnrolled) {

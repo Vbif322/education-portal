@@ -14,14 +14,13 @@ import ModuleTable from "@/app/components/tables/ModuleTable";
 import { deleteCourse } from "@/app/actions/courses";
 import { deleteModule } from "@/app/actions/modules";
 import { deleteLesson } from "@/app/actions/lessons";
+import { canManage, isAdmin } from "@/app/utils/permissions";
 
 export default async function AdminPage() {
   const user = await getUser();
-  if (!user || (user.role !== "admin" && user.role !== "manager")) {
+  if (!canManage(user)) {
     notFound();
   }
-
-  const isAdmin = user.role === "admin";
 
   const [lessons, modules, courses] = await Promise.all([
     getAllLessons(),
@@ -52,7 +51,11 @@ export default async function AdminPage() {
         </Link>
       </div>
       <div>
-        <CourseTable data={courses} handleDelete={deleteCourse} canDelete={isAdmin} />
+        <CourseTable
+          data={courses}
+          handleDelete={deleteCourse}
+          canDelete={isAdmin(user)}
+        />
       </div>
       <h4 style={{ marginTop: "64px" }}>Темы</h4>
       <div
@@ -68,7 +71,11 @@ export default async function AdminPage() {
         </Link>
       </div>
       <div>
-        <ModuleTable data={modules} handleDelete={deleteModule} canDelete={isAdmin} />
+        <ModuleTable
+          data={modules}
+          handleDelete={deleteModule}
+          canDelete={isAdmin(user)}
+        />
       </div>
       <h4 style={{ marginTop: "64px" }}>Уроки</h4>
       <div
@@ -87,7 +94,7 @@ export default async function AdminPage() {
           handleAttach={handleAttach}
           handleChange={handleChange}
           handleDelete={deleteLesson}
-          canDelete={isAdmin}
+          canDelete={isAdmin(user)}
         />
       </div>
     </div>

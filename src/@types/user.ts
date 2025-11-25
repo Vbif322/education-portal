@@ -6,6 +6,7 @@ export const ROLE_LABELS = {
   admin: 'Администратор',
 } as const;
 
-export type User = typeof users.$inferSelect;
+export type UserFull = typeof users.$inferSelect;
+export type User = Omit<UserFull, 'password' | 'sessionID'>
 export type Subscription = typeof subscription.$inferSelect;
 export type UserWithSubscription = User & { subscription: Subscription };

@@ -12,10 +12,10 @@ import Divider from "@/app/ui/Divider/Divider";
 
 type Props = {
   variant: "public" | "private";
-  role?: User["role"];
+  user?: User;
 };
 
-const Header: FC<Props> = ({ variant, role }) => {
+const Header: FC<Props> = ({ variant, user }) => {
   if (variant === "public") {
     return (
       <header className={s.header}>
@@ -59,7 +59,7 @@ const Header: FC<Props> = ({ variant, role }) => {
             </IconButton>
           </div>
         </div>
-        <Navbar role={role} />
+        <Navbar user={user} />
         <Divider
           style={{ position: "absolute", width: "100%", left: 0, zIndex: -1 }}
         />

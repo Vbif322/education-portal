@@ -1,7 +1,7 @@
 "use server";
 
 import { getUser } from "@/app/lib/dal";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import UserManagementClient from "./user-management-client";
 import { getUserById } from "@/app/lib/dal/users.dal";
 import {
@@ -10,6 +10,7 @@ import {
   getUserCourseAccess,
 } from "@/app/lib/dal/course.dal";
 import { getAllLessons, getUserLessonAccess } from "@/app/lib/dal/lesson.dal";
+import { canManage } from "@/app/utils/permissions";
 
 export default async function UserManagementPage({
   params,
@@ -19,7 +20,7 @@ export default async function UserManagementPage({
   const { id } = await params;
 
   const currentUser = await getUser();
-  if (!currentUser || currentUser.role === "user") {
+  if (!canManage(currentUser) || !currentUser) {
     notFound();
   }
 

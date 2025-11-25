@@ -6,16 +6,16 @@ import { subscription, courseAccess, lessonAccess, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { Subscription, User } from "@/@types/user";
+import { canManage, isAdmin } from "@/app/utils/permissions";
 
 export async function updateSubscription(
   userId: string,
   type: NonNullable<Subscription['type']>,
   endedAt: Date
 ) {
-  console.log(type, 'type')
   const currentUser = await getUser();
-  if (!currentUser || currentUser.role !== "admin") {
-    throw new Error("Unauthorized");
+  if (!canManage(currentUser)) {
+     return {success: false}
   }
 
   try {
@@ -44,7 +44,7 @@ export async function updateSubscription(
     return { success: true };
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to update subscription");
+     return {success: false}
   }
 }
 
@@ -54,8 +54,8 @@ export async function grantCourseAccess(
   expiresAt: Date | null
 ) {
   const currentUser = await getUser();
-  if (!currentUser || currentUser.role !== "admin") {
-    throw new Error("Unauthorized");
+  if (!canManage(currentUser)) {
+    return {success: false}
   }
 
   try {
@@ -65,7 +65,7 @@ export async function grantCourseAccess(
         userId,
         courseId,
         expiresAt,
-        grantedBy: currentUser.id,
+        grantedBy: currentUser?.id,
       })
       .onConflictDoNothing();
 
@@ -73,14 +73,14 @@ export async function grantCourseAccess(
     return { success: true };
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to grant course access");
+    return {success: false}
   }
 }
 
 export async function revokeCourseAccess(userId: string, courseId: number) {
   const currentUser = await getUser();
-  if (!currentUser || currentUser.role !== "admin") {
-    throw new Error("Unauthorized");
+  if (!canManage(currentUser)) {
+     return {success: false}
   }
 
   try {
@@ -94,7 +94,7 @@ export async function revokeCourseAccess(userId: string, courseId: number) {
     return { success: true };
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to revoke course access");
+     return {success: false}
   }
 }
 
@@ -104,8 +104,8 @@ export async function grantLessonAccess(
   expiresAt: Date | null
 ) {
   const currentUser = await getUser();
-  if (!currentUser || currentUser.role !== "admin") {
-    throw new Error("Unauthorized");
+  if (!canManage(currentUser)) {
+     return {success: false}
   }
 
   try {
@@ -115,7 +115,7 @@ export async function grantLessonAccess(
         userId,
         lessonId,
         expiresAt,
-        grantedBy: currentUser.id,
+        grantedBy: currentUser?.id,
       })
       .onConflictDoNothing();
 
@@ -123,14 +123,14 @@ export async function grantLessonAccess(
     return { success: true };
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to grant lesson access");
+     return {success: false}
   }
 }
 
 export async function revokeLessonAccess(userId: string, lessonId: number) {
   const currentUser = await getUser();
-  if (!currentUser || currentUser.role !== "admin") {
-    throw new Error("Unauthorized");
+  if (!canManage(currentUser)) {
+     return {success: false}
   }
 
   try {
@@ -144,14 +144,14 @@ export async function revokeLessonAccess(userId: string, lessonId: number) {
     return { success: true };
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to revoke lesson access");
+     return {success: false}
   }
 }
 
 export async function changeUserRole(userId: string, role: User['role']) {
   const currentUser = await getUser();
-  if (!currentUser || currentUser.role !== "admin") {
-    throw new Error("Unauthorized");
+  if (!isAdmin(currentUser)) {
+     return {success: false}
   }
 
   try {
@@ -161,6 +161,6 @@ export async function changeUserRole(userId: string, role: User['role']) {
     return { success: true };
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to change user role");
+     return {success: false}
   }
 }

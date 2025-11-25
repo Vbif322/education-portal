@@ -32,7 +32,7 @@ const ModuleLayout: FC<
 
   return (
     <>
-      <Header variant="private" role={user?.role} />
+      <Header variant="private" user={user || undefined} />
       <div className={s.container}>
         <Aside
           progress={progress.percentage}
