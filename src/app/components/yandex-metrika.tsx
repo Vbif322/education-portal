@@ -1,11 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Script from "next/script";
 
 export default function YandexMetrika({ yid }: { yid: string }) {
   return (
     <>
-      <Script type="text/javascript">
+      <Script type="text/javascript" id="yandex-metrika">
         {`(function(m,e,t,r,i,k,a){
         m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
         m[i].l=1*new Date();
@@ -17,7 +18,7 @@ export default function YandexMetrika({ yid }: { yid: string }) {
       </Script>
       <noscript>
         <div>
-          <img
+          <Image
             src="https://mc.yandex.ru/watch/yid"
             style={{ position: "absolute", left: "-9999px" }}
             alt=""
