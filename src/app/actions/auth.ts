@@ -7,6 +7,7 @@ import { createSession, deleteSession } from "../lib/session";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import z from "zod";
+import { analyticsService } from "@/lib/analytics/analytics.service";
 
 export async function signin(_: unknown, formData: FormData) {
   // Validate form fields
@@ -57,6 +58,16 @@ export async function signin(_: unknown, formData: FormData) {
         .where(eq(users.id, isUserExist[0].id))
         .returning();
       await createSession(user[0].id, user[0].role, user[0].sessionID);
+
+      // Отслеживаем успешный вход (асинхронно)
+      analyticsService
+        .trackActivity({
+          userId: user[0].id,
+          activityType: "login",
+          metadata: { newUser: false },
+        })
+        .catch((err) => console.error("Analytics tracking failed:", err));
+
       redirect("/dashboard");
     } else {
       return {
@@ -68,6 +79,7 @@ export async function signin(_: unknown, formData: FormData) {
       };
     }
   } else {
+    let newUserId: string;
     await db.transaction(async (tx) => {
       const [user] = await tx
         .insert(users)
@@ -82,6 +94,7 @@ export async function signin(_: unknown, formData: FormData) {
           role: users.role,
           sessionID: users.sessionID,
         });
+      newUserId = user.id;
       await tx.insert(subscription).values({
         userId: user.id,
         type: "Ознакомительная",
@@ -89,6 +102,15 @@ export async function signin(_: unknown, formData: FormData) {
       });
       await createSession(user.id, user.role, user.sessionID);
     });
+
+    // Отслеживаем регистрацию нового пользователя (асинхронно)
+    analyticsService
+      .trackActivity({
+        userId: newUserId!,
+        activityType: "login",
+        metadata: { newUser: true },
+      })
+      .catch((err) => console.error("Analytics tracking failed:", err));
 
     redirect("/dashboard");
   }
@@ -101,6 +123,14 @@ export async function logout() {
       .update(users)
       .set({ sessionID: null })
       .where(eq(users.id, cookie.userId));
+
+    // Отслеживаем выход (асинхронно)
+    analyticsService
+      .trackActivity({
+        userId: cookie.userId,
+        activityType: "logout",
+      })
+      .catch((err) => console.error("Analytics tracking failed:", err));
   }
   redirect("/");
 }

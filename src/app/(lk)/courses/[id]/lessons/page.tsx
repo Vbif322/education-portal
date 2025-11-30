@@ -4,6 +4,8 @@ import {
   getCourseById,
   getCompletedLessonIds,
 } from "@/app/lib/dal/course.dal";
+import { analyticsService } from "@/lib/analytics/analytics.service";
+import { getUser } from "@/app/lib/dal";
 
 interface LessonsPageProps {
   params: Promise<{
@@ -12,8 +14,23 @@ interface LessonsPageProps {
 }
 
 const LessonsPage: FC<LessonsPageProps> = async ({ params }) => {
+  const user = await getUser()
+  if (!user) {
+    redirect("/login")
+  }
   const { id } = await params;
   const courseId = Number(id);
+
+  // Логируем попытку доступа (до проверок)
+  analyticsService
+    .trackActivity({
+      userId: user.id,
+      activityType: "course_access_attempt",
+      resourceType: "course",
+      resourceId: id
+    })
+    .catch((err) => console.error("Analytics tracking failed:", err));
+
   const course = await getCourseById(courseId);
 
   if (!course) {
@@ -24,6 +41,16 @@ const LessonsPage: FC<LessonsPageProps> = async ({ params }) => {
   if (!course.modules.length || !course.modules[0].module.lessons.length) {
     notFound();
   }
+
+  // Логируем успешный просмотр (после всех проверок)
+  analyticsService
+    .trackActivity({
+      userId: user.id,
+      activityType: "course_view",
+      resourceType: "course",
+      resourceId: id
+    })
+    .catch((err) => console.error("Analytics tracking failed:", err));
 
   // Получаем список завершенных уроков
   const completedLessons = await getCompletedLessonIds(courseId);

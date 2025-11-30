@@ -66,7 +66,6 @@ const ModuleTable: FC<Props> = ({ data, handleDelete, canDelete = true }) => {
           <thead>
             <tr>
               <th>Название</th>
-              {/* <th>Доступность</th> */}
               <th style={{ textAlign: "center" }}>Управление</th>
             </tr>
           </thead>
@@ -75,11 +74,6 @@ const ModuleTable: FC<Props> = ({ data, handleDelete, canDelete = true }) => {
               return (
                 <tr key={moduleItem.id}>
                   <td>{moduleItem.name}</td>
-                  {/* <td>
-                    {courseItem.privacy === "private"
-                      ? "Доступ закрыт"
-                      : "Доступ открыт"}
-                  </td> */}
                   <td style={{ display: "flex", justifyContent: "center" }}>
                     <Button
                       variant="text"

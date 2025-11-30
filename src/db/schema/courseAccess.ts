@@ -34,6 +34,7 @@ export const courseAccessRelations = relations(courseAccess, ({ one }) => ({
   user: one(users, {
     fields: [courseAccess.userId],
     references: [users.id],
+    relationName: 'user'
   }),
   course: one(courses, {
     fields: [courseAccess.courseId],
@@ -42,5 +43,6 @@ export const courseAccessRelations = relations(courseAccess, ({ one }) => ({
   grantedByUser: one(users, {
     fields: [courseAccess.grantedBy],
     references: [users.id],
+    relationName: 'grantedByUser'
   }),
 }));

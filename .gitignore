@@ -50,3 +50,6 @@ SECURITY_AUDIT.md
 
 # documentation (internal)
 /docs
+
+#temp_files
+/temp_files

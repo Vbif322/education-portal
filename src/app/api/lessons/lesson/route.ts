@@ -11,6 +11,8 @@ import { eq } from "drizzle-orm";
 import { pipeline } from "stream/promises";
 import { Readable } from "stream";
 import { getVideoPath } from "@/app/utils/helpers";
+import { auditService } from "@/lib/audit/audit.service";
+import { canManage, isAdmin } from "@/app/utils/permissions";
 
 // Максимальный размер файла: 1000 MB
 const MAX_FILE_SIZE = 1000;
@@ -52,7 +54,7 @@ export async function POST(request: NextRequest) {
   try {
     // Проверка авторизации
     const user = await getUser();
-    if (!user || user.role !== "admin") {
+    if (!canManage(user)) {
       return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
     }
 
@@ -115,17 +117,51 @@ export async function POST(request: NextRequest) {
     const videoDuration = Math.floor(duration / timeScale);
 
     // Только после успешной загрузки файла записываем в БД
-    await db.insert(lessons).values({
-      name: fields.data.name,
-      status: fields.data.status,
-      videoURL: path.basename(fields.data.file.name),
-      description: fields.data.description,
-      duration: videoDuration,
-    });
+    const [newLesson] = await db
+      .insert(lessons)
+      .values({
+        name: fields.data.name,
+        status: fields.data.status,
+        videoURL: path.basename(fields.data.file.name),
+        description: fields.data.description,
+        duration: videoDuration,
+      })
+      .returning();
+
+    // Логируем создание урока (асинхронно)
+    auditService
+      .logAdminAction({
+        userId: user.id,
+        userEmail: user.email,
+        userRole: user.role as "admin",
+        actionType: "lesson_create",
+        resourceType: "lesson",
+        resourceId: String(newLesson.id),
+        changesAfter: newLesson,
+        status: "success",
+      })
+      .catch((err) => console.error("Audit logging failed:", err));
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Ошибка при создании урока:", error);
+
+    // Логируем ошибку (асинхронно)
+    const user = await getUser();
+    if (user) {
+      auditService
+        .logAdminAction({
+          userId: user.id,
+          userEmail: user.email,
+          userRole: user.role as "admin",
+          actionType: "lesson_create",
+          resourceType: "lesson",
+          resourceId: "unknown",
+          status: "failure",
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+        .catch((err) => console.error("Audit logging failed:", err));
+    }
 
     // Очистка временных файлов при ошибке
     if (tempFilepath && fs.existsSync(tempFilepath)) {
@@ -146,7 +182,7 @@ export async function PATCH(request: NextRequest) {
   try {
     // Проверка авторизации
     const user = await getUser();
-    if (!user || user.role !== "admin") {
+    if (!canManage(user)) {
       return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
     }
 
@@ -170,6 +206,17 @@ export async function PATCH(request: NextRequest) {
 
     const isFileChanged = fields.data.file.type !== "application/octet-stream";
     const { file, ...other } = fields.data;
+
+    // Получаем данные урока до изменений для аудита
+    const existingLesson = await db.query.lessons.findFirst({
+      where: eq(lessons.id, id),
+    });
+
+    if (!existingLesson) {
+      return NextResponse.json({ error: "Урок не найден" }, { status: 404 });
+    }
+
+    const changesBefore = { ...existingLesson };
 
     // Проверяем изменен ли файл
     if (isFileChanged) {
@@ -225,9 +272,43 @@ export async function PATCH(request: NextRequest) {
         .where(eq(lessons.id, id));
     }
 
+    // Логируем обновление урока (асинхронно)
+    auditService
+      .logAdminAction({
+        userId: user.id,
+        userEmail: user.email,
+        userRole: user.role as "admin",
+        actionType: "lesson_update",
+        resourceType: "lesson",
+        resourceId: String(id),
+        changesBefore,
+        changesAfter: isFileChanged
+          ? { ...fields.data, videoURL: path.basename(file.name), id }
+          : { ...other, id },
+        status: "success",
+      })
+      .catch((err) => console.error("Audit logging failed:", err));
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Ошибка при обновлении урока:", error);
+
+    // Логируем ошибку (асинхронно)
+    const user = await getUser();
+    if (user) {
+      auditService
+        .logAdminAction({
+          userId: user.id,
+          userEmail: user.email,
+          userRole: user.role as "admin",
+          actionType: "lesson_update",
+          resourceType: "lesson",
+          resourceId: "unknown",
+          status: "failure",
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+        .catch((err) => console.error("Audit logging failed:", err));
+    }
 
     // Очистка временных файлов при ошибке
     if (tempFilepath && fs.existsSync(tempFilepath)) {
@@ -245,7 +326,7 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const user = await getUser();
-    if (!user || user.role !== "admin") {
+    if (!isAdmin(user)) {
       return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
     }
 
@@ -257,14 +338,21 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Получаем данные урока для аудита перед удалением
+    const existingLesson = await db.query.lessons.findFirst({
+      where: eq(lessons.id, res.lessonId),
+    });
+
+    if (!existingLesson) {
+      return NextResponse.json({ error: "Урок не найден" }, { status: 404 });
+    }
+
+    const changesBefore = { ...existingLesson };
+
     const response = await db
       .delete(lessons)
       .where(eq(lessons.id, res.lessonId))
       .returning({ url: lessons.videoURL });
-
-    if (response.length === 0) {
-      return NextResponse.json({ error: "Урок не найден" }, { status: 404 });
-    }
 
     const filename = response[0].url;
     // Использование безопасного пути с санитизацией
@@ -274,9 +362,41 @@ export async function DELETE(request: NextRequest) {
       await fsp.unlink(filepath);
     }
 
+    // Логируем удаление урока (асинхронно)
+    auditService
+      .logAdminAction({
+        userId: user.id,
+        userEmail: user.email,
+        userRole: user.role as "admin",
+        actionType: "lesson_delete",
+        resourceType: "lesson",
+        resourceId: String(res.lessonId),
+        changesBefore,
+        status: "success",
+      })
+      .catch((err) => console.error("Audit logging failed:", err));
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Ошибка при удалении урока:", error);
+
+    // Логируем ошибку (асинхронно)
+    const user = await getUser();
+    if (user) {
+      auditService
+        .logAdminAction({
+          userId: user.id,
+          userEmail: user.email,
+          userRole: user.role as "admin",
+          actionType: "lesson_delete",
+          resourceType: "lesson",
+          resourceId: "unknown",
+          status: "failure",
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+        .catch((err) => console.error("Audit logging failed:", err));
+    }
+
     return NextResponse.json({ error: "Ошибка удаления" }, { status: 500 });
   }
 }
