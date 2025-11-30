@@ -5,6 +5,7 @@ import { skills } from "@/db/schema";
 import { getUser } from "@/app/lib/dal";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { canManage } from "../utils/permissions";
 
 const skillSchema = z.object({
   name: z.string().min(1, "Название навыка обязательно"),
@@ -13,7 +14,7 @@ const skillSchema = z.object({
 export async function createSkill(name: string) {
   try {
     const user = await getUser();
-    if (!user || user.role !== "admin") {
+    if (!canManage(user)) {
       return { success: false, error: "Недостаточно прав" };
     }
 

@@ -1,6 +1,6 @@
 import { User } from "@/@types/user";
 
-export function canManage(user: Partial<User> | undefined | null) {
+export function canManage(user: Partial<User> | undefined | null): user is User & { role: 'admin' | 'manager' } {
     if (!user || !user.role) {
         return false
     } else {
@@ -8,10 +8,10 @@ export function canManage(user: Partial<User> | undefined | null) {
     }
 }
 
-export function isAdmin(user:Partial<User> | null | undefined) {
+export function isAdmin(user: Partial<User> | null | undefined): user is User & { role: 'admin' } {
     if (!user || !user.role) {
         return false
     } else {
-        return  user.role === "admin";
+        return user.role === "admin";
     }
 }

@@ -6,7 +6,9 @@ import { getUser } from "@/app/lib/dal";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { canManage } from "../utils/permissions";
+import { canManage, isAdmin } from "../utils/permissions";
+import { auditService } from "@/lib/audit/audit.service";
+import { getCourseById } from "@/app/lib/dal/course.dal";
 
 const courseSchema = z.object({
   name: z.string().min(1, "Название курса обязательно"),
@@ -26,15 +28,17 @@ const courseSchema = z.object({
 export async function createCourse(data: {
   name: string;
   description?: string;
-  program?:string;
+  program?: string;
   privacy: "public" | "private";
   showOnLanding: boolean;
   modules: { moduleId: number; order: number }[];
   skills: number[];
 }) {
+  let currentUser = null;
+
   try {
-    const user = await getUser();
-    if (!user || user.role !== "admin") {
+    currentUser = await getUser();
+    if (!canManage(currentUser)) {
       return { success: false, error: "Недостаточно прав" };
     }
 
@@ -90,10 +94,45 @@ export async function createCourse(data: {
       );
     }
 
+    // Логируем создание курса (асинхронно)
+    auditService
+      .logAdminAction({
+        userId: currentUser.id,
+        userEmail: currentUser.email,
+        userRole: currentUser.role as "admin",
+        actionType: "course_create",
+        resourceType: "course",
+        resourceId: String(newCourse.id),
+        changesAfter: {
+          ...newCourse,
+          modules: modulesList,
+          skills: skillsList,
+        },
+        status: "success",
+      })
+      .catch((err) => console.error("Audit logging failed:", err));
+
     revalidatePath("/dashboard/admin");
     return { success: true, course: newCourse };
   } catch (error) {
     console.error("Ошибка при создании курса:", error);
+
+    // Логируем ошибку (асинхронно)
+    if (currentUser) {
+      auditService
+        .logAdminAction({
+          userId: currentUser.id,
+          userEmail: currentUser.email,
+          userRole: currentUser.role as "admin",
+          actionType: "course_create",
+          resourceType: "course",
+          resourceId: "unknown",
+          status: "failure",
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+        .catch((err) => console.error("Audit logging failed:", err));
+    }
+
     return { success: false, error: "Ошибка при создании курса" };
   }
 }
@@ -110,12 +149,13 @@ export async function updateCourse(
     showOnLanding: boolean;
   }
 ) {
+  let currentUser = null;
+
   try {
-    const user = await getUser();
-    if (!canManage(user)) {
+    currentUser = await getUser();
+    if (!canManage(currentUser)) {
       return { success: false, error: "Недостаточно прав" };
     }
-
     const validation = courseSchema.safeParse(data);
     if (!validation.success) {
       return {
@@ -135,14 +175,23 @@ export async function updateCourse(
       skills: skillsList,
     } = validation.data;
 
-    // Проверяем существование курса
-    const existingCourse = await db.query.courses.findFirst({
-      where: eq(courses.id, courseId),
-    });
+    // Проверяем существование курса и получаем старые связи для аудита
+    const existingCourse = await getCourseById(courseId);
 
     if (!existingCourse) {
       return { success: false, error: "Курс не найден" };
     }
+
+    // Сохраняем состояние до изменений для аудита
+
+    const changesBefore = {
+      ...existingCourse,
+      modules: existingCourse.modules.map((ctm) => ({
+        moduleId: ctm.module.id,
+        order: ctm.order,
+      })),
+      skills: existingCourse.skillsToCourses.map((stc) => stc.skill.id),
+    };
 
     // Обновляем курс
     await db
@@ -187,35 +236,130 @@ export async function updateCourse(
       );
     }
 
+    // Логируем обновление курса (асинхронно)
+    auditService
+      .logAdminAction({
+        userId: currentUser.id,
+        userEmail: currentUser.email,
+        userRole: currentUser.role,
+        actionType: "course_update",
+        resourceType: "course",
+        resourceId: String(courseId),
+        changesBefore,
+        changesAfter: {
+          id: courseId,
+          name,
+          description,
+          program,
+          privacy,
+          showOnLanding,
+          modules: modulesList,
+          skills: skillsList,
+        },
+        status: "success",
+      })
+      .catch((err) => console.error("Audit logging failed:", err));
+
     revalidatePath("/dashboard/admin");
     return { success: true };
   } catch (error) {
     console.error("Ошибка при обновлении курса:", error);
+
+    // Логируем ошибку (асинхронно)
+    if (currentUser) {
+      auditService
+        .logAdminAction({
+          userId: currentUser.id,
+          userEmail: currentUser.email,
+          userRole: currentUser.role as "admin" | "manager",
+          actionType: "course_update",
+          resourceType: "course",
+          resourceId: String(courseId),
+          status: "failure",
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+        .catch((err) => console.error("Audit logging failed:", err));
+    }
+
     return { success: false, error: "Ошибка при обновлении курса" };
   }
 }
 
 export async function deleteCourse(courseId: number) {
+  let currentUser = null;
+
   try {
-    const user = await getUser();
-    if (!user || user.role !== "admin") {
+    currentUser = await getUser();
+    if (!isAdmin(currentUser)) {
       return { success: false, error: "Недостаточно прав" };
     }
 
-    // Удаляем курс (связи с модулями удалятся автоматически благодаря onDelete: "cascade")
-    const result = await db
-      .delete(courses)
-      .where(eq(courses.id, courseId))
-      .returning();
+    // Получаем данные курса для аудита перед удалением
+    const existingCourse = await db.query.courses.findFirst({
+      where: eq(courses.id, courseId),
+      with: {
+        coursesToModules: true,
+        skillsToCourses: true,
+      },
+    });
 
-    if (result.length === 0) {
+    if (!existingCourse) {
       return { success: false, error: "Курс не найден" };
     }
+
+    // Сохраняем полное состояние курса для аудита
+    const existingWithRelations = existingCourse as typeof existingCourse & {
+      coursesToModules: Array<{ moduleId: number; order: number }>;
+      skillsToCourses: Array<{ skillId: number }>;
+    };
+
+    const changesBefore = {
+      ...existingCourse,
+      modules: existingWithRelations.coursesToModules.map((ctm) => ({
+        moduleId: ctm.moduleId,
+        order: ctm.order,
+      })),
+      skills: existingWithRelations.skillsToCourses.map((stc) => stc.skillId),
+    };
+
+    // Удаляем курс (связи с модулями удалятся автоматически благодаря onDelete: "cascade")
+    await db.delete(courses).where(eq(courses.id, courseId));
+
+    // Логируем удаление курса (асинхронно)
+    auditService
+      .logAdminAction({
+        userId: currentUser.id,
+        userEmail: currentUser.email,
+        userRole: currentUser.role as "admin",
+        actionType: "course_delete",
+        resourceType: "course",
+        resourceId: String(courseId),
+        changesBefore,
+        status: "success",
+      })
+      .catch((err) => console.error("Audit logging failed:", err));
 
     revalidatePath("/dashboard/admin");
     return { success: true };
   } catch (error) {
     console.error("Ошибка при удалении курса:", error);
+
+    // Логируем ошибку (асинхронно)
+    if (currentUser) {
+      auditService
+        .logAdminAction({
+          userId: currentUser.id,
+          userEmail: currentUser.email,
+          userRole: currentUser.role as "admin",
+          actionType: "course_delete",
+          resourceType: "course",
+          resourceId: String(courseId),
+          status: "failure",
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+        .catch((err) => console.error("Audit logging failed:", err));
+    }
+
     return { success: false, error: "Ошибка при удалении курса" };
   }
 }

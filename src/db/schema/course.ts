@@ -1,4 +1,10 @@
-import { boolean, integer, primaryKey, varchar, text } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  primaryKey,
+  varchar,
+  text,
+} from "drizzle-orm/pg-core";
 import { createdAt, updatedAt, prodSchema } from "../schemaHelpers";
 import { relations } from "drizzle-orm";
 import { coursesToModules } from "./coursesToModules";

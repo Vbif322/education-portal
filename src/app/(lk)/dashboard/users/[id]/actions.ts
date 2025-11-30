@@ -7,6 +7,7 @@ import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { Subscription, User } from "@/@types/user";
 import { canManage, isAdmin } from "@/app/utils/permissions";
+import { auditService } from "@/lib/audit/audit.service";
 
 export async function updateSubscription(
   userId: string,
@@ -59,6 +60,16 @@ export async function grantCourseAccess(
   }
 
   try {
+    // Получаем email пользователя для аудита
+    const targetUser = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    // Получаем название курса для аудита
+    const course = await db.query.courses.findFirst({
+      where: (courses, { eq }) => eq(courses.id, courseId),
+    });
+
     await db
       .insert(courseAccess)
       .values({
@@ -68,6 +79,24 @@ export async function grantCourseAccess(
         grantedBy: currentUser?.id,
       })
       .onConflictDoNothing();
+
+    // Логируем предоставление доступа к курсу (асинхронно)
+    if (targetUser) {
+      auditService
+        .logAccessChange({
+          action: "grant",
+          accessType: "course",
+          userId,
+          userEmail: targetUser.email,
+          resourceId: courseId,
+          resourceName: course?.name,
+          grantedBy: currentUser!.id,
+          grantedByEmail: currentUser!.email,
+          grantedByRole: currentUser!.role as "admin" | "manager",
+          expiresAt,
+        })
+        .catch((err) => console.error("Access logging failed:", err));
+    }
 
     revalidatePath(`/dashboard/users/${userId}`);
     return { success: true };
@@ -84,11 +113,38 @@ export async function revokeCourseAccess(userId: string, courseId: number) {
   }
 
   try {
+    // Получаем email пользователя для аудита
+    const targetUser = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    // Получаем название курса для аудита
+    const course = await db.query.courses.findFirst({
+      where: (courses, { eq }) => eq(courses.id, courseId),
+    });
+
     await db
       .delete(courseAccess)
       .where(
         and(eq(courseAccess.userId, userId), eq(courseAccess.courseId, courseId))
       );
+
+    // Логируем отзыв доступа к курсу (асинхронно)
+    if (targetUser) {
+      auditService
+        .logAccessChange({
+          action: "revoke",
+          accessType: "course",
+          userId,
+          userEmail: targetUser.email,
+          resourceId: courseId,
+          resourceName: course?.name,
+          grantedBy: currentUser!.id,
+          grantedByEmail: currentUser!.email,
+          grantedByRole: currentUser!.role as "admin" | "manager",
+        })
+        .catch((err) => console.error("Access logging failed:", err));
+    }
 
     revalidatePath(`/dashboard/users/${userId}`);
     return { success: true };
@@ -109,6 +165,16 @@ export async function grantLessonAccess(
   }
 
   try {
+    // Получаем email пользователя для аудита
+    const targetUser = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    // Получаем название урока для аудита
+    const lesson = await db.query.lessons.findFirst({
+      where: (lessons, { eq }) => eq(lessons.id, lessonId),
+    });
+
     await db
       .insert(lessonAccess)
       .values({
@@ -118,6 +184,24 @@ export async function grantLessonAccess(
         grantedBy: currentUser?.id,
       })
       .onConflictDoNothing();
+
+    // Логируем предоставление доступа к уроку (асинхронно)
+    if (targetUser) {
+      auditService
+        .logAccessChange({
+          action: "grant",
+          accessType: "lesson",
+          userId,
+          userEmail: targetUser.email,
+          resourceId: lessonId,
+          resourceName: lesson?.name,
+          grantedBy: currentUser!.id,
+          grantedByEmail: currentUser!.email,
+          grantedByRole: currentUser!.role as "admin" | "manager",
+          expiresAt,
+        })
+        .catch((err) => console.error("Access logging failed:", err));
+    }
 
     revalidatePath(`/dashboard/users/${userId}`);
     return { success: true };
@@ -134,11 +218,38 @@ export async function revokeLessonAccess(userId: string, lessonId: number) {
   }
 
   try {
+    // Получаем email пользователя для аудита
+    const targetUser = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    // Получаем название урока для аудита
+    const lesson = await db.query.lessons.findFirst({
+      where: (lessons, { eq }) => eq(lessons.id, lessonId),
+    });
+
     await db
       .delete(lessonAccess)
       .where(
         and(eq(lessonAccess.userId, userId), eq(lessonAccess.lessonId, lessonId))
       );
+
+    // Логируем отзыв доступа к уроку (асинхронно)
+    if (targetUser) {
+      auditService
+        .logAccessChange({
+          action: "revoke",
+          accessType: "lesson",
+          userId,
+          userEmail: targetUser.email,
+          resourceId: lessonId,
+          resourceName: lesson?.name,
+          grantedBy: currentUser!.id,
+          grantedByEmail: currentUser!.email,
+          grantedByRole: currentUser!.role as "admin" | "manager",
+        })
+        .catch((err) => console.error("Access logging failed:", err));
+    }
 
     revalidatePath(`/dashboard/users/${userId}`);
     return { success: true };

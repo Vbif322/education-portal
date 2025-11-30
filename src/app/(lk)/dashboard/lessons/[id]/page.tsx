@@ -4,6 +4,9 @@ import Player from "@/app/components/video-player/Player";
 import { addLessonToUser, getLesson } from "@/app/lib/dal/lesson.dal";
 import { cache } from "react";
 import ContactModal from "./contact-modal";
+import { analyticsService } from "@/lib/analytics/analytics.service";
+import { getUser } from "@/app/lib/dal";
+import { redirect } from "next/navigation";
 
 const getLessonCached = cache(getLesson);
 
@@ -30,16 +33,41 @@ export default async function LessonPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await getUser();
+  if (!user) {
+    redirect("/login")
+  }
   const { id } = await params;
 
+  // Логируем попытку доступа (до проверок)
+  analyticsService
+    .trackActivity({
+      userId: user.id,
+      activityType: "lesson_access_attempt",
+      resourceType: "lesson",
+      resourceId: id
+    })
+    .catch((err) => console.error("Analytics tracking failed:", err));
+
   const lesson = await getLessonCached(Number(id));
+
   if (!lesson) {
     return <p>Такой урок не найден</p>;
   }
   const forbidden = "forbidden" in lesson ? true : false;
 
+  // Логируем успешный просмотр (только если есть доступ)
   if (!forbidden) {
     addLessonToUser(Number(id));
+
+    analyticsService
+      .trackActivity({
+        userId: user.id,
+        activityType: "lesson_view",
+        resourceType: "lesson",
+        resourceId: id
+      })
+      .catch((err) => console.error("Analytics tracking failed:", err));
   }
 
   return (

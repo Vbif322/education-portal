@@ -6,6 +6,7 @@ import {
 } from "@/app/lib/dal/lesson.dal";
 import { getUser } from "@/app/lib/dal";
 import { revalidatePath } from "next/cache";
+import { analyticsService } from "@/lib/analytics/analytics.service";
 
 export async function GET(
   _request: NextRequest,
@@ -57,6 +58,21 @@ export async function POST(
 
     // Сохраняем прогресс
     await updateLessonProgress(Number(lessonId), currentTime, duration);
+
+    // Определяем тип события для аналитики
+    const eventType = completed === true ? "video_complete" : "progress_save";
+
+    // Отслеживаем событие видео (асинхронно, не блокируя ответ)
+    analyticsService
+      .trackVideoEvent({
+        userId: user.id,
+        lessonId: Number(lessonId),
+        eventType,
+        currentTime,
+        duration,
+        userAgent: request.headers.get("user-agent") || undefined,
+      })
+      .catch((err) => console.error("Analytics tracking failed:", err));
 
     // Если урок завершен (90% просмотра), отмечаем его
     if (completed === true) {
