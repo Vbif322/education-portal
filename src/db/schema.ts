@@ -8,3 +8,5 @@ export * from "./schema/usersToLessons";
 export * from "./schema/usersToCourses";
 export * from "./schema/courseAccess";
 export * from "./schema/lessonAccess";
+export * from "./schema/analytics/userActivity";
+export * from "./schema/analytics/videoEvents";

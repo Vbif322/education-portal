@@ -10,6 +10,7 @@ import {
   ROLE_LABELS,
   Subscription,
   User,
+  UserActivity,
   UserWithSubscription,
 } from "@/@types/user";
 import {
@@ -45,7 +46,7 @@ type Props = {
   allCourses: Course[];
   allLessons: Lesson[];
   lessonsFromCourses: { lessons: Lesson[]; courseId: Course["id"] }[];
-  userLogins: any[]
+  userLogins: UserActivity[]
 };
 
 const UserManagementClient: FC<Props> = ({
