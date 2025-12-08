@@ -10,6 +10,7 @@ import {
   ROLE_LABELS,
   Subscription,
   User,
+  UserActivity,
   UserWithSubscription,
 } from "@/@types/user";
 import {
@@ -45,6 +46,7 @@ type Props = {
   allCourses: Course[];
   allLessons: Lesson[];
   lessonsFromCourses: { lessons: Lesson[]; courseId: Course["id"] }[];
+  userLogins: UserActivity[]
 };
 
 const UserManagementClient: FC<Props> = ({
@@ -55,11 +57,43 @@ const UserManagementClient: FC<Props> = ({
   allCourses,
   allLessons,
   lessonsFromCourses,
+  userLogins
 }) => {
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const [courseDialogOpen, setCourseDialogOpen] = useState(false);
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+
+  const mockLessonActivity = [
+    {
+      lessonName: "Введение в React",
+      courseRequested: "Основы фронтенд-разработки",
+      lastView: new Date("2024-12-04T10:30:00"),
+      progress: 85,
+      totalViews: 12
+    },
+    {
+      lessonName: "Работа с API",
+      courseRequested: "Основы фронтенд-разработки",
+      lastView: new Date("2024-12-03T15:45:00"),
+      progress: 100,
+      totalViews: 8
+    },
+    {
+      lessonName: "Hooks и контекст",
+      courseRequested: "Продвинутый React",
+      lastView: new Date("2024-12-02T14:20:00"),
+      progress: 45,
+      totalViews: 5
+    },
+    {
+      lessonName: "TypeScript основы",
+      courseRequested: "TypeScript для разработчиков",
+      lastView: new Date("2024-12-01T09:10:00"),
+      progress: 60,
+      totalViews: 3
+    },
+  ];
 
   // Subscription form state
   const [subscriptionType, setSubscriptionType] = useState<
@@ -206,6 +240,101 @@ const UserManagementClient: FC<Props> = ({
                   : "#e8eef7"
               }
             />
+          </div>
+        </div>
+      </Paper>
+
+      {/* Activity History Section */}
+      <Paper className={s.section}>
+        <div className={s.section__header}>
+          <h2 className={s.section__title}>История активности</h2>
+          <Button variant="text" onClick={() => {}}>
+            Подробная аналитика
+          </Button>
+        </div>
+
+        {/* Recent Logins */}
+        <div className={s.activity__subsection}>
+          <h3 className={s.activity__subsection__title}>Последние входы</h3>
+          <div className={s.activity__table__wrapper}>
+            <table className={s.activity__table}>
+              <thead>
+                <tr>
+                  <th>Дата</th>
+                  <th>Время</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userLogins.map((login) => (
+                  <tr key={login.id}>
+                    <td>{formatDate(login.createdAt)}</td>
+                    <td>
+                      {login.createdAt.toLocaleTimeString("ru-RU", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Lesson Activity */}
+        <div className={s.activity__subsection}>
+          <h3 className={s.activity__subsection__title}>
+            Активность по урокам
+          </h3>
+          <div className={s.activity__table__wrapper}>
+            <table className={s.activity__table}>
+              <thead>
+                <tr>
+                  <th>Урок</th>
+                  <th>Курс</th>
+                  <th>Последний просмотр</th>
+                  <th>Прогресс</th>
+                  <th>Просмотров</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mockLessonActivity.map((activity, index) => (
+                  <tr key={index}>
+                    <td className={s.activity__table__lesson}>
+                      {activity.lessonName}
+                    </td>
+                    <td className={s.activity__table__course}>
+                      {activity.courseRequested}
+                    </td>
+                    <td className={s.activity__table__date}>
+                      {formatDate(activity.lastView)}
+                      <span className={s.activity__table__time}>
+                        {activity.lastView.toLocaleTimeString("ru-RU", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </td>
+                    <td>
+                      <div className={s.activity__progress}>
+                        <div className={s.activity__progress__bar}>
+                          <div
+                            className={s.activity__progress__fill}
+                            style={{ width: `${activity.progress}%` }}
+                          />
+                        </div>
+                        <span className={s.activity__progress__text}>
+                          {activity.progress}%
+                        </span>
+                      </div>
+                    </td>
+                    <td className={s.activity__table__views}>
+                      {activity.totalViews}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </Paper>
