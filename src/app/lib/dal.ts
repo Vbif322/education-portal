@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
 import { subscription, users } from "@/db/schema/users";
+import { visitTrackingService } from "@/lib/analytics/visitTracking.service";
 
 export const verifySession = cache(async () => {
   const cookieStore = await cookies();
@@ -20,15 +21,26 @@ export const verifySession = cache(async () => {
     redirect("/api/auth/clear-session");
   }
   const getSessionID = await db
-    .select({ session: users.sessionID })
+    .select({
+      session: users.sessionID,
+      lastVisitDate: users.lastVisitDate
+    })
     .from(users)
     .where(eq(users.id, session.userId))
     .limit(1);
   if (getSessionID[0].session !== session.sessionID) {
     redirect("/api/auth/clear-session");
-  } else {
-    return { isAuth: true, userId: session.userId, role: session.role };
   }
+
+  // Асинхронное отслеживание визита (fire-and-forget)
+  const today = new Date().toISOString().split("T")[0];
+  if (getSessionID[0].lastVisitDate !== today) {
+    visitTrackingService
+      .trackVisit({ userId: session.userId })
+      .catch((err) => console.error("Visit tracking failed:", err));
+  }
+
+  return { isAuth: true, userId: session.userId, role: session.role };
 });
 
 export const getUser = cache(async () => {
@@ -43,6 +55,7 @@ export const getUser = cache(async () => {
         id: true,
         email: true,
         role: true,
+        lastVisitDate: true,
       },
     });
 
