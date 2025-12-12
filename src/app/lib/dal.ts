@@ -22,23 +22,21 @@ export const verifySession = cache(async () => {
   }
   const getSessionID = await db
     .select({
-      session: users.sessionID,
-      lastVisitDate: users.lastVisitDate
+      session: users.sessionID
     })
     .from(users)
     .where(eq(users.id, session.userId))
     .limit(1);
-  if (getSessionID[0].session !== session.sessionID) {
+
+  if (!getSessionID.length || getSessionID[0].session !== session.sessionID) {
     redirect("/api/auth/clear-session");
   }
 
   // Асинхронное отслеживание визита (fire-and-forget)
-  const today = new Date().toISOString().split("T")[0];
-  if (getSessionID[0].lastVisitDate !== today) {
-    visitTrackingService
-      .trackVisit({ userId: session.userId })
-      .catch((err) => console.error("Visit tracking failed:", err));
-  }
+  // Сервис сам проверит, был ли уже визит сегодня
+  visitTrackingService
+    .trackVisit({ userId: session.userId })
+    .catch((err) => console.error("Visit tracking failed:", err));
 
   return { isAuth: true, userId: session.userId, role: session.role };
 });
@@ -55,7 +53,6 @@ export const getUser = cache(async () => {
         id: true,
         email: true,
         role: true,
-        lastVisitDate: true,
       },
     });
 

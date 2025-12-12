@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { date, integer, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { integer, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { prodSchema } from "../schemaHelpers";
 
 export const users = prodSchema.table("users", {
@@ -10,7 +10,6 @@ export const users = prodSchema.table("users", {
   role: varchar({ enum: ["user", "manager", "admin"] })
     .notNull()
     .default("user"),
-  lastVisitDate: date("last_visit_date"),
 });
 
 export const subscription = prodSchema.table("subscription", {
