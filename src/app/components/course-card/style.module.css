@@ -1,38 +1,42 @@
 .card {
-  border-color: #e5e7eb;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 22px;
   max-width: 364px;
   min-width: 240px;
-  height: 278px;
-  display: grid;
-  grid-template-rows: 48px 1fr 32px 36px;
-  gap: 16px;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.25),
-    0 4px 6px -4px rgb(0 0 0 / 0.2);
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background-color: #fff;
+  box-shadow: 0 1px 2px rgb(16 24 40 / 0.04),
+    0 8px 24px -12px rgb(16 24 40 / 0.18);
 }
 
-.card button {
-  border-radius: 0.5rem;
-  background-color: #000;
+.spacer {
+  flex: 1;
 }
 
 .titleContainer {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 48px;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .icon {
   color: #0056d2;
   flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.iconDone {
+  color: #0f8a5c;
 }
 
 .title {
-  font-size: 1.25rem;
-  line-height: 1.5rem;
-  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 700;
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -43,50 +47,116 @@
 }
 
 .description {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  color: rgb(75 85 99);
-  margin-top: 8px;
-  margin-bottom: 0;
-  height: 3.75rem;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #4b5563;
+  margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .meta {
-  font-size: 0.8rem;
-  color: rgb(107 114 128);
-  margin-top: 8px;
+  font-size: 12.5px;
+  color: #6b7280;
+  margin: 0;
   font-weight: 500;
 }
 
 .progressContainer {
-  margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
+}
+
+.progressLabel {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.progressCap {
+  font-size: 12.5px;
+  color: #6b7280;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.progressPct {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0056d2;
 }
 
 .progressBar {
   width: 100%;
   height: 8px;
-  background-color: #e5e7eb;
-  border-radius: 4px;
+  background-color: #e2ecfb;
+  border-radius: 999px;
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background-color: #000;
+  background-color: #0056d2;
+  border-radius: 999px;
   transition: width 0.3s ease;
 }
 
-.progressText {
-  font-size: 0.75rem;
-  color: rgb(75 85 99);
-  text-align: center;
+.progressBarDone {
+  background-color: #dcf2e8;
+}
+
+.progressFillDone {
+  background-color: #0f8a5c;
+}
+
+.doneRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0b6d49;
+}
+
+.card button {
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  transition: background-color 0.15s;
+}
+
+.card button.btnDark {
+  background-color: #000;
+  color: #fff;
+}
+
+.card button.btnDark:hover {
+  background-color: #1a1a1a;
+}
+
+.card button.btnBlue {
+  background-color: #0056d2;
+  color: #fff;
+}
+
+.card button.btnBlue:hover {
+  background-color: #0049b3;
+}
+
+.card button.btnGhost {
+  background-color: #fff;
+  color: #111827;
+  border: 1.5px solid #e5e7eb;
+}
+
+.card button.btnGhost:hover {
+  background-color: #f9fafb;
 }
