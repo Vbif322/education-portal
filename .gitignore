@@ -45,9 +45,6 @@ next-env.d.ts
 *lock.json
 /drizzle
 
-# security
-SECURITY_AUDIT.md
-
 # documentation (internal)
 /docs
 
