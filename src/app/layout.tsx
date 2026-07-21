@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import YandexMetrika from "./components/yandex-metrika";
 import { Suspense } from "react";
+import ToastProvider from "./ui/Toast/ToastProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +33,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable}`}
         style={{ minHeight: "100vh" }}
       >
-        {children}
+        <ToastProvider>{children}</ToastProvider>
         <Suspense>
         {yandexMetrikaId && process.env.NODE_ENV === "production" && (
           <YandexMetrika yid={yandexMetrikaId} />

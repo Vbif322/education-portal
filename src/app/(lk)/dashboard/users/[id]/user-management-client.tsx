@@ -24,6 +24,7 @@ import {
 import { Course, Lesson } from "@/@types/course";
 import AccessDialog from "./AccessDialog";
 import { LessonActivity } from "@/app/lib/dal/analytics";
+import { useToast } from "@/app/ui/Toast/ToastProvider";
 
 type CourseAccess = {
   courseId: number;
@@ -67,6 +68,9 @@ const UserManagementClient: FC<Props> = ({
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
 
+  const { showToast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Subscription form state
   const [subscriptionType, setSubscriptionType] = useState<
     Subscription["type"]
@@ -102,24 +106,50 @@ const UserManagementClient: FC<Props> = ({
 
   const handleSubscriptionSubmit = async () => {
     if (!subscriptionEndDate) return;
-    if (subscriptionType === null) return;
-    await updateSubscription(
-      user.id,
-      subscriptionType,
-      new Date(subscriptionEndDate)
-    );
-    setSubscriptionDialogOpen(false);
+    if (subscriptionType == null) return;
+    setIsSubmitting(true);
+    try {
+      const res = await updateSubscription(
+        user.id,
+        subscriptionType,
+        new Date(subscriptionEndDate)
+      );
+      if (res.success) {
+        showToast("Подписка обновлена", "success");
+        setSubscriptionDialogOpen(false);
+      } else {
+        showToast("Не удалось обновить подписку", "error");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleGrantCourseAccess = async () => {
     if (selectedCourses.length === 0) return;
     const expiresAt = courseExpiresAt ? new Date(courseExpiresAt) : null;
-    for (const courseId of selectedCourses) {
-      await grantCourseAccess(user.id, courseId, expiresAt);
+    setIsSubmitting(true);
+    try {
+      const results = await Promise.all(
+        selectedCourses.map((courseId) =>
+          grantCourseAccess(user.id, courseId, expiresAt)
+        )
+      );
+      const failed = results.filter((res) => !res.success).length;
+      if (failed === 0) {
+        showToast("Доступ к курсам выдан", "success");
+        setCourseDialogOpen(false);
+        setSelectedCourses([]);
+        setCourseExpiresAt("");
+      } else {
+        showToast(
+          `Не удалось выдать доступ: ${failed} из ${selectedCourses.length}`,
+          "error"
+        );
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-    setCourseDialogOpen(false);
-    setSelectedCourses([]);
-    setCourseExpiresAt("");
   };
 
   const handleCourseCheckboxChange = (courseId: number, checked: boolean) => {
@@ -131,18 +161,44 @@ const UserManagementClient: FC<Props> = ({
   };
 
   const handleRevokeCourseAccess = async (courseId: number) => {
-    await revokeCourseAccess(user.id, courseId);
+    setIsSubmitting(true);
+    try {
+      const res = await revokeCourseAccess(user.id, courseId);
+      if (res.success) {
+        showToast("Доступ к курсу отозван", "success");
+      } else {
+        showToast("Не удалось отозвать доступ к курсу", "error");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleGrantLessonAccess = async () => {
     if (selectedLessons.length === 0) return;
     const expiresAt = lessonExpiresAt ? new Date(lessonExpiresAt) : null;
-    for (const lessonId of selectedLessons) {
-      await grantLessonAccess(user.id, lessonId, expiresAt);
+    setIsSubmitting(true);
+    try {
+      const results = await Promise.all(
+        selectedLessons.map((lessonId) =>
+          grantLessonAccess(user.id, lessonId, expiresAt)
+        )
+      );
+      const failed = results.filter((res) => !res.success).length;
+      if (failed === 0) {
+        showToast("Доступ к урокам выдан", "success");
+        setLessonDialogOpen(false);
+        setSelectedLessons([]);
+        setLessonExpiresAt("");
+      } else {
+        showToast(
+          `Не удалось выдать доступ: ${failed} из ${selectedLessons.length}`,
+          "error"
+        );
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-    setLessonDialogOpen(false);
-    setSelectedLessons([]);
-    setLessonExpiresAt("");
   };
 
   const handleLessonCheckboxChange = (lessonId: number, checked: boolean) => {
@@ -154,12 +210,32 @@ const UserManagementClient: FC<Props> = ({
   };
 
   const handleRevokeLessonAccess = async (lessonId: number) => {
-    await revokeLessonAccess(user.id, lessonId);
+    setIsSubmitting(true);
+    try {
+      const res = await revokeLessonAccess(user.id, lessonId);
+      if (res.success) {
+        showToast("Доступ к уроку отозван", "success");
+      } else {
+        showToast("Не удалось отозвать доступ к уроку", "error");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleRoleChange = async () => {
-    await changeUserRole(user.id, selectedRole);
-    setRoleDialogOpen(false);
+    setIsSubmitting(true);
+    try {
+      const res = await changeUserRole(user.id, selectedRole);
+      if (res.success) {
+        showToast("Роль изменена", "success");
+        setRoleDialogOpen(false);
+      } else {
+        showToast("Не удалось изменить роль", "error");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const hasActiveSubscription = user.subscription
@@ -386,6 +462,7 @@ const UserManagementClient: FC<Props> = ({
                   variant="text"
                   color="error"
                   onClick={() => handleRevokeCourseAccess(access.courseId)}
+                  disabled={isSubmitting}
                 >
                   Отозвать
                 </Button>
@@ -430,6 +507,7 @@ const UserManagementClient: FC<Props> = ({
                     variant="text"
                     color="error"
                     onClick={() => handleRevokeLessonAccess(access.lessonId)}
+                    disabled={isSubmitting}
                   >
                     Отозвать
                   </Button>
@@ -505,7 +583,9 @@ const UserManagementClient: FC<Props> = ({
             >
               Отмена
             </Button>
-            <Button onClick={handleSubscriptionSubmit}>Сохранить</Button>
+            <Button onClick={handleSubscriptionSubmit} disabled={isSubmitting}>
+              Сохранить
+            </Button>
           </div>
         </div>
       </Dialog>
@@ -523,6 +603,7 @@ const UserManagementClient: FC<Props> = ({
         expiresAt={courseExpiresAt}
         onExpiresAtChange={setCourseExpiresAt}
         onSubmit={handleGrantCourseAccess}
+        submitting={isSubmitting}
       />
 
       {/* Lesson Access Dialog */}
@@ -538,6 +619,7 @@ const UserManagementClient: FC<Props> = ({
         expiresAt={lessonExpiresAt}
         onExpiresAtChange={setLessonExpiresAt}
         onSubmit={handleGrantLessonAccess}
+        submitting={isSubmitting}
       />
 
       {/* Role Dialog */}
@@ -562,7 +644,9 @@ const UserManagementClient: FC<Props> = ({
             <Button variant="text" onClick={() => setRoleDialogOpen(false)}>
               Отмена
             </Button>
-            <Button onClick={handleRoleChange}>Сохранить</Button>
+            <Button onClick={handleRoleChange} disabled={isSubmitting}>
+              Сохранить
+            </Button>
           </div>
         </div>
       </Dialog>
