@@ -20,7 +20,7 @@ const trackVisitSchema = z.object({
   userId: z.string().uuid("userId must be a valid UUID"),
   referrer: z.string().max(2048).optional(),
   userAgent: z.string().max(512).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 type TrackVisitParams = z.infer<typeof trackVisitSchema>;
@@ -64,7 +64,7 @@ export async function trackVisit(params: TrackVisitParams): Promise<boolean> {
     return result.length > 0;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error("[VisitTrackingService] Validation error:", error.errors);
+      console.error("[VisitTrackingService] Validation error:", error.issues);
     } else {
       console.error("[VisitTrackingService] Failed to track visit:", error);
     }
