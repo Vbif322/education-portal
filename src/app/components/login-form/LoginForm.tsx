@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import s from "./style.module.css";
 import Button from "@/app/ui/Button/Button";
 
-export default function SignupForm() {
+export default function LoginForm() {
   const [state, action, pending] = useActionState(signin, undefined);
   return (
     <form action={action} className={s.form}>
@@ -16,7 +16,7 @@ export default function SignupForm() {
           name="email"
           type="email"
           placeholder="Email"
-          defaultValue={state?.fields.email}
+          defaultValue={state?.fields?.email}
           className={state?.properties?.email ? s.inputError : ""}
         />
         {state?.properties?.email && (
@@ -32,7 +32,6 @@ export default function SignupForm() {
           name="password"
           type="password"
           placeholder="Пароль"
-          defaultValue={state?.fields.password}
           className={state?.properties?.password ? s.inputError : ""}
         />
         {state?.properties?.password && (

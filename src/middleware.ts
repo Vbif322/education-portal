@@ -3,9 +3,9 @@ import { decrypt } from "@/app/lib/session";
 import { cookies } from "next/headers";
 
 // 1. Specify protected and public routes
-const publicRoutes = ["/login", "/"];
+const publicRoutes = ["/login", "/register", "/"];
 // Роуты, с которых залогиненного пользователя надо увести в /dashboard.
-const guestOnlyRoutes = ["/login"];
+const guestOnlyRoutes = ["/login", "/register"];
 // Публичная страница курса: ровно один числовой сегмент (/courses/123).
 // Не матчит /courses/123/lessons/... — платный плеер остаётся защищённым.
 const COURSE_DETAIL = /^\/courses\/\d+\/?$/;
