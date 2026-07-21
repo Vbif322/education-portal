@@ -214,6 +214,11 @@
   font-size: 2.5rem;
 }
 
+.videoShowcase {
+  max-width: 800px;
+  margin: 32px auto 0;
+}
+
 .aboutCard {
   margin-top: 32px;
   background: white;

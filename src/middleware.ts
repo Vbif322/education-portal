@@ -40,5 +40,7 @@ export default async function middleware(req: NextRequest) {
 
 // Routes Middleware should not run on
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|.*\\.(?:png|json|ico)$).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|.*\\.(?:png|jpg|jpeg|webp|svg|ico|json|mp4|webm)$).*)",
+  ],
 };
