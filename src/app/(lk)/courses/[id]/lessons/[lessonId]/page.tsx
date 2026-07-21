@@ -87,7 +87,7 @@ const CourseEduPage: FC<CourseEduPageProps> = async ({ params }) => {
       <Breadcrumbs items={breadcrumbItems} />
 
       <div className={s.content}>
-        <Player videoId={lesson.videoURL} lessonId={lesson.id} />
+        <Player lessonId={lesson.id} />
 
         <LessonNavigation
           lessonTitle={lesson.name}

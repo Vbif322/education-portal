@@ -12,11 +12,10 @@ import {
 import s from "./Player.module.css";
 
 type Props = {
-  videoId: string;
   lessonId: number;
 } & DetailedHTMLProps<VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>;
 
-const Player: FC<Props> = ({ videoId, lessonId, ...props }) => {
+const Player: FC<Props> = ({ lessonId, ...props }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error] = useState<string>("");
   const [savedProgress, setSavedProgress] = useState(0);
@@ -145,7 +144,7 @@ const Player: FC<Props> = ({ videoId, lessonId, ...props }) => {
           preload="metadata"
           {...props}
         >
-          <source src={`/api/videos?name=${videoId}`} type="video/mp4" />
+          <source src={`/api/videos?lessonId=${lessonId}`} type="video/mp4" />
           Ваш браузер не поддерживает видео
         </video>
       </div>

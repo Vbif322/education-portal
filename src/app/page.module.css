@@ -272,6 +272,19 @@
   color: rgb(55 65 81);
 }
 
+.aboutBio a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.aboutBio a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
 .aboutSection {
   margin-bottom: 40px;
 }

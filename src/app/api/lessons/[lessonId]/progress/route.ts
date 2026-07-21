@@ -3,6 +3,7 @@ import {
   getLessonProgress,
   updateLessonProgress,
   completeLessonProgress,
+  canAccessLesson,
 } from "@/app/lib/dal/lesson.dal";
 import { getUser } from "@/app/lib/dal";
 import { revalidatePath } from "next/cache";
@@ -18,8 +19,20 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { lessonId } = await params;
-    const progress = await getLessonProgress(Number(lessonId));
+    const { lessonId: rawLessonId } = await params;
+    const lessonId = Number(rawLessonId);
+    if (!Number.isInteger(lessonId) || lessonId <= 0) {
+      return NextResponse.json(
+        { error: "Некорректный идентификатор урока" },
+        { status: 400 }
+      );
+    }
+
+    if (!(await canAccessLesson(lessonId, user))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const progress = await getLessonProgress(lessonId);
 
     return NextResponse.json({
       currentTime: progress?.currentTime || 0,
@@ -45,7 +58,15 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { lessonId } = await params;
+    const { lessonId: rawLessonId } = await params;
+    const lessonId = Number(rawLessonId);
+    if (!Number.isInteger(lessonId) || lessonId <= 0) {
+      return NextResponse.json(
+        { error: "Некорректный идентификатор урока" },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const { currentTime, duration, completed } = body;
 
@@ -56,8 +77,12 @@ export async function POST(
       );
     }
 
+    if (!(await canAccessLesson(lessonId, user))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     // Сохраняем прогресс
-    await updateLessonProgress(Number(lessonId), currentTime, duration);
+    await updateLessonProgress(lessonId, currentTime, duration);
 
     // Определяем тип события для аналитики
     const eventType = completed === true ? "video_complete" : "progress_save";
@@ -66,7 +91,7 @@ export async function POST(
     analyticsService
       .trackVideoEvent({
         userId: user.id,
-        lessonId: Number(lessonId),
+        lessonId: lessonId,
         eventType,
         currentTime,
         duration,
@@ -76,7 +101,7 @@ export async function POST(
 
     // Если урок завершен (90% просмотра), отмечаем его
     if (completed === true) {
-      await completeLessonProgress(Number(lessonId));
+      await completeLessonProgress(lessonId);
 
       // Ревалидация пути для обновления прогресса в sidebar
       const courseIdMatch = request.headers
