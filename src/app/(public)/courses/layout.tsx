@@ -1,5 +1,5 @@
 import Header from "@/app/components/header/Header";
-import { getUser } from "@/app/lib/dal";
+import { getOptionalUser } from "@/app/lib/dal";
 import { FC } from "react";
 
 const CourseLayout: FC<
@@ -7,7 +7,7 @@ const CourseLayout: FC<
     children: React.ReactNode;
   }>
 > = async ({ children }) => {
-  const user = await getUser();
+  const user = await getOptionalUser();
 
   return (
     <>

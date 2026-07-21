@@ -6,7 +6,7 @@ import {
   getUserCourseAccess,
 } from "@/app/lib/dal/course.dal";
 import { notFound } from "next/navigation";
-import { getUser } from "@/app/lib/dal";
+import { getOptionalUser } from "@/app/lib/dal";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -15,7 +15,7 @@ type Props = {
 const CoursePage: FC<Props> = async ({ params }) => {
   const { id } = await params;
   const courseId = parseInt(id);
-  const user = await getUser()
+  const user = await getOptionalUser()
 
   if (isNaN(courseId)) {
     notFound();
@@ -25,7 +25,8 @@ const CoursePage: FC<Props> = async ({ params }) => {
   if (!course) {
     notFound();
   }
-  const isEnrolled = await isUserEnrolledInCourse(courseId);
+  // Только для залогиненного: иначе isUserEnrolledInCourse дёрнет getUser() → redirect.
+  const isEnrolled = user ? await isUserEnrolledInCourse(courseId) : false;
 
   // Проверяем, есть ли у пользователя доступ к курсу
   let hasAccess = false;

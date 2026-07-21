@@ -13,7 +13,10 @@ export default function InlineVideoPlayer({ videoSrc }: InlineVideoPlayerProps) 
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePlayClick = () => {
-    videoRef.current?.play();
+    // play() возвращает промис, который отклоняется с AbortError, если загрузку
+    // ресурса прервали (пауза/смена src/размонтирование). Глотаем, чтобы не было
+    // "Uncaught (in promise) DOMException" (в частности в Firefox).
+    videoRef.current?.play().catch(() => {});
   };
 
   return (

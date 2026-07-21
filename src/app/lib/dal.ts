@@ -65,6 +65,30 @@ export const getUser = cache(async () => {
   }
 });
 
+// Как getUser, но для публичных страниц: анонимному посетителю возвращает
+// null вместо redirect("/"), чтобы страница могла отрендериться для гостя.
+export const getOptionalUser = cache(async () => {
+  const session = await verifySession();
+  if (session === null) {
+    return null;
+  }
+  try {
+    const data = await db.query.users.findMany({
+      where: eq(users.id, session.userId),
+      columns: {
+        id: true,
+        email: true,
+        role: true,
+      },
+    });
+
+    return data[0] ?? null;
+  } catch (error) {
+    console.log("Failed to fetch user", error);
+    return null;
+  }
+});
+
 export const getUserSubscription = cache(async () => {
   const user = await getUser();
   if (!user) {
