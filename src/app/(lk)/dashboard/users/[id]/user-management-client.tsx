@@ -118,7 +118,7 @@ const UserManagementClient: FC<Props> = ({
         showToast("Подписка обновлена", "success");
         setSubscriptionDialogOpen(false);
       } else {
-        showToast("Не удалось обновить подписку", "error");
+        showToast(res.error ?? "Не удалось обновить подписку", "error");
       }
     } finally {
       setIsSubmitting(false);
@@ -231,7 +231,7 @@ const UserManagementClient: FC<Props> = ({
         showToast("Роль изменена", "success");
         setRoleDialogOpen(false);
       } else {
-        showToast("Не удалось изменить роль", "error");
+        showToast(res.error ?? "Не удалось изменить роль", "error");
       }
     } finally {
       setIsSubmitting(false);
