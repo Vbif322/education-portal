@@ -43,7 +43,6 @@ next-env.d.ts
 *.mp4
 *.lock
 *lock.json
-/drizzle
 
 # documentation (internal)
 /docs
