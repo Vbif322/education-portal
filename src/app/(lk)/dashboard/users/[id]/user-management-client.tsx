@@ -23,6 +23,7 @@ import {
 } from "./actions";
 import { Course, Lesson } from "@/@types/course";
 import AccessDialog from "./AccessDialog";
+import { LessonActivity } from "@/app/lib/dal/analytics";
 
 type CourseAccess = {
   courseId: number;
@@ -46,7 +47,8 @@ type Props = {
   allCourses: Course[];
   allLessons: Lesson[];
   lessonsFromCourses: { lessons: Lesson[]; courseId: Course["id"] }[];
-  userLogins: UserActivity[]
+  userLogins: UserActivity[];
+  lessonActivity: LessonActivity[];
 };
 
 const UserManagementClient: FC<Props> = ({
@@ -57,43 +59,13 @@ const UserManagementClient: FC<Props> = ({
   allCourses,
   allLessons,
   lessonsFromCourses,
-  userLogins
+  userLogins,
+  lessonActivity,
 }) => {
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const [courseDialogOpen, setCourseDialogOpen] = useState(false);
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
-
-  const mockLessonActivity = [
-    {
-      lessonName: "Введение в React",
-      courseRequested: "Основы фронтенд-разработки",
-      lastView: new Date("2024-12-04T10:30:00"),
-      progress: 85,
-      totalViews: 12
-    },
-    {
-      lessonName: "Работа с API",
-      courseRequested: "Основы фронтенд-разработки",
-      lastView: new Date("2024-12-03T15:45:00"),
-      progress: 100,
-      totalViews: 8
-    },
-    {
-      lessonName: "Hooks и контекст",
-      courseRequested: "Продвинутый React",
-      lastView: new Date("2024-12-02T14:20:00"),
-      progress: 45,
-      totalViews: 5
-    },
-    {
-      lessonName: "TypeScript основы",
-      courseRequested: "TypeScript для разработчиков",
-      lastView: new Date("2024-12-01T09:10:00"),
-      progress: 60,
-      totalViews: 3
-    },
-  ];
 
   // Subscription form state
   const [subscriptionType, setSubscriptionType] = useState<
@@ -286,56 +258,63 @@ const UserManagementClient: FC<Props> = ({
           <h3 className={s.activity__subsection__title}>
             Активность по урокам
           </h3>
-          <div className={s.activity__table__wrapper}>
-            <table className={s.activity__table}>
-              <thead>
-                <tr>
-                  <th>Урок</th>
-                  <th>Курс</th>
-                  <th>Последний просмотр</th>
-                  <th>Прогресс</th>
-                  <th>Просмотров</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockLessonActivity.map((activity, index) => (
-                  <tr key={index}>
-                    <td className={s.activity__table__lesson}>
-                      {activity.lessonName}
-                    </td>
-                    <td className={s.activity__table__course}>
-                      {activity.courseRequested}
-                    </td>
-                    <td className={s.activity__table__date}>
-                      {formatDate(activity.lastView)}
-                      <span className={s.activity__table__time}>
-                        {activity.lastView.toLocaleTimeString("ru-RU", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={s.activity__progress}>
-                        <div className={s.activity__progress__bar}>
-                          <div
-                            className={s.activity__progress__fill}
-                            style={{ width: `${activity.progress}%` }}
-                          />
-                        </div>
-                        <span className={s.activity__progress__text}>
-                          {activity.progress}%
-                        </span>
-                      </div>
-                    </td>
-                    <td className={s.activity__table__views}>
-                      {activity.totalViews}
-                    </td>
+          {lessonActivity.length > 0 ? (
+            <div className={s.activity__table__wrapper}>
+              <table className={s.activity__table}>
+                <thead>
+                  <tr>
+                    <th>Урок</th>
+                    <th>Курс</th>
+                    <th>Последний просмотр</th>
+                    <th>Прогресс</th>
+                    <th>Просмотров</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {lessonActivity.map((activity, index) => (
+                    <tr key={index}>
+                      <td className={s.activity__table__lesson}>
+                        {activity.lessonName}
+                      </td>
+                      <td className={s.activity__table__course}>
+                        {activity.courseName}
+                      </td>
+                      <td className={s.activity__table__date}>
+                        {formatDate(activity.lastView)}
+                        <span className={s.activity__table__time}>
+                          {new Date(activity.lastView).toLocaleTimeString(
+                            "ru-RU",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
+                        </span>
+                      </td>
+                      <td>
+                        <div className={s.activity__progress}>
+                          <div className={s.activity__progress__bar}>
+                            <div
+                              className={s.activity__progress__fill}
+                              style={{ width: `${activity.progress}%` }}
+                            />
+                          </div>
+                          <span className={s.activity__progress__text}>
+                            {activity.progress}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className={s.activity__table__views}>
+                        {activity.totalViews}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className={s.empty__text}>Нет активности по урокам</p>
+          )}
         </div>
       </Paper>
 

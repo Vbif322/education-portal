@@ -11,7 +11,10 @@ import {
 } from "@/app/lib/dal/course.dal";
 import { getAllLessons, getUserLessonAccess } from "@/app/lib/dal/lesson.dal";
 import { canManage } from "@/app/utils/permissions";
-import { getLastLoginsByUserId } from "@/app/lib/dal/analytics";
+import {
+  getLastLoginsByUserId,
+  getUserLessonActivity,
+} from "@/app/lib/dal/analytics";
 
 export default async function UserManagementPage({
   params,
@@ -30,14 +33,21 @@ export default async function UserManagementPage({
     notFound();
   }
 
-  const [courseAccessList, lessonAccessList, allCourses, allLessons, userLogins] =
-    await Promise.all([
-      getUserCourseAccess(id),
-      getUserLessonAccess(id),
-      getAllCourses(),
-      getAllLessons(),
-      getLastLoginsByUserId(id)
-    ]);
+  const [
+    courseAccessList,
+    lessonAccessList,
+    allCourses,
+    allLessons,
+    userLogins,
+    lessonActivity,
+  ] = await Promise.all([
+    getUserCourseAccess(id),
+    getUserLessonAccess(id),
+    getAllCourses(),
+    getAllLessons(),
+    getLastLoginsByUserId(id),
+    getUserLessonActivity(id),
+  ]);
 
   const lessonsFromCourses =
     courseAccessList.length > 0
@@ -58,6 +68,7 @@ export default async function UserManagementPage({
       allLessons={allLessons}
       lessonsFromCourses={lessonsFromCourses}
       userLogins={userLogins}
+      lessonActivity={lessonActivity}
     />
   );
 }

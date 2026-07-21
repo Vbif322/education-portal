@@ -6,14 +6,12 @@
 
 ## 🔴 P0 — Критично (безопасность и сломанные потоки)
 
-- [ ] **Учитывать `courseAccess` в `getLesson`** — `src/app/lib/dal/lesson.dal.ts:23-52`. Выдача админом доступа к курсу не открывает ни одного урока, при этом UI курса (`src/app/(public)/courses/[id]/page.tsx:31-39`) считает доступ именно по `courseAccess` и показывает «доступ есть». Модель доступа противоречит сама себе.
 - [ ] **Удалить фейковый `mockLessonActivity` из админки** — `src/app/(lk)/dashboard/users/[id]/user-management-client.tsx:67-96,301-335`. Таблица «Активность по урокам» показывает выдуманные данные для любого пользователя. Убрать или заменить реальными данными из `videoEvents`/`usersToLessons`.
 - [ ] **Обрабатывать `{success:false}` в админ-мутациях** — `user-management-client.tsx:131-191`. Все 6 обработчиков (подписка, выдача/отзыв доступов, смена роли) игнорируют результат экшена и закрывают диалог — ложное «сохранено» при любой ошибке.
 - [ ] **Защитить `changeUserRole`/`updateSubscription`** — `src/app/(lk)/dashboard/users/[id]/actions.ts:12,262`. Добавить zod-валидацию входа, запись в audit log (сейчас самые чувствительные действия не логируются), запрет снятия роли с последнего админа и с самого себя.
 - [ ] **Валидировать `SESSION_SECRET` при старте** — `src/app/lib/session.ts:6-7`. При незаданной переменной ключ подписи пустой → JWT с `role: "admin"` тривиально подделывается. Fail-fast: ошибка при старте, если секрет отсутствует или короче 32 символов. Заодно `secure` cookie в зависимости от `NODE_ENV` (`session.ts:43,62` — сейчас захардкожен, в HTTP-dev cookie молча теряется).
-- [x] **Убрать пароль из логов и echo формы** — ✅ Сделано (Этап 1). `console.log(validatedFields)` убран, экшены больше не возвращают пароль в `fields`, формы `login-form`/`register-form` не подставляют его в `defaultValue` (старая `signup-form` удалена). Проверено вживую: поле пароля пустое после ошибки.
 - [ ] **Не раскрывать внутренние детали в ошибках `/api/videos`** — `src/app/api/videos/route.ts:109-113`. `details: JSON.stringify(error)` отдаёт клиенту пути ФС и стек; возвращать обобщённое сообщение, детали — только в серверный лог.
-- [x] **Ужесточить парольную политику** — ✅ Сделано (Этап 1). `registerFormSchema` в `src/app/lib/definitions.ts`: минимум 8 символов + хотя бы одна буква и одна цифра. Схема входа (`loginFormSchema`) намеренно мягкая (пароль только на непустоту), чтобы не ломать вход по старым паролям.
+- [ ] **Урок утекает название/описание запрещённому пользователю** — `src/app/(lk)/courses/[id]/lessons/[lessonId]/page.tsx:41`. Страница не проверяет флаг `forbidden` из `getLesson` и всегда рендерит `lesson.name`/`lesson.description` (видео при этом корректно даёт 403 в `/api/videos`). Приборная страница урока (`src/app/(lk)/dashboard/lessons/[id]/page.tsx:57,78`) флаг учитывает — привести обе к единому поведению.
 
 ## 🟠 P1 — Высокий (надёжность и UX)
 
@@ -28,6 +26,7 @@
 - [ ] **Адаптация header и navbar** (бургер-меню; media queries отсутствуют полностью) — `src/app/components/header/`, `src/app/components/navbar/`.
 - [ ] **`overflow-x: auto` для общих таблиц** — `src/app/components/tables/style.module.css:1-5`. Таблицы на 5–6 колонок вылезают за экран на мобильных.
 - [ ] **Media queries для форм и login** (фиксированные 300px/900px) — `src/app/components/forms/*.css`, `src/app/(public)/login/style.module.css`.
+- [ ] **`hasAccess` на странице курса учитывает только `courseAccess`** — `src/app/(public)/courses/[id]/page.tsx:32-40`. Проверка игнорирует `lessonAccess`, подписку «Все включено» и публичность урока/курса, поэтому пользователь, реально имеющий доступ к урокам, видит на лендинге ложное «нет доступа» и `ContactDialog` (`ui.tsx:63`). Привести к единой модели доступа (аналог `canAccessLesson`, но на уровне курса).
 - [ ] **Видимые сообщения об ошибках** вместо `alert()` на записи в курс и молчаливых `console.log` при падении загрузки видео — `src/app/(public)/courses/[id]/ui.tsx:52-56`, `src/app/(lk)/dashboard/admin/lesson-modal.tsx:81-87`, `lesson-change-modal.tsx:87-93`.
 - [ ] **Подтверждение «Отозвать доступ»** (сейчас срабатывает мгновенно) и имя удаляемого объекта в DeleteDialog — `user-management-client.tsx:409,453`, `src/app/components/dialogs/delete-dialog.tsx:16`.
 - [ ] **Поиск в шапке**: починить или убрать — `src/app/components/header/Header.tsx:50`. Сейчас это input-декорация без обработчиков.
