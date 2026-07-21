@@ -1,5 +1,9 @@
 "use server";
-import { signupFormSchema } from "@/app/lib/definitions";
+import {
+  loginFormSchema,
+  registerFormSchema,
+  type AuthFormState,
+} from "@/app/lib/definitions";
 import { db } from "@/db/db";
 import { subscription, users } from "@/db/schema/users";
 import * as bcrypt from "bcrypt";
@@ -8,79 +12,137 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import z from "zod";
 import { analyticsService } from "@/lib/analytics/analytics.service";
+import { checkRateLimit, getClientIp } from "../lib/rate-limit";
 
-export async function signin(_: unknown, formData: FormData) {
-  // Validate form fields
-  const validatedFields = signupFormSchema.safeParse({
+// Лимиты best-effort, ключи scoped по IP → блокировка не даёт заблокировать
+// вход жертве с чужого IP (нет account-lockout DoS). См. rate-limit.ts.
+const RATE_WINDOW_MS = 60_000;
+const LOGIN_MAX = 10;
+const REGISTER_MAX = 5;
+
+function tooManyRequests(email: string, retryAfter: number) {
+  return {
+    fields: { email },
+    errors: [`Слишком много попыток. Попробуйте через ${retryAfter} сек.`],
+  };
+}
+
+/** Вход. Не создаёт аккаунт: неизвестный email → та же ошибка, что и неверный пароль. */
+export async function signin(
+  _: unknown,
+  formData: FormData
+): Promise<AuthFormState> {
+  const validatedFields = loginFormSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
 
-  // If any form fields are invalid, return early
   if (!validatedFields.success) {
-    console.log(validatedFields);
+    // Пароль НЕ возвращаем обратно в форму.
     return {
       ...z.treeifyError(validatedFields.error),
-      fields: {
-        email: formData.get("email") as string,
-        password: formData.get("password") as string,
-      },
+      fields: { email: formData.get("email") as string },
     };
   }
-  const { email, password } = validatedFields.data;
-  const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Проверка, что юзер не существует
-  let isUserExist;
+  const { email, password } = validatedFields.data;
+
+  const ip = await getClientIp();
+  const rate = checkRateLimit(`login:${ip}`, LOGIN_MAX, RATE_WINDOW_MS);
+  if (!rate.ok) {
+    return tooManyRequests(email, rate.retryAfter);
+  }
+
+  let found;
   try {
-    isUserExist = await db
+    found = await db
       .select()
       .from(users)
       .where(eq(users.email, email))
       .limit(1);
   } catch (error) {
-    console.log(error);
+    console.error("signin: ошибка запроса пользователя", error);
+    return { fields: { email }, errors: ["Ошибка сервера. Попробуйте позже."] };
+  }
+
+  const user = found[0];
+  // bcrypt.compare только если пользователь найден (без преждевременного hash).
+  const isMatch = user ? await bcrypt.compare(password, user.password) : false;
+
+  if (!user || !isMatch) {
+    // Единое сообщение — на входе enumeration закрыт.
+    return { fields: { email }, errors: ["Неверный email или пароль"] };
+  }
+
+  const [updated] = await db
+    .update(users)
+    .set({ sessionID: crypto.randomUUID() })
+    .where(eq(users.id, user.id))
+    .returning();
+  await createSession(updated.id, updated.role, updated.sessionID);
+
+  analyticsService
+    .trackActivity({
+      userId: updated.id,
+      activityType: "login",
+      metadata: { newUser: false },
+    })
+    .catch((err) => console.error("Analytics tracking failed:", err));
+
+  redirect("/dashboard");
+}
+
+/** Регистрация. Создаёт пользователя + триальную подписку. */
+export async function signup(
+  _: unknown,
+  formData: FormData
+): Promise<AuthFormState> {
+  const validatedFields = registerFormSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+
+  if (!validatedFields.success) {
     return {
-      fields: {
-        email,
-        password,
-      },
-      errors: ["Ошибка при получении пользователя"],
+      ...z.treeifyError(validatedFields.error),
+      fields: { email: formData.get("email") as string },
     };
   }
 
-  if (isUserExist.length === 1) {
-    const isMatch = await bcrypt.compare(password, isUserExist[0].password);
-    if (isMatch) {
-      const user = await db
-        .update(users)
-        .set({ sessionID: crypto.randomUUID() })
-        .where(eq(users.id, isUserExist[0].id))
-        .returning();
-      await createSession(user[0].id, user[0].role, user[0].sessionID);
+  const { email, password } = validatedFields.data;
 
-      // Отслеживаем успешный вход (асинхронно)
-      analyticsService
-        .trackActivity({
-          userId: user[0].id,
-          activityType: "login",
-          metadata: { newUser: false },
-        })
-        .catch((err) => console.error("Analytics tracking failed:", err));
+  const ip = await getClientIp();
+  const rate = checkRateLimit(`register:${ip}`, REGISTER_MAX, RATE_WINDOW_MS);
+  if (!rate.ok) {
+    return tooManyRequests(email, rate.retryAfter);
+  }
 
-      redirect("/dashboard");
-    } else {
-      return {
-        fields: {
-          email,
-          password,
-        },
-        errors: ["Неверное имя пользователя или пароль"],
-      };
-    }
-  } else {
-    let newUserId: string;
-    await db.transaction(async (tx) => {
+  let existing;
+  try {
+    existing = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+  } catch (error) {
+    console.error("signup: ошибка запроса пользователя", error);
+    return { fields: { email }, errors: ["Ошибка сервера. Попробуйте позже."] };
+  }
+
+  if (existing.length > 0) {
+    // Примечание: явное сообщение раскрывает наличие аккаунта (enumeration
+    // через регистрацию). Полное закрытие — на Этапе 2 (email-verify поток).
+    return {
+      fields: { email },
+      errors: ["Пользователь с таким email уже существует"],
+    };
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  let newUser;
+  try {
+    newUser = await db.transaction(async (tx) => {
       const [user] = await tx
         .insert(users)
         .values({
@@ -94,26 +156,33 @@ export async function signin(_: unknown, formData: FormData) {
           role: users.role,
           sessionID: users.sessionID,
         });
-      newUserId = user.id;
       await tx.insert(subscription).values({
         userId: user.id,
         type: "Ознакомительная",
         endedAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 дней
       });
-      await createSession(user.id, user.role, user.sessionID);
+      return user;
     });
-
-    // Отслеживаем регистрацию нового пользователя (асинхронно)
-    analyticsService
-      .trackActivity({
-        userId: newUserId!,
-        activityType: "login",
-        metadata: { newUser: true },
-      })
-      .catch((err) => console.error("Analytics tracking failed:", err));
-
-    redirect("/dashboard");
+  } catch (error) {
+    // В т.ч. гонка на unique(email).
+    console.error("signup: ошибка создания пользователя", error);
+    return {
+      fields: { email },
+      errors: ["Не удалось создать аккаунт. Попробуйте позже."],
+    };
   }
+
+  await createSession(newUser.id, newUser.role, newUser.sessionID);
+
+  analyticsService
+    .trackActivity({
+      userId: newUser.id,
+      activityType: "login",
+      metadata: { newUser: true },
+    })
+    .catch((err) => console.error("Analytics tracking failed:", err));
+
+  redirect("/dashboard");
 }
 
 export async function logout() {

@@ -13,6 +13,7 @@ export * from "./usersToLessons";
 // Analytics tables
 export * from "./analytics/videoEvents";
 export * from "./analytics/userActivity";
+export * from "./analytics/userVisits";
 
 // Audit tables
 export * from "./audit/adminActions";

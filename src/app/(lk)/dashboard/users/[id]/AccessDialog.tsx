@@ -20,6 +20,7 @@ type Props = {
   expiresAt: string;
   onExpiresAtChange: (value: string) => void;
   onSubmit: () => void;
+  submitting?: boolean;
 };
 
 const AccessDialog: FC<Props> = ({
@@ -34,6 +35,7 @@ const AccessDialog: FC<Props> = ({
   expiresAt,
   onExpiresAtChange,
   onSubmit,
+  submitting = false,
 }) => {
   return (
     <Dialog open={open} onClose={onClose}>
@@ -71,7 +73,10 @@ const AccessDialog: FC<Props> = ({
           <Button variant="text" onClick={onClose}>
             Отмена
           </Button>
-          <Button onClick={onSubmit} disabled={selectedItems.length === 0}>
+          <Button
+            onClick={onSubmit}
+            disabled={selectedItems.length === 0 || submitting}
+          >
             Добавить
           </Button>
         </div>

@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Education Portal
 
-## Getting Started
+Образовательная платформа: курсы, модули, уроки с видео, личный кабинет, ролевой доступ (user / manager / admin), аналитика и аудит действий.
 
-First, run the development server:
+## Стек
+
+- **Next.js 15** (App Router, Turbopack) + **React 19** + **TypeScript**
+- **PostgreSQL** + **Drizzle ORM** (драйвер `pg`)
+- **bcrypt** — хеширование паролей
+- **jose** — JWT-сессии в cookie
+- **zod** / **drizzle-zod** — валидация
+
+> Все таблицы БД живут в отдельной Postgres-схеме **`prod`** (не в `public`). Её создаёт первая миграция — вручную ничего создавать не нужно.
+
+## Требования
+
+- **Node.js 20+**
+- **Docker** (для локального PostgreSQL) — либо собственный экземпляр PostgreSQL
+
+## Быстрый старт
 
 ```bash
+# 1. Зависимости
+npm install
+
+# 2. Переменные окружения
+cp .env.example .env
+# затем сгенерируйте SESSION_SECRET и впишите его в .env:
+openssl rand -base64 32
+
+# 3. Поднять PostgreSQL (Docker). Значения совпадают с .env.example
+docker compose up -d
+
+# 4. Создать схему prod и все таблицы
+npm run db:migrate
+
+# 5. Создать стартового администратора (email/пароль из .env)
+npm run db:seed
+
+# 6. Запустить приложение
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откройте [http://localhost:3000](http://localhost:3000). Вход — на странице `/login`
+(по умолчанию `admin@example.com` / `admin12345`, см. `SEED_ADMIN_*` в `.env`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> Если используете свой PostgreSQL вместо Docker — пропустите шаг 3 и укажите свой `DATABASE_URL` в `.env`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Переменные окружения
 
-## Learn More
+| Переменная | Обязательна | Описание |
+|---|---|---|
+| `DATABASE_URL` | да | Строка подключения к PostgreSQL |
+| `SESSION_SECRET` | да | Ключ для подписи JWT-сессий (`openssl rand -base64 32`) |
+| `NEXT_PUBLIC_YANDEX_METRIKA_ID` | нет | ID счётчика Яндекс.Метрики |
+| `SEED_ADMIN_EMAIL` | нет | Email стартового админа для `db:seed` (по умолчанию `admin@example.com`) |
+| `SEED_ADMIN_PASSWORD` | нет | Пароль стартового админа для `db:seed` (по умолчанию `admin12345`) |
 
-To learn more about Next.js, take a look at the following resources:
+## Работа с базой данных
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Схема описана в TypeScript в [`src/db/schema/`](src/db/schema/). Команды Drizzle Kit:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Команда | Назначение |
+|---|---|
+| `npm run db:generate` | Сгенерировать SQL-миграцию после изменения схемы (в `drizzle/`) |
+| `npm run db:migrate` | Применить миграции к базе |
+| `npm run db:push` | Быстро синхронизировать схему с базой без файлов миграций (для локальной разработки) |
+| `npm run db:studio` | Открыть Drizzle Studio (веб-интерфейс к БД) |
+| `npm run db:seed` | Создать стартового администратора (идемпотентно) |
 
-## Deploy on Vercel
+Типичный цикл при изменении схемы: правите файлы в `src/db/schema/` → `npm run db:generate` → `npm run db:migrate`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## npm-скрипты
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Команда | Назначение |
+|---|---|
+| `npm run dev` | Dev-сервер (Turbopack) на порту 3000 |
+| `npm run build` | Production-сборка |
+| `npm run start` | Production-сервер на порту 3000 |
+| `npm run start:prod` | Production-сервер на порту 9000 |
+| `npm run lint` | ESLint |
+
+## Структура проекта
+
+```
+src/
+  app/
+    (public)/        # публичные страницы: /login, курсы
+    (lk)/            # личный кабинет: /dashboard, курсы и уроки
+    api/             # API-роуты (видео, сессии, уроки)
+    actions/         # серверные экшены (auth, courses, lessons, modules, skills)
+    lib/             # session, DAL, definitions
+  db/
+    schema/          # определения таблиц Drizzle (в схеме prod)
+    db.ts            # клиент Drizzle
+    seed.ts          # инициализация данных (админ)
+  lib/
+    analytics/       # сервис аналитики
+    audit/           # сервис аудита
+drizzle/             # сгенерированные SQL-миграции
+docker-compose.yml   # локальный PostgreSQL
+```

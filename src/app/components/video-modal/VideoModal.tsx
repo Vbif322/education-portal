@@ -36,7 +36,9 @@ export default function VideoModal({
     if (!videoRef.current) {
       return
     }
-    videoRef.current.play()
+    // Если модалку закрыть (handleClose → pause) до конца загрузки, промис play()
+    // отклоняется с AbortError. Глотаем, чтобы не было "Uncaught (in promise)".
+    videoRef.current.play().catch(() => {})
   }
 
   return (

@@ -17,3 +17,19 @@
   text-align: center;
   margin-bottom: 2rem;
 }
+
+.altAction {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: rgb(107 114 128);
+}
+
+.altAction a {
+  color: rgb(37 99 235);
+  text-decoration: none;
+}
+
+.altAction a:hover {
+  text-decoration: underline;
+}

@@ -76,10 +76,7 @@ export default async function LessonPage({
         <div className={s.bg}></div>
         <div className={s.wrapper}>
           {forbidden && <ContactModal />}
-          <Player
-            videoId={forbidden ? "" : lesson.videoURL}
-            lessonId={lesson.id}
-          />
+          <Player lessonId={lesson.id} />
           <p className={s.title}>{lesson.name}</p>
           <Paper style={{ width: "100%" }}>
             <p className={s.title}>Описание</p>

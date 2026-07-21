@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
+import { eq } from "drizzle-orm";
 import { getUser } from "@/app/lib/dal";
+import { canAccessLesson } from "@/app/lib/dal/lesson.dal";
+import { db } from "@/db/db";
+import { lessons } from "@/db/schema";
+import { getVideoPath } from "@/app/utils/helpers";
 
 const stat = promisify(fs.stat);
 
@@ -13,17 +18,34 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const filename = req.nextUrl.searchParams.get("name");
-    if (!filename) {
+    const lessonId = Number(req.nextUrl.searchParams.get("lessonId"));
+    if (!Number.isInteger(lessonId) || lessonId <= 0) {
       return NextResponse.json(
-        { error: "Имя файла отсутствует в запросе" },
+        { error: "Некорректный идентификатор урока" },
         { status: 400 }
       );
     }
 
-    // Санитизация пути для защиты от Path Traversal
+    // Проверка права на конкретный урок, а не только факта логина
+    if (!(await canAccessLesson(lessonId, user))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Имя файла берётся из БД, а не из запроса клиента
+    const lesson = await db.query.lessons.findFirst({
+      where: eq(lessons.id, lessonId),
+      columns: { videoURL: true },
+    });
+    if (!lesson?.videoURL) {
+      return NextResponse.json(
+        { error: "Видео не найдено" },
+        { status: 404 }
+      );
+    }
+
+    // Дополнительная защита от Path Traversal (getVideoPath уже берёт basename)
     const videosDir = path.join(process.cwd(), "src", "videos");
-    const filepath = path.resolve(videosDir, filename);
+    const filepath = getVideoPath(lesson.videoURL);
 
     if (!filepath.startsWith(videosDir + path.sep)) {
       return NextResponse.json(

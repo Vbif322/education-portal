@@ -214,6 +214,11 @@
   font-size: 2.5rem;
 }
 
+.videoShowcase {
+  max-width: 800px;
+  margin: 32px auto 0;
+}
+
 .aboutCard {
   margin-top: 32px;
   background: white;
@@ -265,6 +270,19 @@
   font-size: 1.125rem;
   line-height: 1.75;
   color: rgb(55 65 81);
+}
+
+.aboutBio a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.aboutBio a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
 }
 
 .aboutSection {

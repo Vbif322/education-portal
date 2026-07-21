@@ -1,4 +1,5 @@
-import SignupForm from "@/app/components/signup-form/SignupForm";
+import Link from "next/link";
+import LoginForm from "@/app/components/login-form/LoginForm";
 import s from "./style.module.css";
 
 export default function LoginPage() {
@@ -6,7 +7,10 @@ export default function LoginPage() {
     <div className={s.container}>
       <div className={s.paper}>
         <h2 className={s.title}>Вход в кабинет</h2>
-        <SignupForm />
+        <LoginForm />
+        <p className={s.altAction}>
+          Нет аккаунта? <Link href="/register">Зарегистрироваться</Link>
+        </p>
       </div>
     </div>
   );

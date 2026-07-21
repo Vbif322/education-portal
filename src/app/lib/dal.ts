@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
 import { subscription, users } from "@/db/schema/users";
+import { visitTrackingService } from "@/lib/analytics/visitTracking.service";
 
 export const verifySession = cache(async () => {
   const cookieStore = await cookies();
@@ -20,15 +21,24 @@ export const verifySession = cache(async () => {
     redirect("/api/auth/clear-session");
   }
   const getSessionID = await db
-    .select({ session: users.sessionID })
+    .select({
+      session: users.sessionID
+    })
     .from(users)
     .where(eq(users.id, session.userId))
     .limit(1);
-  if (getSessionID[0].session !== session.sessionID) {
+
+  if (!getSessionID.length || getSessionID[0].session !== session.sessionID) {
     redirect("/api/auth/clear-session");
-  } else {
-    return { isAuth: true, userId: session.userId, role: session.role };
   }
+
+  // Асинхронное отслеживание визита (fire-and-forget)
+  // Сервис сам проверит, был ли уже визит сегодня
+  visitTrackingService
+    .trackVisit({ userId: session.userId })
+    .catch((err) => console.error("Visit tracking failed:", err));
+
+  return { isAuth: true, userId: session.userId, role: session.role };
 });
 
 export const getUser = cache(async () => {
@@ -49,6 +59,30 @@ export const getUser = cache(async () => {
     const user = data[0];
 
     return user;
+  } catch (error) {
+    console.log("Failed to fetch user", error);
+    return null;
+  }
+});
+
+// Как getUser, но для публичных страниц: анонимному посетителю возвращает
+// null вместо redirect("/"), чтобы страница могла отрендериться для гостя.
+export const getOptionalUser = cache(async () => {
+  const session = await verifySession();
+  if (session === null) {
+    return null;
+  }
+  try {
+    const data = await db.query.users.findMany({
+      where: eq(users.id, session.userId),
+      columns: {
+        id: true,
+        email: true,
+        role: true,
+      },
+    });
+
+    return data[0] ?? null;
   } catch (error) {
     console.log("Failed to fetch user", error);
     return null;

@@ -1,10 +1,5 @@
 import { relations } from "drizzle-orm";
-import {
-  integer,
-  timestamp,
-  uuid,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { integer, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { prodSchema } from "../schemaHelpers";
 
 export const users = prodSchema.table("users", {
