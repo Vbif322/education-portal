@@ -45,9 +45,6 @@ function validateVideoFile(file: File): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-const buff = Buffer.alloc(100);
-const header = Buffer.from("mvhd");
-
 export async function POST(request: NextRequest) {
   let tempFilepath: string | null = null;
 
@@ -106,15 +103,36 @@ export async function POST(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await pipeline(Readable.fromWeb(stream as any), writeStream);
 
+    const buff = Buffer.alloc(4096);
+    const header = Buffer.from("mvhd");
+
     const file = await fsp.open(filepath);
-    const { buffer } = await file.read(buff, 0, 100, 0);
+    const { buffer } = await file.read(buff, 0, 4096, 0);
 
     await file.close();
 
-    const start = buffer.indexOf(header) + 16;
-    const timeScale = buffer.readUInt32BE(start);
-    const duration = buffer.readUInt32BE(start + 4);
+    const mvhdIndex = buffer.indexOf(header);
+    const start = mvhdIndex + 16;
+    const hasEnoughBytes = mvhdIndex !== -1 && start + 8 <= buffer.length;
+    const timeScale = hasEnoughBytes ? buffer.readUInt32BE(start) : 0;
+    const duration = hasEnoughBytes ? buffer.readUInt32BE(start + 4) : 0;
     const videoDuration = Math.floor(duration / timeScale);
+
+    if (!hasEnoughBytes || timeScale <= 0 || !Number.isFinite(videoDuration)) {
+      await fsp.unlink(filepath);
+      return NextResponse.json(
+        {
+          properties: {
+            videofile: {
+              errors: [
+                "Не удалось определить длительность видео. Проверьте формат/кодировку файла.",
+              ],
+            },
+          },
+        },
+        { status: 400 }
+      );
+    }
 
     // Только после успешной загрузки файла записываем в БД
     const [newLesson] = await db
