@@ -11,6 +11,7 @@ import {
   getNextLesson,
   getPreviousLesson,
 } from "@/app/lib/dal/course.dal";
+import ContactModal from "@/app/(lk)/dashboard/lessons/[id]/contact-modal";
 
 interface CourseEduPageProps {
   params: Promise<{
@@ -43,6 +44,8 @@ const CourseEduPage: FC<CourseEduPageProps> = async ({ params }) => {
   if (!lesson || !course) {
     notFound();
   }
+  const forbidden = "forbidden" in lesson;
+  const lessonTitle = forbidden ? "Урок" : lesson.name;
 
   // Вычисляем общее количество уроков и номер текущего урока
   const allLessons: number[] = [];
@@ -59,7 +62,7 @@ const CourseEduPage: FC<CourseEduPageProps> = async ({ params }) => {
 
   const breadcrumbItems = [
     { label: course.name, href: `/courses/${id}` },
-    { label: lesson.name, href: `/courses/${id}/lessons/${lessonId}` },
+    { label: lessonTitle, href: `/courses/${id}/lessons/${lessonId}` },
   ];
 
   const onPrevious = async () => {
@@ -87,17 +90,18 @@ const CourseEduPage: FC<CourseEduPageProps> = async ({ params }) => {
       <Breadcrumbs items={breadcrumbItems} />
 
       <div className={s.content}>
+        {forbidden && <ContactModal />}
         <Player lessonId={lesson.id} />
 
         <LessonNavigation
-          lessonTitle={lesson.name}
+          lessonTitle={lessonTitle}
           currentLesson={currentLesson}
           totalLessons={totalLessons}
           onPrevious={onPrevious}
           onNext={onNext}
         />
 
-        {lesson.description && (
+        {!forbidden && lesson.description && (
           <div className={s.description}>
             <h4 className={s.descriptionTitle}>О чем этот урок</h4>
             <p className={s.descriptionText}>{lesson.description}</p>
