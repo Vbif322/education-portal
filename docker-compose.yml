@@ -1,3 +1,6 @@
+# ТОЛЬКО ДЛЯ ЛОКАЛЬНОЙ РАЗРАБОТКИ.
+# Пароль здесь заведомо слабый — в продакшене этот файл не используется,
+# там своя, отдельно настроенная база (см. README, раздел «Обновление на сервере»).
 services:
   db:
     image: postgres:16-alpine
@@ -8,7 +11,9 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: education_portal
     ports:
-      - "5432:5432"
+      # Только loopback: иначе база с паролем postgres/postgres
+      # слушает все интерфейсы машины.
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

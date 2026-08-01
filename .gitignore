@@ -31,7 +31,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
 
 # vercel
 .vercel
@@ -41,14 +41,16 @@ yarn-error.log*
 next-env.d.ts
 
 *.mp4
-*.lock
-*lock.json
 
 # documentation (internal)
 /docs
 
 #temp_files
 /temp_files
+
+# состояние scripts/deploy.sh на сервере (логи, блокировка, история)
+/.deploy/
+/.deploy.env
 
 # design-sync (claude.ai/design) — staged scripts, build output, machine state
 /.ds-sync/
