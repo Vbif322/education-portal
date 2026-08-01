@@ -1,7 +1,7 @@
 "use client";
 
 import { FC } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import Button from "@/app/ui/Button/Button";
 import s from "./LessonNavigation.module.css";
 
@@ -44,11 +44,19 @@ const LessonNavigation: FC<LessonNavigationProps> = ({
         <Button
           variant="filled"
           onClick={onNext}
-          disabled={isLast}
           className={s.button}
         >
-          Следующий
-          <ChevronRight size={20} />
+          {isLast ? (
+            <>
+              Завершить курс
+              <Check size={20} />
+            </>
+          ) : (
+            <>
+              Следующий
+              <ChevronRight size={20} />
+            </>
+          )}
         </Button>
       </div>
     </div>

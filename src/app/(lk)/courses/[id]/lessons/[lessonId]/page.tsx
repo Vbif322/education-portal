@@ -6,6 +6,7 @@ import LessonNavigation from "@/app/components/lesson-navigation/LessonNavigatio
 import s from "./style.module.css";
 import { completeLessonProgress, getLesson } from "@/app/lib/dal/lesson.dal";
 import { notFound, redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import {
   getCourseById,
   getNextLesson,
@@ -83,6 +84,7 @@ const CourseEduPage: FC<CourseEduPageProps> = async ({ params }) => {
     if (nextLessonId) {
       redirect(`/courses/${id}/lessons/${nextLessonId}`);
     }
+    revalidatePath(`/courses/${id}/lessons`);
   };
 
   return (
