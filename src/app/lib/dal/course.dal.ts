@@ -11,9 +11,12 @@ import {
   usersToLessons,
   courseAccess,
   lessons,
+  lessonAccess,
+  subscription,
 } from "@/db/schema";
-import { eq, and, asc, count, sql, inArray } from "drizzle-orm";
-import { getUser } from "../dal";
+import { eq, and, or, gt, isNull, asc, count, sql, inArray } from "drizzle-orm";
+import { getUser, getOptionalUser } from "../dal";
+import { canManage } from "../../utils/permissions";
 import {
   Course,
   CourseFulldata,
@@ -466,6 +469,72 @@ export async function getUserCourseAccess(userId: string) {
     console.error(error);
     return [];
   }
+}
+
+type CourseAccessUser = Awaited<ReturnType<typeof getOptionalUser>>;
+
+/**
+ * Единая проверка доступа к курсу: роль (admin/manager), публичность курса,
+ * подписка «Все включено», индивидуальный доступ к курсу (`courseAccess`)
+ * или к любому уроку внутри курса (`lessonAccess`), с учётом срока действия.
+ *
+ * Зеркалит canAccessLesson (lesson.dal.ts), но в обратном направлении:
+ * курс → модули → уроки, вместо урок → модуль → курс.
+ */
+export async function canAccessCourse(
+  courseId: Course["id"],
+  user?: CourseAccessUser
+): Promise<boolean> {
+  const currentUser = user ?? (await getOptionalUser());
+  if (!currentUser) return false;
+
+  if (canManage(currentUser)) return true;
+
+  const course = await db.query.courses.findFirst({
+    where: eq(courses.id, courseId),
+    columns: { id: true, privacy: true },
+  });
+  if (!course) return false;
+
+  if (course.privacy === "public") return true;
+
+  const now = new Date();
+
+  const sub = await db.query.subscription.findFirst({
+    where: eq(subscription.userId, currentUser.id),
+  });
+  if (sub?.type === "Все включено" && sub.endedAt > now) return true;
+
+  const grant = await db.query.courseAccess.findFirst({
+    where: and(
+      eq(courseAccess.userId, currentUser.id),
+      eq(courseAccess.courseId, courseId)
+    ),
+  });
+  if (grant && (!grant.expiresAt || grant.expiresAt > now)) return true;
+
+  const courseLessons = await db
+    .select({ lessonId: modulesToLessons.lessonId })
+    .from(coursesToModules)
+    .innerJoin(
+      modulesToLessons,
+      eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+    )
+    .where(eq(coursesToModules.courseId, courseId));
+
+  const lessonIds = courseLessons.map((l) => l.lessonId);
+  if (lessonIds.length > 0) {
+    const lessonGrant = await db.query.lessonAccess.findFirst({
+      where: and(
+        eq(lessonAccess.userId, currentUser.id),
+        inArray(lessonAccess.lessonId, lessonIds),
+        or(isNull(lessonAccess.expiresAt), gt(lessonAccess.expiresAt, now))
+      ),
+    });
+    if (lessonGrant) return true;
+  }
+
+  return false;
 }
 
 export async function getAllLessonsFromCourse(courseId: Course['id']) {

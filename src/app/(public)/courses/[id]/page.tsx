@@ -3,7 +3,7 @@ import UI from "./ui";
 import {
   getCourseMetadataById,
   isUserEnrolledInCourse,
-  getUserCourseAccess,
+  canAccessCourse,
 } from "@/app/lib/dal/course.dal";
 import { notFound } from "next/navigation";
 import { getOptionalUser } from "@/app/lib/dal";
@@ -28,16 +28,9 @@ const CoursePage: FC<Props> = async ({ params }) => {
   // Только для залогиненного: иначе isUserEnrolledInCourse дёрнет getUser() → redirect.
   const isEnrolled = user ? await isUserEnrolledInCourse(courseId) : false;
 
-  // Проверяем, есть ли у пользователя доступ к курсу
-  let hasAccess = false;
-  if (user) {
-    const accessList = await getUserCourseAccess(user.id);
-    hasAccess = accessList.some(
-      (access) =>
-        access.courseId === courseId &&
-        (!access.expiresAt || new Date(access.expiresAt) > new Date())
-    );
-  }
+  // Единая проверка доступа: роль, публичность курса, подписка «Все включено»,
+  // индивидуальный доступ к курсу или к любому уроку внутри него.
+  const hasAccess = await canAccessCourse(courseId, user);
 
   return <UI {...course} user={user} isEnrolled={isEnrolled} hasAccess={hasAccess} />;
 };

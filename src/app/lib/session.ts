@@ -4,6 +4,11 @@ import { cookies } from "next/headers";
 import { UserFull } from "../../@types/user";
 
 const secretKey = process.env.SESSION_SECRET;
+if (!secretKey || secretKey.length < 32) {
+  throw new Error(
+    "SESSION_SECRET не задан или короче 32 символов — сгенерируйте: openssl rand -base64 32"
+  );
+}
 const encodedKey = new TextEncoder().encode(secretKey);
 
 export async function encrypt(payload: JWTPayload) {
@@ -40,7 +45,7 @@ export async function createSession(
 
   cookieStore.set("session", session, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     expires: expiresAt,
     sameSite: "lax",
     path: "/",
@@ -60,7 +65,7 @@ export async function updateSession() {
   const cookieStore = await cookies();
   cookieStore.set("session", session, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     expires: expires,
     sameSite: "lax",
     path: "/",

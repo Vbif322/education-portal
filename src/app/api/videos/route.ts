@@ -129,9 +129,7 @@ export async function GET(req: NextRequest) {
       });
     }
   } catch (error) {
-    return NextResponse.json(
-      { error: "Ошибка", details: JSON.stringify(error) },
-      { status: 400 }
-    );
+    console.error("Ошибка при отдаче видео:", error);
+    return NextResponse.json({ error: "Ошибка" }, { status: 400 });
   }
 }
