@@ -13,9 +13,17 @@ type Props = {
   /** Какая из двух посадочных активна — подсвечиваем переключатель. */
   audience: "b2c" | "b2b";
   navLinks: NavLink[];
+  /** Выбор аудитории уместен только на посадочных, но не на служебных
+   *  страницах вроде политики обработки ПД. */
+  showAudienceSwitch?: boolean;
 };
 
-export default function LandingHeader({ user, audience, navLinks }: Props) {
+export default function LandingHeader({
+  user,
+  audience,
+  navLinks,
+  showAudienceSwitch = true,
+}: Props) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
 
@@ -55,28 +63,30 @@ export default function LandingHeader({ user, audience, navLinks }: Props) {
               </ul>
             )}
             <div className={s.navActions}>
-              <div className={s.audienceSwitch}>
-                <Link
-                  href="/"
-                  className={`${s.audienceLink} ${
-                    audience === "b2c" ? s.audienceLinkActive : ""
-                  }`}
-                  aria-current={audience === "b2c" ? "page" : undefined}
-                  onClick={close}
-                >
-                  Для себя
-                </Link>
-                <Link
-                  href="/business"
-                  className={`${s.audienceLink} ${
-                    audience === "b2b" ? s.audienceLinkActive : ""
-                  }`}
-                  aria-current={audience === "b2b" ? "page" : undefined}
-                  onClick={close}
-                >
-                  Для компании
-                </Link>
-              </div>
+              {showAudienceSwitch && (
+                <div className={s.audienceSwitch}>
+                  <Link
+                    href="/"
+                    className={`${s.audienceLink} ${
+                      audience === "b2c" ? s.audienceLinkActive : ""
+                    }`}
+                    aria-current={audience === "b2c" ? "page" : undefined}
+                    onClick={close}
+                  >
+                    Для себя
+                  </Link>
+                  <Link
+                    href="/business"
+                    className={`${s.audienceLink} ${
+                      audience === "b2b" ? s.audienceLinkActive : ""
+                    }`}
+                    aria-current={audience === "b2b" ? "page" : undefined}
+                    onClick={close}
+                  >
+                    Для компании
+                  </Link>
+                </div>
+              )}
               <Link
                 href={user ? "/dashboard" : "/login"}
                 className={s.loginButton}

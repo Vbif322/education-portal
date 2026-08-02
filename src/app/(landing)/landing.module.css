@@ -81,7 +81,10 @@
   display: flex;
   flex: 1;
   align-items: center;
-  justify-content: space-between;
+  /* Кнопка входа всегда прижата к правому краю шапки; якоря разводит влево
+     margin-right: auto на .navLinks. Через space-between единственный
+     оставшийся блок (страницы без якорей) уезжал бы влево. */
+  justify-content: flex-end;
   /* wrap — страховка: если текст отрисуется шире (другой шрифт/масштаб),
      блоки перенесутся на вторую строку, а не вылезут за шапку. */
   flex-wrap: wrap;
@@ -94,7 +97,7 @@
   list-style-type: none;
   gap: 20px;
   align-items: center;
-  margin: 0;
+  margin: 0 auto 0 0;
   padding: 0;
 }
 
@@ -529,6 +532,62 @@
   gap: 8px;
 }
 
+/* Юридические страницы: узкая колонка по центру. Ширина = max-width .legalText
+   (800px) + горизонтальные padding'и .section, чтобы заголовок и текст шли по
+   одному левому краю. */
+.legalSection {
+  max-width: 864px;
+  margin: 0 auto;
+}
+
+.legalText {
+  margin-top: 32px;
+  max-width: 800px;
+}
+
+.legalText h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: rgb(17 24 39);
+  margin: 32px 0 12px;
+}
+
+.legalText p {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: rgb(55 65 81);
+}
+
+.legalText ul {
+  margin: 12px 0;
+  padding-left: 24px;
+  list-style: disc;
+}
+
+.legalText li {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: rgb(55 65 81);
+}
+
+.legalText li + li {
+  margin-top: 8px;
+}
+
+.legalText code {
+  font-size: 0.9375rem;
+  word-break: break-all;
+}
+
+.legalText a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.legalText a:hover {
+  text-decoration: underline;
+}
+
 .requestLead {
   margin-top: 8px;
   max-width: 720px;
@@ -834,6 +893,7 @@
     flex-direction: column;
     align-items: stretch;
     gap: 4px;
+    margin: 0;
   }
 
   .navigation li {

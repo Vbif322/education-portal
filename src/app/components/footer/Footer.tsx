@@ -28,6 +28,7 @@ const Footer: FC = () => {
         <div className={s.links}>
           <Link href="/">Курсы для себя</Link>
           <Link href="/business">Корпоративное обучение</Link>
+          <Link href="/privacy">Обработка персональных данных</Link>
         </div>
       </div>
       <div className={s.block}>
