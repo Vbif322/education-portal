@@ -76,20 +76,17 @@
   color: #2563eb;
 }
 
-/* Свёртываемая часть: якорные ссылки + переключатель + вход. */
+/* Свёртываемая часть: якорные ссылки + переключатель + вход.
+   flex-basis обязан быть auto, а не 0: с нулевым базисом сумма базовых размеров
+   меньше контейнера, раскладка идёт по сценарию роста, и .navTop никогда не
+   сжимается — дефицит места отдувает меню. Порог min-content (min-width: auto)
+   не снимаем, чтобы нехватка ширины уходила в логотип, а не ломала меню. */
 .navMenu {
   display: flex;
-  flex: 1;
+  flex: 1 1 auto;
   align-items: center;
-  /* Кнопка входа всегда прижата к правому краю шапки; якоря разводит влево
-     margin-right: auto на .navLinks. Через space-between единственный
-     оставшийся блок (страницы без якорей) уезжал бы влево. */
   justify-content: flex-end;
-  /* wrap — страховка: если текст отрисуется шире (другой шрифт/масштаб),
-     блоки перенесутся на вторую строку, а не вылезут за шапку. */
-  flex-wrap: wrap;
   gap: 12px 24px;
-  min-width: 0;
 }
 
 .navLinks {
@@ -114,6 +111,9 @@
   position: relative;
   transition: color 0.2s ease;
   display: block;
+  /* Держит min-content меню равным его max-content: при нехватке ширины
+     переносится логотип, а якоря остаются в одну строку. */
+  white-space: nowrap;
 }
 
 .navigation li a:hover {
@@ -141,7 +141,6 @@
   font-size: 1.125rem;
   cursor: pointer;
   transition: transform 0.2s ease;
-  white-space: nowrap;
   color: rgb(17 24 39);
   text-decoration: none;
 }
@@ -294,7 +293,9 @@
 .imgContainer img {
   border-radius: 8px;
   display: block;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
@@ -923,6 +924,7 @@
   .navMenu {
     display: none;
     flex: 1 1 100%;
+    min-width: 0;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
