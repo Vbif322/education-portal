@@ -38,8 +38,11 @@ DS_CHROMIUM_PATH=/usr/bin/google-chrome node .ds-sync/package-validate.mjs ./ds-
   `playwright` lib installed into `.ds-sync/` with browser download skipped — no ~150 MB chromium.
 - **Fonts:** the app loads Geist via `next/font` (JS), which the bundle does not reference, so previews
   render in the system fallback (Arial), not Geist. No `[FONT_MISSING]` — expected, not a defect.
-- **Excluded (5):** `Header`, `SignupForm`, `CourseForm` (import server actions), `Player` (internal
-  `/api` fetches), `YandexMetrika` (analytics injector, not a UI component).
+- **Excluded (8):** `Header`, `SignupForm`, `CourseForm` (import server actions), `Player` (internal
+  `/api` fetches), `YandexMetrika` (analytics injector, not a UI component), plus three landing
+  components: `LandingHero` (static `.webp` import via `next/image` — esbuild has no loader for it),
+  `CoursesCatalog` (async server component that queries the DB), `LeadForm` (client component
+  importing a `'use server'` module — esbuild would follow it into `nodemailer`/`db`/`server-only`).
 
 ## Per-component override notes
 

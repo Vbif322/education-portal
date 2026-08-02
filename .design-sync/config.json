@@ -27,7 +27,12 @@
     "Breadcrumbs": "/** Trail items in order; the last renders as the current (non-link) page. A leading Home icon linking to the dashboard is always prepended. */ items: { label: string; href: string }[];",
     "SettingBlock": "/** Card heading. */ title: string; /** Setting rows. A row with navigate renders as a link with a chevron; without it, a static label/value pair. */ rows: { navigate?: string; text1: string; text2: string }[];",
     "Aside": "/** Course whose module/lesson tree is listed. */ course: { id: number; name: string; modules: { order: number; module: { id: number; name: string; lessons: { order: number; lesson: { id: number; name: string } }[] } }[] }; /** Completion percent 0-100 for the header progress bar. */ progress?: number; /** Ids of completed lessons (shown with a check). */ completedLessonIds?: Set<number>;",
-    "CourseCard": "/** Course title. */ name?: string; /** Short summary. */ description?: string | null; /** Course id (used for the enroll/continue link). */ id?: number; /** Number of modules. */ moduleCount?: number; /** Number of lessons. */ lessonCount?: number; /** Progress; when present the CTA becomes 'Продолжить курс' and a bar is shown. */ progress?: { completed: number; total: number; percentage: number }; /** Optional explicit link override. */ link?: string;",
+    "CourseCard": "/** Course title. */ name?: string; /** Short summary. */ description?: string | null; /** Course id (used for the enroll/continue link). */ id?: number; /** Number of modules. */ moduleCount?: number; /** Number of lessons. */ lessonCount?: number; /** Progress; when present the CTA becomes 'Продолжить курс' and a bar is shown. */ progress?: { completed: number; total: number; percentage: number }; /** Optional explicit link override. */ link?: string; /** Overrides the CTA label (e.g. 'Программа курса' on the B2B landing). */ ctaLabel?: string;",
+    "LandingHeader": "/** Signed-in user, or null for a guest (drives the Вход / Личный кабинет button). */ user: { id: string } | null; /** Which landing is active; highlights the audience switch. */ audience: 'b2c' | 'b2b'; /** Anchor links shown in the middle of the nav. */ navLinks: { href: string; label: string }[];",
+    "LandingSection": "/** Optional anchor id for in-page navigation. */ id?: string; /** Section heading (rendered as h2). */ title: string; /** Section body. */ children?: React.ReactNode;",
+    "AboutInstructor": "/** No props — the instructor bio block is identical on both landings. */",
+    "BusinessTeaser": "/** No props — B2B teaser block shown on the B2C landing. */",
+    "HowItWorks": "/** No props — the four fixed steps of the corporate onboarding flow. */",
     "LessonCard": "/** Lesson title. */ name: string; /** Short summary (nullable). */ description?: string | null; /** Lesson id (used for the watch link). */ id: number; /** Duration in seconds; rendered as mm:ss. */ duration: number; /** When true the CTA becomes 'Продолжить' instead of 'Смотреть'. */ progress?: boolean;",
     "Navbar": "/** Current user; when role is manager/admin, management tabs appear. Omit for a guest. */ user?: { id: string; email: string; role: 'user' | 'manager' | 'admin' };",
     "CourseTable": "/** Rows to render (course records). */ data: { id: number; name: string; description: string | null; program: string | null; privacy: 'private' | 'public'; showOnLanding: boolean; createdAt: Date; updatedAt: Date }[]; /** Called with the course id to delete. */ handleDelete: (id: number) => void; /** Show the red delete button (default true). */ canDelete?: boolean;",
@@ -78,6 +83,11 @@
     "ModuleTable": "src/app/components/tables/ModuleTable.tsx",
     "UsersTable": "src/app/components/tables/users-table.tsx",
     "LessonTable": "src/app/components/tables/LessonTable.tsx",
-    "ModuleForm": "src/app/components/forms/module-form.tsx"
+    "ModuleForm": "src/app/components/forms/module-form.tsx",
+    "LandingHeader": "src/app/(landing)/_components/LandingHeader.tsx",
+    "LandingSection": "src/app/(landing)/_components/LandingSection.tsx",
+    "AboutInstructor": "src/app/(landing)/_components/AboutInstructor.tsx",
+    "BusinessTeaser": "src/app/(landing)/_components/BusinessTeaser.tsx",
+    "HowItWorks": "src/app/(landing)/_components/HowItWorks.tsx"
   }
 }

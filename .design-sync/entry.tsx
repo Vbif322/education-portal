@@ -36,3 +36,10 @@ export { default as ModuleTable } from "@/app/components/tables/ModuleTable";
 export { default as UsersTable } from "@/app/components/tables/users-table";
 export { default as LessonTable } from "@/app/components/tables/LessonTable";
 export { default as ModuleForm } from "@/app/components/forms/module-form";
+
+// --- Landing (B2C / B2B) ---
+export { default as LandingHeader } from "@/app/(landing)/_components/LandingHeader";
+export { default as LandingSection } from "@/app/(landing)/_components/LandingSection";
+export { default as AboutInstructor } from "@/app/(landing)/_components/AboutInstructor";
+export { default as BusinessTeaser } from "@/app/(landing)/_components/BusinessTeaser";
+export { default as HowItWorks } from "@/app/(landing)/_components/HowItWorks";
