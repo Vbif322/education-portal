@@ -30,7 +30,7 @@
 }
 
 .nav {
-  padding: 24px 48px;
+  padding: 24px 28px;
   background: rgb(255 255 255 / 0.7);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
@@ -45,20 +45,61 @@
   list-style-type: none;
   justify-content: space-between;
   align-items: center;
-  gap: 48px;
+  gap: 24px;
+}
+
+/* Логотип + бургер. На десктопе бургер скрыт, блок ужимается по содержимому. */
+.navTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+}
+
+.burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: rgb(55 65 81);
+  cursor: pointer;
+}
+
+.burger:hover {
+  background: rgb(243 244 246);
+  color: #2563eb;
+}
+
+/* Свёртываемая часть: якорные ссылки + переключатель + вход. */
+.navMenu {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  /* wrap — страховка: если текст отрисуется шире (другой шрифт/масштаб),
+     блоки перенесутся на вторую строку, а не вылезут за шапку. */
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  min-width: 0;
 }
 
 .navLinks {
   display: flex;
   list-style-type: none;
-  gap: 36px;
+  gap: 20px;
   align-items: center;
   margin: 0;
   padding: 0;
 }
 
 .navigation li {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 500;
   position: relative;
 }
@@ -94,7 +135,7 @@
 
 .logoTitle {
   font-weight: 700;
-  font-size: 1.375rem;
+  font-size: 1.125rem;
   cursor: pointer;
   transition: transform 0.2s ease;
   white-space: nowrap;
@@ -109,7 +150,7 @@
 .navActions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 /* Переключатель аудитории B2C / B2B — сегментированная пара ссылок. */
@@ -121,7 +162,7 @@
 }
 
 .audienceLink {
-  padding: 7px 16px;
+  padding: 7px 12px;
   font-size: 0.9375rem;
   font-weight: 600;
   color: rgb(75 85 99);
@@ -143,7 +184,7 @@
 
 .loginButton {
   display: inline-block;
-  padding: 10px 24px;
+  padding: 10px 20px;
   font-size: 1rem;
   font-weight: 600;
   background: white;
@@ -154,6 +195,15 @@
   transition: all 0.3s ease;
   white-space: nowrap;
   text-decoration: none;
+}
+
+/* Десктоп: короткая подпись; в бургер-меню (≤1199px) — полная. */
+.loginLabelFull {
+  display: none;
+}
+
+.loginLabelShort {
+  display: inline;
 }
 
 .loginButton:hover {
@@ -247,6 +297,8 @@
 
 .section {
   padding: 32px;
+  /* Шапка лендинга sticky — без отступа якорная ссылка прячет заголовок под неё. */
+  scroll-margin-top: 110px;
 }
 
 .sectionTitle {
@@ -750,30 +802,80 @@
 /* Шапка не помещается в одну строку: логотип + якоря + переключатель + кнопка
    «Личный кабинет» шире 1200px-контейнера. Ниже этой ширины сворачиваем всё,
    кроме логотипа, в бургер-меню. */
+@media (max-width: 1199px) {
+  .navigation {
+    flex-wrap: wrap;
+  }
+
+  .navTop {
+    flex: 1 1 100%;
+  }
+
+  .burger {
+    display: flex;
+  }
+
+  .navMenu {
+    display: none;
+    flex: 1 1 100%;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgb(229 231 235);
+  }
+
+  .navMenuOpen {
+    display: flex;
+  }
+
+  .navLinks {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .navigation li {
+    font-size: 1.0625rem;
+  }
+
+  .navigation li a {
+    padding: 10px 0;
+  }
+
+  /* Подчёркивание из десктопного меню в вертикальном списке мешает. */
+  .navigation li a::after {
+    display: none;
+  }
+
+  .navActions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .audienceLink {
+    flex: 1;
+    text-align: center;
+  }
+
+  .loginButton {
+    text-align: center;
+  }
+
+  .loginLabelFull {
+    display: inline;
+  }
+
+  .loginLabelShort {
+    display: none;
+  }
+}
 
 @media (max-width: 1024px) {
   .featuresContainer {
     gap: 24px;
-  }
-
-  .nav {
-    padding: 20px 32px;
-  }
-
-  .navigation {
-    gap: 24px;
-  }
-
-  .navLinks {
-    gap: 24px;
-  }
-
-  .navigation li {
-    font-size: 1rem;
-  }
-
-  .logoTitle {
-    font-size: 1.125rem;
   }
 
   .aboutCard {
@@ -812,33 +914,22 @@
   }
 
   .nav {
-    padding: 16px 24px;
-  }
-
-  .navigation {
-    flex-direction: column;
-    gap: 20px;
-    align-items: stretch;
-  }
-
-  .navLinks {
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
-  }
-
-  .navigation li {
-    padding: 8px 0;
+    padding: 16px 20px;
   }
 
   .logoTitle {
     font-size: 1rem;
-    text-align: center;
   }
 
-  .loginButton {
-    width: 100%;
-    text-align: center;
+  /* На мобильном шапка прижата к верху окна: без отступа сверху и без
+     скруглений, чтобы sticky-состояние не отличалось от исходного. */
+  .page {
+    padding-top: 0;
+  }
+
+  .nav {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
   }
 
   .mainSection {
