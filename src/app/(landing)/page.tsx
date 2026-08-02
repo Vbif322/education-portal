@@ -27,8 +27,8 @@ import cs from "../components/contact-form/style.module.css";
 
 const NAV_LINKS = [
   { href: "#about", label: "О преподавателе" },
-  { href: "#courses", label: "Курсы" },
   { href: "#lessons", label: "Фрагменты уроков" },
+  { href: "#courses", label: "Курсы" },
   { href: "#faq", label: "Вопросы" },
   { href: "#contact", label: "Контакты" },
 ];

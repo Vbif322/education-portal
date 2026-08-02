@@ -15,7 +15,9 @@ export const registerFormSchema = z.object({
   password: z
     .string()
     .min(8, { message: "Пароль не должен быть меньше 8 символов" })
-    .regex(/[a-zA-Z]/, { message: "Пароль должен содержать хотя бы одну букву" })
+    .regex(/[a-zA-Z]/, {
+      message: "Пароль должен содержать хотя бы одну букву",
+    })
     .regex(/[0-9]/, { message: "Пароль должен содержать хотя бы одну цифру" })
     .trim(),
 });
@@ -99,7 +101,9 @@ export const contactRequestSchema = z.object({
     .min(2, { message: "Представьтесь, пожалуйста" })
     .max(80, { message: "Не больше 80 символов" })
     .transform(noNewlines),
-  email: z.email({ message: "Введите email в формате email@example.ru" }).trim(),
+  email: z
+    .email({ message: "Введите email в формате email@example.ru" })
+    .trim(),
   phone: z
     .string()
     .trim()
@@ -110,8 +114,8 @@ export const contactRequestSchema = z.object({
   message: z
     .string()
     .trim()
-    .min(5, { message: "Опишите вопрос хотя бы парой слов" })
-    .max(2000, { message: "Не больше 2000 символов" }),
+    .max(2000, { message: "Не больше 2000 символов" })
+    .optional(),
   consent: z.literal("on", {
     message:
       "Без согласия на обработку персональных данных мы не сможем принять обращение",
