@@ -106,6 +106,41 @@
   transform: scale(1.02);
 }
 
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Переключатель аудитории B2C / B2B — сегментированная пара ссылок. */
+.audienceSwitch {
+  display: flex;
+  padding: 3px;
+  background: rgb(243 244 246);
+  border-radius: 8px;
+}
+
+.audienceLink {
+  padding: 7px 16px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgb(75 85 99);
+  text-decoration: none;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.audienceLink:hover {
+  color: #2563eb;
+}
+
+.audienceLinkActive {
+  background: white;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 .loginButton {
   display: inline-block;
   padding: 10px 24px;
@@ -442,6 +477,14 @@
   gap: 8px;
 }
 
+.requestLead {
+  margin-top: 8px;
+  max-width: 720px;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: rgb(55 65 81);
+}
+
 .emptyCatalog {
   margin-top: 24px;
   font-size: 1.125rem;
@@ -579,6 +622,135 @@
   color: #10b981;
 }
 
+/* Тихая перелинковка на вторую посадочную под блоком CTA. */
+.crossLink {
+  font-size: 1rem;
+  color: rgb(75 85 99);
+  margin: -12px 0 0;
+}
+
+.crossLink a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.crossLink a:hover {
+  text-decoration: underline;
+}
+
+/* Тизер корпоративного сценария на B2C-лендинге. */
+.teaser {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 32px 40px;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+  border: 1px solid rgb(191 219 254);
+  border-radius: 12px;
+}
+
+.teaserIcon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 12px;
+  color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+}
+
+.teaserText {
+  flex: 1;
+}
+
+.teaserTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgb(17 24 39);
+  margin: 0 0 8px;
+}
+
+.teaserSubtitle {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgb(55 65 81);
+  margin: 0;
+}
+
+.teaserCta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: #2563eb;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.teaserCta:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+}
+
+/* «Как это работает» — нумерованные шаги на /business. */
+.steps {
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.step {
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.stepNumber {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(239 246 255);
+  color: #2563eb;
+  border-radius: 50%;
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.stepTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: rgb(17 24 39);
+  margin: 0 0 8px;
+}
+
+.stepText {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgb(55 65 81);
+  margin: 0;
+}
+
+/* Шапка не помещается в одну строку: логотип + якоря + переключатель + кнопка
+   «Личный кабинет» шире 1200px-контейнера. Ниже этой ширины сворачиваем всё,
+   кроме логотипа, в бургер-меню. */
+
 @media (max-width: 1024px) {
   .featuresContainer {
     gap: 24px;
@@ -626,6 +798,10 @@
 
   .highlightItem p {
     font-size: 0.9375rem;
+  }
+
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -775,5 +951,27 @@
 
   .highlightItem p {
     font-size: 0.9375rem;
+  }
+
+  .crossLink {
+    text-align: center;
+    margin-top: 0;
+  }
+
+  .teaser {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+    gap: 16px;
+  }
+
+  .teaserCta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 }

@@ -35,3 +35,19 @@
 .contactLink:hover {
   background: #e8e8e8;
 }
+
+.b2bHint {
+  margin-top: 20px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.b2bHint a {
+  color: #0056d2;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.b2bHint a:hover {
+  text-decoration: underline;
+}

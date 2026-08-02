@@ -2,7 +2,12 @@ import CourseCard from "@/app/components/course-card/CourseCard";
 import { getLandingCourses } from "@/app/lib/dal/course.dal";
 import s from "../landing.module.css";
 
-export default async function CoursesCatalog() {
+type Props = {
+  /** Подпись кнопки карточки: на /business «Записаться» вводит в заблуждение. */
+  ctaLabel?: string;
+};
+
+export default async function CoursesCatalog({ ctaLabel }: Props) {
   const courses = await getLandingCourses();
 
   if (courses.length === 0) {
@@ -17,7 +22,7 @@ export default async function CoursesCatalog() {
   return (
     <div className={s.courseCardContainer}>
       {courses.map((course) => (
-        <CourseCard key={course.id} {...course} />
+        <CourseCard key={course.id} {...course} ctaLabel={ctaLabel} />
       ))}
     </div>
   );

@@ -1,4 +1,5 @@
 import Dialog from "@/app/ui/Dialog/Dialog";
+import Link from "next/link";
 import React from "react";
 import s from "./style.module.css";
 
@@ -19,9 +20,17 @@ const ContactDialog = ({ open, onClose }: Props) => {
           Пожалуйста, свяжитесь с нами одним из способов:
         </p>
         <div className={s.contactMethods}>
-          <p className={s.contactLink}>📧 mesenyashin@mail.ru</p>
-          <p className={s.contactLink}>📞 +7 812 467-34-67</p>
+          <a className={s.contactLink} href="mailto:mesenyashin@mail.ru">
+            📧 mesenyashin@mail.ru
+          </a>
+          <a className={s.contactLink} href="tel:+78124673467">
+            📞 +7 812 467-34-67
+          </a>
         </div>
+        <p className={s.b2bHint}>
+          Обучаете сотрудников?{" "}
+          <Link href="/business">Корпоративное обучение →</Link>
+        </p>
       </div>
     </Dialog>
   );

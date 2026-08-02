@@ -4,6 +4,8 @@
   padding: 32px;
   display: flex;
   justify-content: space-evenly;
+  flex-wrap: wrap;
+  gap: 32px;
   color: #ffffff;
 }
 
@@ -31,9 +33,38 @@
   gap: 8px;
 }
 
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 1.125rem;
+}
+
+.links a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
+
 .company {
   display: flex;
   flex-direction: column;
   gap: 4px;
   font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    flex-direction: column;
+    padding: 24px;
+    gap: 28px;
+  }
+
+  .textContainer,
+  .links {
+    font-size: 1rem;
+  }
 }

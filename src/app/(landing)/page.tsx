@@ -18,6 +18,7 @@ import LandingHero from "./_components/LandingHero";
 import LandingSection from "./_components/LandingSection";
 import AboutInstructor from "./_components/AboutInstructor";
 import CoursesCatalog from "./_components/CoursesCatalog";
+import BusinessTeaser from "./_components/BusinessTeaser";
 
 const NAV_LINKS = [
   { href: "#about", label: "О преподавателе" },
@@ -30,7 +31,7 @@ export default async function Home() {
 
   return (
     <div className={s.page}>
-      <LandingHeader user={user} navLinks={NAV_LINKS} />
+      <LandingHeader user={user} audience="b2c" navLinks={NAV_LINKS} />
       <main className={s.main}>
         <LandingHero
           title="Курсы по менеджменту и"
@@ -109,6 +110,8 @@ export default async function Home() {
             <InlineVideoPlayer videoSrc="/videos/nareska-3min.mp4" />
           </div>
         </LandingSection>
+
+        <BusinessTeaser />
 
         <LandingSection id="courses" title="Каталог курсов">
           <CoursesCatalog />

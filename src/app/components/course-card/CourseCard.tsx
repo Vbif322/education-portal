@@ -14,6 +14,8 @@ interface CourseCardProps extends Partial<CourseWithMetadata> {
     percentage: number;
   };
   link?: string;
+  /** Переопределяет подпись кнопки (например, «Программа курса» на /business). */
+  ctaLabel?: string;
 }
 
 const CourseCard: FC<CourseCardProps> = ({
@@ -24,17 +26,20 @@ const CourseCard: FC<CourseCardProps> = ({
   moduleCount,
   lessonCount,
   link,
+  ctaLabel: ctaLabelOverride,
 }) => {
   const router = useRouter();
 
   const isCompleted = progress?.percentage === 100;
   const isInProgress = !!progress && !isCompleted;
 
-  const ctaLabel = isCompleted
-    ? "Пройти заново"
-    : isInProgress
-    ? "Продолжить курс"
-    : "Записаться";
+  const ctaLabel =
+    ctaLabelOverride ??
+    (isCompleted
+      ? "Пройти заново"
+      : isInProgress
+      ? "Продолжить курс"
+      : "Записаться");
   const ctaClass = isCompleted ? s.btnGhost : isInProgress ? s.btnBlue : s.btnDark;
 
   return (

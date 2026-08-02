@@ -19,6 +19,8 @@ type Props = {
   /** Вторая кнопка (VideoModal) — приходит готовым элементом. */
   secondaryCta?: React.ReactNode;
   badges: HeroBadge[];
+  /** Строка-перелинковка на вторую посадочную под блоком CTA. */
+  crossLink?: React.ReactNode;
 };
 
 export default function LandingHero({
@@ -29,6 +31,7 @@ export default function LandingHero({
   primaryCta,
   secondaryCta,
   badges,
+  crossLink,
 }: Props) {
   return (
     <section className={s.mainSection}>
@@ -55,6 +58,8 @@ export default function LandingHero({
           </Link>
           {secondaryCta}
         </div>
+
+        {crossLink && <p className={s.crossLink}>{crossLink}</p>}
 
         <div className={s.trustBadges}>
           {badges.map((badge) => (
