@@ -20,6 +20,8 @@ import LandingSection from "../_components/LandingSection";
 import AboutInstructor from "../_components/AboutInstructor";
 import CoursesCatalog from "../_components/CoursesCatalog";
 import HowItWorks from "../_components/HowItWorks";
+import FaqAccordion from "../_components/FaqAccordion";
+import { FAQ_B2B } from "../_components/faq-items";
 
 export const metadata: Metadata = {
   title:
@@ -123,6 +125,14 @@ export default async function BusinessLanding() {
 
         <LandingSection id="courses" title="Каталог курсов">
           <CoursesCatalog ctaLabel="Программа курса" />
+        </LandingSection>
+
+        <LandingSection id="faq" title="Частые вопросы">
+          <FaqAccordion items={FAQ_B2B} />
+          <p className={s.faqFooter}>
+            Остались вопросы? <a href="#request">Оставьте заявку</a> — ответим в
+            течение рабочего дня.
+          </p>
         </LandingSection>
 
         <LandingSection id="request" title="Оставить заявку">

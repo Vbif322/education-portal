@@ -19,11 +19,14 @@ import LandingSection from "./_components/LandingSection";
 import AboutInstructor from "./_components/AboutInstructor";
 import CoursesCatalog from "./_components/CoursesCatalog";
 import BusinessTeaser from "./_components/BusinessTeaser";
+import FaqAccordion from "./_components/FaqAccordion";
+import { FAQ_B2C } from "./_components/faq-items";
 
 const NAV_LINKS = [
   { href: "#about", label: "О преподавателе" },
   { href: "#courses", label: "Курсы" },
   { href: "#testimonials", label: "Видео" },
+  { href: "#faq", label: "Вопросы" },
 ];
 
 export default async function Home() {
@@ -115,6 +118,15 @@ export default async function Home() {
 
         <LandingSection id="courses" title="Каталог курсов">
           <CoursesCatalog />
+        </LandingSection>
+
+        <LandingSection id="faq" title="Частые вопросы">
+          <FaqAccordion items={FAQ_B2C} />
+          <p className={s.faqFooter}>
+            Не нашли ответ? Напишите на{" "}
+            <a href="mailto:mesenyashin@mail.ru">mesenyashin@mail.ru</a> или
+            позвоните <a href="tel:+78124673467">+7 812 467-34-67</a>.
+          </p>
         </LandingSection>
       </main>
       <Footer />

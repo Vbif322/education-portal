@@ -1141,3 +1141,91 @@
     gap: 16px;
   }
 }
+
+/* --- FAQ --------------------------------------------------------------- */
+
+.faqList {
+  max-width: 800px;
+  margin: 32px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faqItem {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.faqQuestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  cursor: pointer;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: rgb(17 24 39);
+  /* Убираем нативный треугольник: у <summary> он рисуется маркером списка
+     (Firefox/Chrome) либо псевдоэлементом (старые WebKit). */
+  list-style: none;
+}
+
+.faqQuestion::-webkit-details-marker {
+  display: none;
+}
+
+.faqQuestion:hover {
+  color: #2563eb;
+}
+
+.faqQuestion:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+.faqIcon {
+  flex-shrink: 0;
+  color: #2563eb;
+  transition: transform 0.2s ease;
+}
+
+.faqItem[open] .faqIcon {
+  transform: rotate(180deg);
+}
+
+.faqAnswer {
+  margin: 0;
+  padding: 0 24px 20px;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgb(55 65 81);
+}
+
+.faqFooter {
+  max-width: 800px;
+  margin: 24px auto 0;
+  text-align: center;
+  font-size: 0.9375rem;
+  color: rgb(55 65 81);
+}
+
+.faqFooter a {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .faqQuestion {
+    padding: 16px;
+    gap: 12px;
+    font-size: 1rem;
+  }
+
+  .faqAnswer {
+    padding: 0 16px 16px;
+  }
+}

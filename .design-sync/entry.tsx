@@ -44,3 +44,4 @@ export { default as AboutInstructor } from "@/app/(landing)/_components/AboutIns
 export { default as BusinessTeaser } from "@/app/(landing)/_components/BusinessTeaser";
 export { default as HowItWorks } from "@/app/(landing)/_components/HowItWorks";
 export { default as LandingCourseCard } from "@/app/(landing)/_components/LandingCourseCard";
+export { default as FaqAccordion } from "@/app/(landing)/_components/FaqAccordion";

@@ -33,6 +33,7 @@
     "AboutInstructor": "/** No props — the instructor bio block is identical on both landings. */",
     "BusinessTeaser": "/** No props — B2B teaser block shown on the B2C landing. */",
     "HowItWorks": "/** No props — the four fixed steps of the corporate onboarding flow. */",
+    "FaqAccordion": "/** Question/answer pairs rendered as native <details>. The answer is plain text — the same string is emitted as schema.org FAQPage JSON-LD, so no markup or links inside. */ items: { question: string; answer: string }[];",
     "LandingCourseCard": "/** Course shown in the landing catalogue: fields + aggregates + module names + skills. Every optional part hides its block when absent. */ course: { id: number; name: string; /** Short summary, clamped to 3 lines. */ description?: string | null; /** How the course runs, e.g. 'В записи'. */ format?: string | null; /** What the student will be able to do afterwards. */ outcome?: string | null; /** Module names in order; the card lists the first three. */ moduleNames: string[]; moduleCount: number; lessonCount: number; /** Total duration of all lessons, seconds. */ totalDuration: number; /** Result chips; the card shows the first four. */ skills: { id: number; name: string }[] }; /** Overrides the CTA label (e.g. 'Программа курса' on the B2B landing). */ ctaLabel?: string;",
     "LessonCard": "/** Lesson title. */ name: string; /** Short summary (nullable). */ description?: string | null; /** Lesson id (used for the watch link). */ id: number; /** Duration in seconds; rendered as mm:ss. */ duration: number; /** When true the CTA becomes 'Продолжить' instead of 'Смотреть'. */ progress?: boolean;",
     "Navbar": "/** Current user; when role is manager/admin, management tabs appear. Omit for a guest. */ user?: { id: string; email: string; role: 'user' | 'manager' | 'admin' };",
@@ -90,6 +91,7 @@
     "AboutInstructor": "src/app/(landing)/_components/AboutInstructor.tsx",
     "BusinessTeaser": "src/app/(landing)/_components/BusinessTeaser.tsx",
     "HowItWorks": "src/app/(landing)/_components/HowItWorks.tsx",
-    "LandingCourseCard": "src/app/(landing)/_components/LandingCourseCard.tsx"
+    "LandingCourseCard": "src/app/(landing)/_components/LandingCourseCard.tsx",
+    "FaqAccordion": "src/app/(landing)/_components/FaqAccordion.tsx"
   }
 }
