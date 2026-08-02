@@ -5,6 +5,7 @@ import {
   courses,
   usersToCourses,
   coursesToModules,
+  modules,
   modulesToLessons,
   skillsToCourses,
   skills,
@@ -21,6 +22,8 @@ import {
   Course,
   CourseFulldata,
   CourseWithMetadata,
+  LandingCourse,
+  Skill,
   UserCourseEnrollment,
 } from "@/@types/course";
 
@@ -49,6 +52,30 @@ function createLessonCountSubquery() {
     )
     .groupBy(coursesToModules.courseId)
     .as("lesson_counts");
+}
+
+/**
+ * Количество уроков и их суммарная длительность одним проходом.
+ * `::int` обязателен: SUM(integer) в Postgres возвращает bigint, а node-pg
+ * отдал бы его строкой — арифметика и форматирование молча сломались бы.
+ */
+function createLessonStatsSubquery() {
+  return db
+    .select({
+      courseId: coursesToModules.courseId,
+      lessonCount: count(lessons.id).as("lesson_count"),
+      totalDuration: sql<number>`COALESCE(SUM(${lessons.duration}), 0)::int`.as(
+        "total_duration"
+      ),
+    })
+    .from(coursesToModules)
+    .leftJoin(
+      modulesToLessons,
+      eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+    )
+    .leftJoin(lessons, eq(modulesToLessons.lessonId, lessons.id))
+    .groupBy(coursesToModules.courseId)
+    .as("lesson_stats");
 }
 
 // Function overloads for better type inference
@@ -83,6 +110,8 @@ export async function getAllCourses(
           name: courses.name,
           description: courses.description,
           program: courses.program,
+          format: courses.format,
+          outcome: courses.outcome,
           privacy: courses.privacy,
           createdAt: courses.createdAt,
           updatedAt: courses.updatedAt,
@@ -124,11 +153,83 @@ export async function getAllCourses(
   }
 }
 
-export async function getLandingCourses() {
-  const result = await db.query.courses.findMany({
-    where: eq(courses.showOnLanding, true),
-  });
-  return result;
+/**
+ * Курсы для каталога на лендинге со всем, что раскрывает карточка:
+ * формат и результат — поля курса, содержание — имена тем, объём — агрегаты
+ * по урокам, навыки — чипы результата.
+ */
+export async function getLandingCourses(): Promise<LandingCourse[]> {
+  // Лендинг рендерится динамически: падение БД не должно превращаться в 500
+  // на главной. Пустой каталог отрисуется фолбэком с контактами.
+  try {
+    const lessonStats = createLessonStatsSubquery();
+
+    // 1) курсы + агрегаты по урокам
+    const rows = await db
+      .select({
+        id: courses.id,
+        name: courses.name,
+        description: courses.description,
+        program: courses.program,
+        format: courses.format,
+        outcome: courses.outcome,
+        privacy: courses.privacy,
+        showOnLanding: courses.showOnLanding,
+        createdAt: courses.createdAt,
+        updatedAt: courses.updatedAt,
+        lessonCount: sql<number>`COALESCE(${lessonStats.lessonCount}, 0)`,
+        totalDuration: sql<number>`COALESCE(${lessonStats.totalDuration}, 0)`,
+      })
+      .from(courses)
+      .leftJoin(lessonStats, eq(courses.id, lessonStats.courseId))
+      .where(eq(courses.showOnLanding, true))
+      .orderBy(asc(courses.id));
+
+    if (rows.length === 0) return [];
+    const ids = rows.map((course) => course.id);
+
+    // 2) имена тем по порядку — moduleCount берём из длины списка
+    const moduleRows = await db
+      .select({ courseId: coursesToModules.courseId, name: modules.name })
+      .from(coursesToModules)
+      .innerJoin(modules, eq(coursesToModules.moduleId, modules.id))
+      .where(inArray(coursesToModules.courseId, ids))
+      .orderBy(asc(coursesToModules.courseId), asc(coursesToModules.order));
+
+    // 3) навыки
+    const skillRows = await db
+      .select({ courseId: skillsToCourses.courseId, skill: skills })
+      .from(skillsToCourses)
+      .innerJoin(skills, eq(skillsToCourses.skillId, skills.id))
+      .where(inArray(skillsToCourses.courseId, ids));
+
+    const namesByCourse = new Map<number, string[]>();
+    for (const row of moduleRows) {
+      const list = namesByCourse.get(row.courseId) ?? [];
+      list.push(row.name);
+      namesByCourse.set(row.courseId, list);
+    }
+
+    const skillsByCourse = new Map<number, Skill[]>();
+    for (const row of skillRows) {
+      const list = skillsByCourse.get(row.courseId) ?? [];
+      list.push(row.skill);
+      skillsByCourse.set(row.courseId, list);
+    }
+
+    return rows.map((course) => {
+      const moduleNames = namesByCourse.get(course.id) ?? [];
+      return {
+        ...course,
+        moduleNames,
+        moduleCount: moduleNames.length,
+        skills: skillsByCourse.get(course.id) ?? [],
+      };
+    });
+  } catch (error) {
+    console.error("Failed to fetch landing courses", error);
+    return [];
+  }
 }
 
 // Get course metadata by ID (moduleCount, lessonCount, skills)
@@ -145,6 +246,8 @@ export async function getCourseMetadataById(
         name: courses.name,
         description: courses.description,
         program: courses.program,
+        format: courses.format,
+        outcome: courses.outcome,
         privacy: courses.privacy,
         createdAt: courses.createdAt,
         updatedAt: courses.updatedAt,
@@ -274,6 +377,8 @@ export async function getUserCourses(): Promise<UserCourseEnrollment[]> {
           name: courses.name,
           description: courses.description,
           program: courses.program,
+          format: courses.format,
+          outcome: courses.outcome,
           privacy: courses.privacy,
           createdAt: courses.createdAt,
           updatedAt: courses.updatedAt,

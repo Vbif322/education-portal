@@ -38,12 +38,20 @@ DS_CHROMIUM_PATH=/usr/bin/google-chrome node .ds-sync/package-validate.mjs ./ds-
   `playwright` lib installed into `.ds-sync/` with browser download skipped — no ~150 MB chromium.
 - **Fonts:** the app loads Geist via `next/font` (JS), which the bundle does not reference, so previews
   render in the system fallback (Arial), not Geist. No `[FONT_MISSING]` — expected, not a defect.
-- **Excluded (5):** `Header`, `SignupForm`, `CourseForm` (import server actions), `Player` (internal
-  `/api` fetches), `YandexMetrika` (analytics injector, not a UI component).
+- **Excluded (11):** `Header`, `SignupForm`, `CourseForm` (import server actions), `Player` (internal
+  `/api` fetches), `InlineVideoPlayer` (asset-dependent: `public/videos/*` is not in the preview
+  bundle, so the card would render a black 16:9 box), `YandexMetrika` (analytics injector, not a UI
+  component), plus three landing
+  components: `LandingHero` (static `.webp` import via `next/image` — esbuild has no loader for it),
+  `CoursesCatalog` (async server component that queries the DB), `LeadForm` (client component
+  importing a `'use server'` module — esbuild would follow it into `nodemailer`/`db`/`server-only`).
+  Same server-action reason excludes `ContactForm` and — since it now embeds that form instead of
+  static contacts — `ContactDialog`, which was **de-registered** (entry re-export, `dtsPropsFor`,
+  `overrides`, `componentSrcMap` and its preview file all removed).
 
 ## Per-component override notes
 
-- Overlays render open in a single card: `Dialog`, `ContactDialog`, `DeleteDialog`, `AddSkillModal`,
+- Overlays render open in a single card: `Dialog`, `DeleteDialog`, `AddSkillModal`,
   `VideoModal` → `cardMode: single` (+ viewport).
 - Wide/full-bleed → `cardMode: column`: all 4 tables, `Navbar`, `Aside`.
 - **`Aside` needs `viewport: 1280x800`** — its CSS `@media (max-width:1024px){ display:none }` blanks it

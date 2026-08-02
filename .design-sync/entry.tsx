@@ -18,7 +18,6 @@ export { default as TestimonialCard } from "@/app/components/testimonial-card/Te
 export { default as LessonMaterials } from "@/app/components/lesson-materials/LessonMaterials";
 export { default as LessonNavigation } from "@/app/components/lesson-navigation/LessonNavigation";
 export { default as LessonItem } from "@/app/components/lesson-item/LessonItem";
-export { default as ContactDialog } from "@/app/components/dialogs/contact-dialog";
 export { default as DeleteDialog } from "@/app/components/dialogs/delete-dialog";
 export { default as AddSkillModal } from "@/app/components/modals/AddSkillModal";
 export { default as VideoModal } from "@/app/components/video-modal/VideoModal";
@@ -36,3 +35,13 @@ export { default as ModuleTable } from "@/app/components/tables/ModuleTable";
 export { default as UsersTable } from "@/app/components/tables/users-table";
 export { default as LessonTable } from "@/app/components/tables/LessonTable";
 export { default as ModuleForm } from "@/app/components/forms/module-form";
+
+// --- Landing (B2C / B2B) ---
+export { default as LandingHeader } from "@/app/(landing)/_components/LandingHeader";
+export { default as LandingSection } from "@/app/(landing)/_components/LandingSection";
+export { default as AboutInstructor } from "@/app/(landing)/_components/AboutInstructor";
+export { default as BusinessTeaser } from "@/app/(landing)/_components/BusinessTeaser";
+export { default as HowItWorks } from "@/app/(landing)/_components/HowItWorks";
+export { default as LessonFormat } from "@/app/(landing)/_components/LessonFormat";
+export { default as LandingCourseCard } from "@/app/(landing)/_components/LandingCourseCard";
+export { default as FaqAccordion } from "@/app/(landing)/_components/FaqAccordion";

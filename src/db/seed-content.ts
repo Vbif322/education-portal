@@ -4,7 +4,7 @@ import path from "path";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm";
 import * as schema from "./schema/index";
-import { courses } from "./schema/course";
+import { courses, skills, skillsToCourses } from "./schema/course";
 import { modules } from "./schema/module";
 import { lessons } from "./schema/lesson";
 import { coursesToModules } from "./schema/coursesToModules";
@@ -99,6 +99,12 @@ interface CourseDef {
   name: string;
   description: string;
   program: string;
+  /** Как проходит обучение — попадает в карточку курса на лендинге. */
+  format: string;
+  /** «Что вы сможете делать после курса» — там же. */
+  outcome: string;
+  /** Навыки курса: чипы блока «Результат». Создаются по имени. */
+  skills: string[];
   privacy: Status;
   showOnLanding: boolean;
   modules: ModuleDef[];
@@ -111,6 +117,14 @@ const CONTENT: CourseDef[] = [
       "Базовый курс о том, как ставить, вести и доводить задачи до результата в современной таск-системе.",
     program:
       "Обзор системы, быстрый старт, создание и ведение задач, работа с интерфейсом.",
+    format: "В записи",
+    outcome:
+      "Сможете поставить задачу так, чтобы её сделали в срок, и видеть статус всех задач команды в одной системе.",
+    skills: [
+      "Постановка задач",
+      "Контроль сроков",
+      "Работа в таск-трекере",
+    ],
     privacy: "public",
     showOnLanding: true,
     modules: [
@@ -157,6 +171,10 @@ const CONTENT: CourseDef[] = [
     description:
       "Углублённый курс о визуальном управлении потоком работ: доски, плавательные дорожки и организация процесса.",
     program: "Kanban-доски, плавательные дорожки (swimlanes), практикум по процессу.",
+    format: "В записи",
+    outcome:
+      "Сможете собрать Kanban-доску под свой процесс, развести потоки по дорожкам и находить узкие места.",
+    skills: ["Kanban", "Управление потоком работ", "Разбор процессов"],
     privacy: "private",
     showOnLanding: false,
     modules: [
@@ -197,6 +215,10 @@ const CONTENT: CourseDef[] = [
     description:
       "Практичный курс о фокусе, планировании и инструментах, которые помогают успевать больше.",
     program: "Основы продуктивности, фокус, планирование задач.",
+    format: "В записи",
+    outcome:
+      "Сможете спланировать неделю так, чтобы важные задачи не вытеснялись срочными.",
+    skills: ["Планирование дня и недели", "Удержание фокуса", "Приоритизация"],
     privacy: "public",
     showOnLanding: true,
     modules: [
@@ -311,6 +333,21 @@ async function main() {
     return moduleId;
   };
 
+  const upsertSkill = async (name: string): Promise<number> => {
+    const existing = await db
+      .select({ id: skills.id })
+      .from(skills)
+      .where(eq(skills.name, name))
+      .limit(1);
+    if (existing.length > 0) return existing[0].id;
+    const [row] = await db
+      .insert(skills)
+      .values({ name })
+      .returning({ id: skills.id });
+    console.log(`  ＋ Навык «${name}»`);
+    return row.id;
+  };
+
   const upsertCourse = async (c: CourseDef): Promise<number> => {
     const existing = await db
       .select({ id: courses.id })
@@ -319,8 +356,14 @@ async function main() {
       .limit(1);
     let courseId: number;
     if (existing.length > 0) {
-      console.log(`Курс «${c.name}» уже есть — пропускаю.`);
       courseId = existing[0].id;
+      // Курс уже есть, но новые поля могли появиться после его создания —
+      // без этого апдейта сид не донёс бы format/outcome до засеянной базы.
+      await db
+        .update(courses)
+        .set({ format: c.format, outcome: c.outcome })
+        .where(eq(courses.id, courseId));
+      console.log(`Курс «${c.name}» уже есть — обновляю формат и результат.`);
     } else {
       const [row] = await db
         .insert(courses)
@@ -328,6 +371,8 @@ async function main() {
           name: c.name,
           description: c.description,
           program: c.program,
+          format: c.format,
+          outcome: c.outcome,
           privacy: c.privacy,
           showOnLanding: c.showOnLanding,
         })
@@ -341,6 +386,14 @@ async function main() {
       await db
         .insert(coursesToModules)
         .values({ courseId, moduleId, order: i })
+        .onConflictDoNothing();
+    }
+
+    for (const skillName of c.skills) {
+      const skillId = await upsertSkill(skillName);
+      await db
+        .insert(skillsToCourses)
+        .values({ courseId, skillId })
         .onConflictDoNothing();
     }
 

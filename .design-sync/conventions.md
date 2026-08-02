@@ -58,7 +58,7 @@ part of this bundle, so previews and standalone renders use the system font).
 
 ## Composition notes
 
-- Overlays (`Dialog`, `ContactDialog`, `DeleteDialog`, `AddSkillModal`, `VideoModal`) are controlled:
+- Overlays (`Dialog`, `DeleteDialog`, `AddSkillModal`, `VideoModal`) are controlled:
   pass `open`/`isOpen` and the close/confirm callbacks.
 - Cards and forms take domain data as props (`CourseCard`, `LessonCard`, `LessonForm`, the tables) —
   give them realistic course/lesson/module/user objects; see each `.d.ts` for the shape.

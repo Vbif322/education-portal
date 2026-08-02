@@ -75,7 +75,9 @@ export default async function LessonPage({
       <div className={s.container}>
         <div className={s.bg}></div>
         <div className={s.wrapper}>
-          {forbidden && <ContactModal />}
+          {forbidden && (
+            <ContactModal lessonId={Number(id)} userEmail={user.email} />
+          )}
           <Player lessonId={lesson.id} />
           <p className={s.title}>{lesson.name}</p>
           <Paper style={{ width: "100%" }}>

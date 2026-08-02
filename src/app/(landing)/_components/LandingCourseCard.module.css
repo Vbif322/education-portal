@@ -1,0 +1,226 @@
+/* Визуальный язык совпадает с карточкой ЛК
+   (components/course-card/style.module.css): рамка #e5e7eb, радиус 12,
+   двухслойная тень, синяя иконка. Отличия — высота по треку грида и блоки
+   «Содержание»/«Результат». */
+
+/* Базовая раскладка — колонка; в браузерах с subgrid её перекрывает блок
+   @supports ниже, где строки карточки наследуются от сетки каталога. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /* Ширину задаёт колонка грида, высоту — самая длинная карточка строки. */
+  height: 100%;
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 1px 2px rgb(16 24 40 / 0.04),
+    0 8px 24px -12px rgb(16 24 40 / 0.18);
+  /* Длинное название темы не должно распирать трек грида. */
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.titleIcon {
+  color: #0056d2;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.title {
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 700;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.description {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #4b5563;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blockTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+}
+
+.moduleList {
+  margin: 0;
+  padding-left: 18px;
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.moduleList li::marker {
+  color: #0056d2;
+}
+
+.moduleItem {
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: #374151;
+  overflow-wrap: anywhere;
+}
+
+.more {
+  margin: 0;
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+.outcome {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #374151;
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Chip задаёт padding/radius/фон инлайном — снаружи меняем только типографику. */
+.skillChip {
+  font-size: 12.5px;
+  color: #1f2937;
+}
+
+.cta {
+  /* Прижимает кнопку к низу карточки: у соседей по строке она на той же линии. */
+  margin-top: auto;
+  display: block;
+  padding: 11px 16px;
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  background-color: #000;
+  color: #fff;
+  transition: background-color 0.15s;
+}
+
+.cta:hover {
+  background-color: #1a1a1a;
+}
+
+/* Одинаковые элементы соседних карточек — на одной высоте.
+   Карточка спанит десять строк сетки каталога и наследует их через subgrid,
+   поэтому высоту каждой строки задаёт самая длинная карточка ряда, а не
+   собственный контент. Блоки «Содержание» и «Результат» — вложенные subgrid'ы
+   по три строки: иначе выровнялся бы только верх блока, а список тем и чипы
+   навыков внутри него по-прежнему разъезжались бы вслед за длиной текста.
+
+   Строка закреплена за элементом явно (grid-row), чтобы отсутствующий элемент
+   оставлял свой трек пустым, а не сдвигал остальные вверх. Собственный
+   row-gap перекрывает шаг родителя внутри карточки и внутри блока.
+
+   Раскладка треков:
+     1 заголовок · 2 описание · 3 мета
+     4-6 содержание (заголовок · список тем · «ещё N»)
+     7-9 результат (заголовок · текст · чипы навыков)
+     10 кнопка */
+@supports (grid-template-rows: subgrid) {
+  .card {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 10;
+    row-gap: 14px;
+    height: auto;
+  }
+
+  .titleRow {
+    grid-row: 1;
+  }
+
+  .description {
+    grid-row: 2;
+  }
+
+  .meta {
+    grid-row: 3;
+  }
+
+  .block {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 3;
+    row-gap: 8px;
+  }
+
+  /* Нумерация строк внутри вложенного subgrid — своя, от 1 до 3. */
+  .blockTitle {
+    grid-row: 1;
+  }
+
+  .moduleList,
+  .outcome {
+    grid-row: 2;
+  }
+
+  .more,
+  .skills {
+    grid-row: 3;
+  }
+
+  .cta {
+    grid-row: 10;
+    /* Кнопку к низу прижимает последний трек, авто-отступ больше не нужен. */
+    margin-top: 0;
+    align-self: end;
+  }
+}

@@ -13,6 +13,7 @@ import {
   getPreviousLesson,
 } from "@/app/lib/dal/course.dal";
 import ContactModal from "@/app/(lk)/dashboard/lessons/[id]/contact-modal";
+import { getUser } from "@/app/lib/dal";
 
 interface CourseEduPageProps {
   params: Promise<{
@@ -47,6 +48,9 @@ const CourseEduPage: FC<CourseEduPageProps> = async ({ params }) => {
   }
   const forbidden = "forbidden" in lesson;
   const lessonTitle = forbidden ? "Урок" : lesson.name;
+  // Только ради предзаполнения формы в ContactModal; getUser обёрнут в
+  // React cache(), так что лишнего запроса на обычном рендере нет.
+  const user = forbidden ? await getUser() : null;
 
   // Вычисляем общее количество уроков и номер текущего урока
   const allLessons: number[] = [];
@@ -92,7 +96,12 @@ const CourseEduPage: FC<CourseEduPageProps> = async ({ params }) => {
       <Breadcrumbs items={breadcrumbItems} />
 
       <div className={s.content}>
-        {forbidden && <ContactModal />}
+        {forbidden && (
+          <ContactModal
+            lessonId={Number(lessonId)}
+            userEmail={user?.email}
+          />
+        )}
         <Player lessonId={lesson.id} />
 
         <LessonNavigation

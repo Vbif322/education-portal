@@ -1,6 +1,14 @@
+/* Ширина и скролл задаются здесь, а не в общем Dialog: у .dialog-content нет
+   max-height, а .dialog-container — центрирующий флекс на height:100%, поэтому
+   форма из четырёх полей на 375×667 уехала бы за экран без возможности
+   проскроллить. Править сам Dialog нельзя — задело бы DeleteDialog и
+   AddSkillModal. */
 .contactDialog {
-  padding: 24px;
-  max-width: 500px;
+  width: min(460px, 88vw);
+  max-height: calc(100dvh - 96px);
+  overflow-y: auto;
+  /* .dialog-content уже даёт свои 24px. */
+  padding: 0;
 }
 
 .dialogTitle {
@@ -14,6 +22,13 @@
   color: #666;
   margin-bottom: 20px;
   line-height: 1.5;
+}
+
+.fallbackTitle {
+  margin-top: 24px;
+  margin-bottom: 12px;
+  font-size: 0.9375rem;
+  color: #666;
 }
 
 .contactMethods {
@@ -34,4 +49,20 @@
 
 .contactLink:hover {
   background: #e8e8e8;
+}
+
+.b2bHint {
+  margin-top: 20px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.b2bHint a {
+  color: #0056d2;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.b2bHint a:hover {
+  text-decoration: underline;
 }

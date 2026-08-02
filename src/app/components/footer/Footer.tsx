@@ -1,4 +1,5 @@
 import { FC } from "react";
+import Link from "next/link";
 import s from "./style.module.css";
 import { Mail, Phone, Globe } from "lucide-react";
 
@@ -20,6 +21,14 @@ const Footer: FC = () => {
             <Globe size={20} />
             <a href="https://optimum-company.ru">optimum-company.ru</a>
           </div>
+        </div>
+      </div>
+      <div className={s.block}>
+        <p className={s.title}>Разделы</p>
+        <div className={s.links}>
+          <Link href="/">Курсы для себя</Link>
+          <Link href="/business">Корпоративное обучение</Link>
+          <Link href="/privacy">Обработка персональных данных</Link>
         </div>
       </div>
       <div className={s.block}>

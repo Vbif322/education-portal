@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isEmailConfigured } from "@/app/lib/email";
 
 export const runtime = "nodejs";
 // Без этого Next пререндерит ответ на этапе build, и скрипт деплоя
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   return NextResponse.json(
-    { status: "ok" },
+    { status: "ok", email: isEmailConfigured() ? "ok" : "not-configured" },
     { headers: { "Cache-Control": "no-store" } }
   );
 }
