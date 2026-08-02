@@ -18,6 +18,8 @@ type Props = {
     name: string;
     description?: string;
     program?: string;
+    format?: string;
+    outcome?: string;
     privacy: "public" | "private";
     showOnLanding: boolean;
     modules: { moduleId: number; order: number }[];
@@ -36,6 +38,8 @@ const CourseForm: FC<Props> = ({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [program, setProgram] = useState('')
+  const [format, setFormat] = useState("");
+  const [outcome, setOutcome] = useState("");
   const [privacy, setPrivacy] = useState<"public" | "private">("private");
   const [showOnLanding, setShowOnLanding] = useState(false);
   const [selectedModules, setSelectedModules] = useState<
@@ -62,6 +66,8 @@ const CourseForm: FC<Props> = ({
       setName(course.name);
       setDescription(course.description || "");
       setProgram(course.program || '')
+      setFormat(course.format || "");
+      setOutcome(course.outcome || "");
       setPrivacy(course.privacy);
       setShowOnLanding(course.showOnLanding || false);
       if (course.modules) {
@@ -85,6 +91,8 @@ const CourseForm: FC<Props> = ({
         name,
         description,
         program,
+        format,
+        outcome,
         privacy,
         showOnLanding,
         modules: selectedModules.map((sm) => ({
@@ -206,6 +214,41 @@ const CourseForm: FC<Props> = ({
             placeholder="Введите описание курса"
             className={s.textarea}
             rows={4}
+          />
+        </div>
+
+        {/* Формат и результат попадают в карточку курса на лендинге. */}
+        <div className={s.formGroup}>
+          <label htmlFor="format">Формат</label>
+          <input
+            id="format"
+            type="text"
+            list="course-format-options"
+            value={format}
+            onChange={(e) => setFormat(e.target.value)}
+            maxLength={64}
+            placeholder="Например: В записи"
+            className={s.input}
+          />
+          {/* datalist подсказывает канонические формулировки, но не запрещает
+              свои — в БД это свободный текст. */}
+          <datalist id="course-format-options">
+            <option value="В записи" />
+            <option value="Онлайн" />
+            <option value="С наставником" />
+          </datalist>
+        </div>
+
+        <div className={s.formGroup}>
+          <label htmlFor="outcome">Результат — что вы сможете делать</label>
+          <textarea
+            id="outcome"
+            value={outcome}
+            onChange={(e) => setOutcome(e.target.value)}
+            maxLength={512}
+            placeholder="После курса вы сможете…"
+            className={s.textarea}
+            rows={3}
           />
         </div>
 

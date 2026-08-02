@@ -1,4 +1,4 @@
-import CourseCard from "@/app/components/course-card/CourseCard";
+import LandingCourseCard from "./LandingCourseCard";
 import { getLandingCourses } from "@/app/lib/dal/course.dal";
 import s from "../landing.module.css";
 
@@ -22,7 +22,7 @@ export default async function CoursesCatalog({ ctaLabel }: Props) {
   return (
     <div className={s.courseCardContainer}>
       {courses.map((course) => (
-        <CourseCard key={course.id} {...course} ctaLabel={ctaLabel} />
+        <LandingCourseCard key={course.id} course={course} ctaLabel={ctaLabel} />
       ))}
     </div>
   );

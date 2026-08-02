@@ -82,3 +82,27 @@ export function pluralizeWithCount(
 ): string {
   return `${count} ${pluralize(count, forms)}`;
 }
+
+/**
+ * Человекочитаемая длительность курса из суммы секунд всех уроков.
+ * В отличие от {@link formatTime} (MM:SS) не превращает три часа в «180:00».
+ *
+ * @param seconds - суммарная длительность в секундах
+ * @returns строка вида «≈ 3 часа» или пустая строка, если данных нет
+ *
+ * @example
+ * formatCourseDuration(9000) // '≈ 3 часа'
+ * formatCourseDuration(1500) // '≈ 25 минут'
+ * formatCourseDuration(0)    // ''
+ */
+export function formatCourseDuration(seconds: number): string {
+  if (!seconds || seconds <= 0) return "";
+
+  if (seconds < 3600) {
+    const minutes = Math.max(1, Math.round(seconds / 60));
+    return `≈ ${pluralizeWithCount(minutes, ["минута", "минуты", "минут"])}`;
+  }
+
+  const hours = Math.round(seconds / 3600);
+  return `≈ ${pluralizeWithCount(hours, ["час", "часа", "часов"])}`;
+}

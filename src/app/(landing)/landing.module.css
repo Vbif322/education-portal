@@ -524,12 +524,16 @@
   gap: 32px;
 }
 
+/* auto-fill, а не auto-fit: при двух курсах карточки остаются ~360px, а не
+   растягиваются на полэкрана каждая. На контентной ширине 1136px это три трека
+   по ~363px. align-items: stretch выравнивает высоту — кнопки соседних карточек
+   встают на одну линию. */
 .courseCardContainer {
   margin-top: 24px;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  align-items: stretch;
+  gap: 24px;
 }
 
 /* Юридические страницы: узкая колонка по центру. Ширина = max-width .legalText
@@ -965,12 +969,23 @@
   .steps {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .courseCardContainer {
+    gap: 20px;
+  }
 }
 
 @media (max-width: 768px) {
   .featuresContainer {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+
+  /* Явный 1fr обязателен: minmax(320px, …) шире контентной колонки телефона
+     и уводит страницу в горизонтальный скролл. */
+  .courseCardContainer {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .nav {

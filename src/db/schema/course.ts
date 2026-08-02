@@ -14,6 +14,12 @@ export const courses = prodSchema.table("courses", {
   name: varchar({ length: 256 }).notNull(),
   description: varchar({ length: 1024 }),
   program: text(),
+  /** Как проходит обучение: «В записи», «Онлайн», «С наставником».
+   *  Свободный текст: формулировка маркетинговая и меняется чаще схемы —
+   *  набор подсказок живёт в админ-форме (datalist), а не в типе. */
+  format: varchar({ length: 64 }),
+  /** «Что вы сможете делать после курса» — 1–2 предложения для карточки. */
+  outcome: varchar({ length: 512 }),
   privacy: varchar({ enum: ["private", "public"] })
     .notNull()
     .default("private"),

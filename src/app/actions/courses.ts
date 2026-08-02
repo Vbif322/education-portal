@@ -14,6 +14,8 @@ const courseSchema = z.object({
   name: z.string().min(1, "Название курса обязательно"),
   description: z.string().optional(),
   program: z.string().optional(),
+  format: z.string().trim().max(64).optional(),
+  outcome: z.string().trim().max(512).optional(),
   privacy: z.enum(["public", "private"]),
   modules: z.array(
     z.object({
@@ -29,6 +31,8 @@ export async function createCourse(data: {
   name: string;
   description?: string;
   program?: string;
+  format?: string;
+  outcome?: string;
   privacy: "public" | "private";
   showOnLanding: boolean;
   modules: { moduleId: number; order: number }[];
@@ -55,6 +59,8 @@ export async function createCourse(data: {
       name,
       description,
       program,
+      format,
+      outcome,
       privacy,
       showOnLanding,
       modules: modulesList,
@@ -68,6 +74,10 @@ export async function createCourse(data: {
         name,
         description: description || null,
         program,
+        // Пустое поле формы — это NULL, а не "": карточка лендинга скрывает
+        // блок по отсутствию значения, пустая строка оставила бы пустой блок.
+        format: format || null,
+        outcome: outcome || null,
         privacy,
         showOnLanding: showOnLanding || false,
       })
@@ -143,6 +153,8 @@ export async function updateCourse(
     name: string;
     description?: string;
     program?: string;
+    format?: string;
+    outcome?: string;
     privacy: "public" | "private";
     modules: { moduleId: number; order: number }[];
     skills: number[];
@@ -169,6 +181,8 @@ export async function updateCourse(
       name,
       description,
       program,
+      format,
+      outcome,
       privacy,
       showOnLanding,
       modules: modulesList,
@@ -200,6 +214,8 @@ export async function updateCourse(
         name,
         description: description || null,
         program,
+        format: format || null,
+        outcome: outcome || null,
         privacy,
         showOnLanding: showOnLanding || false,
       })
@@ -251,6 +267,8 @@ export async function updateCourse(
           name,
           description,
           program,
+          format,
+          outcome,
           privacy,
           showOnLanding,
           modules: modulesList,
