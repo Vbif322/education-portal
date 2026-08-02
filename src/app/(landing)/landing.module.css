@@ -98,6 +98,8 @@
   cursor: pointer;
   transition: transform 0.2s ease;
   white-space: nowrap;
+  color: rgb(17 24 39);
+  text-decoration: none;
 }
 
 .logoTitle:hover {
@@ -105,6 +107,7 @@
 }
 
 .loginButton {
+  display: inline-block;
   padding: 10px 24px;
   font-size: 1rem;
   font-weight: 600;
@@ -115,6 +118,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .loginButton:hover {
@@ -466,6 +470,7 @@
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
   animation: pulse 2s infinite;
+  text-decoration: none;
 }
 
 .ctaPrimary:hover {

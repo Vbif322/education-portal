@@ -6,12 +6,13 @@ import {
   Trophy,
   Video,
   LayoutDashboard,
-  Users,
   Briefcase,
   Award,
+  GraduationCap,
 } from "lucide-react";
 import VideoModal from "../components/video-modal/VideoModal";
 import InlineVideoPlayer from "../components/inline-video-player/InlineVideoPlayer";
+import { getOptionalUser } from "../lib/dal";
 import LandingHeader from "./_components/LandingHeader";
 import LandingHero from "./_components/LandingHero";
 import LandingSection from "./_components/LandingSection";
@@ -25,19 +26,26 @@ const NAV_LINKS = [
 ];
 
 export default async function Home() {
+  const user = await getOptionalUser();
+
   return (
     <div className={s.page}>
-      <LandingHeader navLinks={NAV_LINKS} />
+      <LandingHeader user={user} navLinks={NAV_LINKS} />
       <main className={s.main}>
         <LandingHero
-          title="Библиотека курсов по бизнесу от"
-          titleAccent="Кирилла Месеняшина"
+          title="Курсы по менеджменту и"
+          titleAccent="бережливому производству"
+          subtitle="Видеокурсы в записи от Кирилла Месеняшина — для руководителей и специалистов. Проходите в своём темпе, применяйте на своих задачах."
           bullets={[
             "Стратегический менеджмент",
             "Операционный менеджмент",
             "Бережливое производство",
           ]}
-          primaryCta={{ href: "/dashboard", label: "Выбрать курс" }}
+          primaryCta={
+            user
+              ? { href: "/dashboard", label: "Продолжить обучение" }
+              : { href: "#courses", label: "Смотреть курсы" }
+          }
           secondaryCta={
             <VideoModal
               videoSrc="/videos/privet.mp4"
@@ -46,9 +54,9 @@ export default async function Home() {
           }
           badges={[
             {
-              icon: <Users />,
-              value: "3000+",
-              label: "обученных сотрудников",
+              icon: <Award />,
+              value: "20 лет",
+              label: "практики",
             },
             {
               icon: <Briefcase />,
@@ -56,9 +64,9 @@ export default async function Home() {
               label: "реализованных проектов",
             },
             {
-              icon: <Award />,
-              value: "20 лет",
-              label: "практики",
+              icon: <GraduationCap />,
+              value: "5 бизнес-школ",
+              label: "преподавательский опыт",
             },
           ]}
         />
@@ -67,30 +75,30 @@ export default async function Home() {
           <AboutInstructor />
         </LandingSection>
 
-        <LandingSection title="Почему выбирают наш курс">
+        <LandingSection title="Что вы получаете">
           <div className={s.featuresContainer}>
             <FeatureCard
               icon={<Video />}
-              title="Современный формат обучения"
-              description="Видеоуроки, диагностические тесты, практические задания"
+              title="Обучение в записи"
+              description="Видеоуроки, диагностические тесты и практические задания. Без расписания и вебинаров в рабочее время."
               color="rgb(29 78 216)"
             />
             <FeatureCard
               icon={<Trophy />}
-              title="Экспертный контент"
-              description="Программа разработана ведущим специалистом в области стратегического, операционного управления и бережливого производства"
+              title="Программа от практика"
+              description="Курс построен на проектах в реальном производстве, а не на пересказе учебников по менеджменту."
               color="rgb(234 179 8)"
             />
             <FeatureCard
               icon={<ChartNoAxesColumnIncreasing />}
-              title="Персонализированный подход"
-              description="Вы можете отслеживать прогресс каждого сотрудника, формировать индивидуальные траектории развития"
+              title="Виден собственный прогресс"
+              description="В личном кабинете видно, какие уроки пройдены и сколько осталось до конца курса."
               color="rgb(34 197 94)"
             />
             <FeatureCard
               icon={<LayoutDashboard />}
-              title="Удобный личный кабинет"
-              description="Подписка позволяет сотрудникам получать знания в удобное время"
+              title="Материалы под рукой"
+              description="Возвращайтесь к нужному уроку, когда задача встанет на работе, — пока действует доступ."
               color="rgb(168 85 247)"
             />
           </div>

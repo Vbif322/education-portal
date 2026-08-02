@@ -13,6 +13,7 @@ export type HeroBadge = {
 type Props = {
   title: string;
   titleAccent: string;
+  subtitle?: string;
   bullets: string[];
   primaryCta: { href: string; label: string };
   /** Вторая кнопка (VideoModal) — приходит готовым элементом. */
@@ -23,6 +24,7 @@ type Props = {
 export default function LandingHero({
   title,
   titleAccent,
+  subtitle,
   bullets,
   primaryCta,
   secondaryCta,
@@ -35,6 +37,7 @@ export default function LandingHero({
           {title} <br />
           <span className={s.titleAccent}>{titleAccent}</span>
         </h1>
+        {subtitle && <p className={s.subtitle}>{subtitle}</p>}
 
         <div className={s.benefits}>
           {bullets.map((bullet) => (
@@ -46,11 +49,9 @@ export default function LandingHero({
         </div>
 
         <div className={s.ctaContainer}>
-          <Link href={primaryCta.href}>
-            <button className={s.ctaPrimary}>
-              {primaryCta.label}
-              <ArrowRight size={20} />
-            </button>
+          <Link href={primaryCta.href} className={s.ctaPrimary}>
+            {primaryCta.label}
+            <ArrowRight size={20} />
           </Link>
           {secondaryCta}
         </div>
