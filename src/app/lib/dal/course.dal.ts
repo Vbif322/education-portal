@@ -125,10 +125,16 @@ export async function getAllCourses(
 }
 
 export async function getLandingCourses() {
-  const result = await db.query.courses.findMany({
-    where: eq(courses.showOnLanding, true),
-  });
-  return result;
+  // Лендинг рендерится динамически: падение БД не должно превращаться в 500
+  // на главной. Пустой каталог отрисуется фолбэком с контактами.
+  try {
+    return await db.query.courses.findMany({
+      where: eq(courses.showOnLanding, true),
+    });
+  } catch (error) {
+    console.error("Failed to fetch landing courses", error);
+    return [];
+  }
 }
 
 // Get course metadata by ID (moduleCount, lessonCount, skills)

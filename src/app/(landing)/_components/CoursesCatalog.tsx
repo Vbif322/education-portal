@@ -5,6 +5,15 @@ import s from "../landing.module.css";
 export default async function CoursesCatalog() {
   const courses = await getLandingCourses();
 
+  if (courses.length === 0) {
+    return (
+      <p className={s.emptyCatalog}>
+        Каталог временно недоступен. Напишите на mesenyashin@mail.ru — подберём
+        программу вручную.
+      </p>
+    );
+  }
+
   return (
     <div className={s.courseCardContainer}>
       {courses.map((course) => (

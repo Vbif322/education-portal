@@ -438,6 +438,12 @@
   gap: 8px;
 }
 
+.emptyCatalog {
+  margin-top: 24px;
+  font-size: 1.125rem;
+  color: rgb(75 85 99);
+}
+
 .ctaContainer {
   display: flex;
   gap: 16px;
