@@ -18,6 +18,7 @@ import LandingHero from "./_components/LandingHero";
 import LandingSection from "./_components/LandingSection";
 import AboutInstructor from "./_components/AboutInstructor";
 import CoursesCatalog from "./_components/CoursesCatalog";
+import LessonFormat from "./_components/LessonFormat";
 import BusinessTeaser from "./_components/BusinessTeaser";
 import FaqAccordion from "./_components/FaqAccordion";
 import { FAQ_B2C } from "./_components/faq-items";
@@ -27,7 +28,7 @@ import cs from "../components/contact-form/style.module.css";
 const NAV_LINKS = [
   { href: "#about", label: "О преподавателе" },
   { href: "#courses", label: "Курсы" },
-  { href: "#testimonials", label: "Видео" },
+  { href: "#lessons", label: "Фрагменты уроков" },
   { href: "#faq", label: "Вопросы" },
   { href: "#contact", label: "Контакты" },
 ];
@@ -111,9 +112,21 @@ export default async function Home() {
           </div>
         </LandingSection>
 
-        <LandingSection id="testimonials" title="Как проходит обучение">
+        <LandingSection
+          id="lessons"
+          title="Как выглядят уроки"
+          lead="Ниже — нарезка фрагментов из реальных уроков курса: как подаётся материал, как выглядят слайды и разборы примеров из практики."
+        >
           <div className={s.videoShowcase}>
-            <InlineVideoPlayer videoSrc="/videos/nareska-3min.mp4" />
+            <InlineVideoPlayer
+              videoSrc="/videos/nareska-3min.mp4"
+              badge="Нарезка фрагментов уроков · 3 мин"
+            />
+            <p className={s.videoCaption}>
+              Фрагменты собраны из уроков разных модулей. Целиком уроки
+              открываются в личном кабинете после получения доступа.
+            </p>
+            <LessonFormat />
           </div>
         </LandingSection>
 
@@ -127,11 +140,11 @@ export default async function Home() {
           <FaqAccordion items={FAQ_B2C} />
         </LandingSection>
 
-        <LandingSection id="contact" title="Остались вопросы?">
-          <p className={s.requestLead}>
-            Напишите — расскажем про курсы, доступ и порядок оплаты. Отвечаем в
-            течение рабочего дня.
-          </p>
+        <LandingSection
+          id="contact"
+          title="Остались вопросы?"
+          lead="Напишите — расскажем про курсы, доступ и порядок оплаты. Отвечаем в течение рабочего дня."
+        >
           <ContactForm source="landing" />
           <p className={cs.contactFallback}>
             Или свяжитесь напрямую:{" "}

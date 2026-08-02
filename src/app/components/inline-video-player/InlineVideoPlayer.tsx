@@ -6,10 +6,18 @@ import s from "./style.module.css";
 
 interface InlineVideoPlayerProps {
   videoSrc: string;
+  /** Подпись поверх стоп-кадра; скрывается на время воспроизведения. */
+  badge?: string;
 }
 
-export default function InlineVideoPlayer({ videoSrc }: InlineVideoPlayerProps) {
+export default function InlineVideoPlayer({
+  videoSrc,
+  badge,
+}: InlineVideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+  // Бейдж — подпись именно к стоп-кадру, поэтому гасится навсегда после первого
+  // запуска: по !isPlaying он возвращался бы на паузе поверх произвольного кадра.
+  const [hasStarted, setHasStarted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePlayClick = () => {
@@ -21,11 +29,12 @@ export default function InlineVideoPlayer({ videoSrc }: InlineVideoPlayerProps) 
 
   return (
     <div className={s.videoContainer}>
+      {!hasStarted && badge && <span className={s.badge}>{badge}</span>}
       {!isPlaying && (
         <button
           className={s.playBtn}
           onClick={handlePlayClick}
-          aria-label="Смотреть видео"
+          aria-label={badge ? `Смотреть: ${badge}` : "Смотреть видео"}
         >
           <PlayIcon color="#FFF" fill="#FFF" size={40} />
         </button>
@@ -36,7 +45,10 @@ export default function InlineVideoPlayer({ videoSrc }: InlineVideoPlayerProps) 
         controls
         preload="metadata"
         src={videoSrc}
-        onPlay={() => setIsPlaying(true)}
+        onPlay={() => {
+          setIsPlaying(true);
+          setHasStarted(true);
+        }}
         onPause={() => setIsPlaying(false)}
       >
         Ваш браузер не поддерживает воспроизведение видео.

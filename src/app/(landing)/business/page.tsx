@@ -135,11 +135,11 @@ export default async function BusinessLanding() {
           </p>
         </LandingSection>
 
-        <LandingSection id="request" title="Оставить заявку">
-          <p className={s.requestLead}>
-            Расскажите про команду и задачи — предложим программу и стоимость.
-            Отвечаем в течение рабочего дня.
-          </p>
+        <LandingSection
+          id="request"
+          title="Оставить заявку"
+          lead="Расскажите про команду и задачи — предложим программу и стоимость. Отвечаем в течение рабочего дня."
+        >
           <LeadForm />
         </LandingSection>
       </main>

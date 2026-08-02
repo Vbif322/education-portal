@@ -313,6 +313,48 @@
   margin: 32px auto 0;
 }
 
+.videoCaption {
+  margin: 16px 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgb(75 85 99);
+}
+
+.lessonFormat {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.lessonFormatIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(239 246 255);
+  color: #2563eb;
+  border-radius: 50%;
+  margin-bottom: 12px;
+}
+
+.lessonFormatTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgb(17 24 39);
+  margin: 0 0 6px;
+}
+
+.lessonFormatText {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgb(55 65 81);
+  margin: 0;
+}
+
 .aboutCard {
   margin-top: 32px;
   background: white;
@@ -592,7 +634,7 @@
   text-decoration: underline;
 }
 
-.requestLead {
+.sectionLead {
   margin-top: 8px;
   max-width: 720px;
   font-size: 1.125rem;
@@ -970,6 +1012,12 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
+  /* Контейнер нарезки шире не становится (800px), поэтому три колонки
+     сохраняем — достаточно поджать промежуток. */
+  .lessonFormat {
+    gap: 16px;
+  }
+
   .courseCardContainer {
     gap: 20px;
   }
@@ -979,6 +1027,15 @@
   .featuresContainer {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+
+  .lessonFormat {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .sectionLead {
+    font-size: 1rem;
   }
 
   /* Явный 1fr обязателен: minmax(320px, …) шире контентной колонки телефона
