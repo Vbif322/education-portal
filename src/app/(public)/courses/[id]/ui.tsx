@@ -73,7 +73,15 @@ const UI: FC<Props> = ({
 
   return (
     <>
-      <ContactDialog open={open} onClose={() => setOpen(false)} />
+      <ContactDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        source="course"
+        sourceId={String(id)}
+        defaultEmail={user?.email}
+        title="Записаться на курс"
+        intro={`Оставьте контакты — свяжемся и откроем доступ к курсу «${name}».`}
+      />
       <div className={s.container}>
         <div className={s.blocks}>
           <Block

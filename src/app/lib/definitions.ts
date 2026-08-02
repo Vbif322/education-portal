@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { EMPLOYEE_RANGES } from "./lead";
+import { CONTACT_SOURCES, EMPLOYEE_RANGES } from "./lead";
 
 // Схема входа: пароль проверяем только на непустоту.
 // НЕ применяем политику сложности — у существующих пользователей могут быть
@@ -87,6 +87,50 @@ export const businessLeadSchema = z.object({
     message:
       "Без согласия на обработку персональных данных мы не сможем принять заявку",
   }),
+});
+
+// Обращение частного лица: форма на главной и модалка «нет доступа».
+// Телефон необязателен — канал ответа здесь email (он уходит в Reply-To),
+// а вот пустое сообщение делает обращение бесполезным, поэтому оно required.
+export const contactRequestSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, { message: "Представьтесь, пожалуйста" })
+    .max(80, { message: "Не больше 80 символов" })
+    .transform(noNewlines),
+  email: z.email({ message: "Введите email в формате email@example.ru" }).trim(),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[\d\s+()-]{10,20}$/, {
+      message: "Введите телефон, например +7 999 123-45-67",
+    })
+    .optional(),
+  message: z
+    .string()
+    .trim()
+    .min(5, { message: "Опишите вопрос хотя бы парой слов" })
+    .max(2000, { message: "Не больше 2000 символов" }),
+  consent: z.literal("on", {
+    message:
+      "Без согласия на обработку персональных данных мы не сможем принять обращение",
+  }),
+});
+
+// Метаданные источника едут скрытыми полями: пользователь их не видит, и
+// показать ошибку по ним негде. Поэтому .catch() с фолбэком вместо провала
+// валидации — и заодно ключи source/sourceId не попадают в state.properties,
+// который форма рендерит по своим полям.
+export const contactSourceSchema = z.object({
+  source: z.literal(CONTACT_SOURCES).catch("landing"),
+  // Только цифры: значение подставляет клиент, а уходит оно в тело письма.
+  sourceId: z
+    .string()
+    .trim()
+    .regex(/^\d{1,10}$/)
+    .optional()
+    .catch(undefined),
 });
 
 export type FormState =

@@ -18,7 +18,6 @@ export { default as TestimonialCard } from "@/app/components/testimonial-card/Te
 export { default as LessonMaterials } from "@/app/components/lesson-materials/LessonMaterials";
 export { default as LessonNavigation } from "@/app/components/lesson-navigation/LessonNavigation";
 export { default as LessonItem } from "@/app/components/lesson-item/LessonItem";
-export { default as ContactDialog } from "@/app/components/dialogs/contact-dialog";
 export { default as DeleteDialog } from "@/app/components/dialogs/delete-dialog";
 export { default as AddSkillModal } from "@/app/components/modals/AddSkillModal";
 export { default as VideoModal } from "@/app/components/video-modal/VideoModal";

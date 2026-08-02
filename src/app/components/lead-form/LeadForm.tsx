@@ -4,14 +4,11 @@ import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { submitBusinessLead } from "@/app/actions/lead";
 import { EMPLOYEE_RANGES, type EmployeeRange, type LeadField } from "@/app/lib/lead";
+import { reachGoal } from "@/app/lib/metrika";
+import { getFieldHelpers } from "@/app/components/form-fields/field-helpers";
+import f from "@/app/components/form-fields/fields.module.css";
 import Button from "@/app/ui/Button/Button";
 import s from "./style.module.css";
-
-declare global {
-  interface Window {
-    ym?: (id: number, action: string, ...rest: unknown[]) => void;
-  }
-}
 
 const EMPLOYEE_LABELS: Record<EmployeeRange, string> = {
   "1-5": "1–5 человек",
@@ -35,18 +32,15 @@ export default function LeadForm() {
     }
     setFormKey((key) => key + 1);
     if (state.ok) {
-      const metrikaId = Number(process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID);
-      if (metrikaId) {
-        window.ym?.(metrikaId, "reachGoal", "b2b_lead");
-      }
+      reachGoal("b2b_lead");
     }
   }, [state]);
 
   if (state?.ok) {
     return (
-      <div className={s.success} role="status">
-        <p className={s.successTitle}>Заявка отправлена</p>
-        <p className={s.successText}>
+      <div className={f.success} role="status">
+        <p className={f.successTitle}>Заявка отправлена</p>
+        <p className={f.successText}>
           Свяжемся с вами в течение рабочего дня. Если вопрос срочный —
           позвоните: +7 812 467-34-67.
         </p>
@@ -54,34 +48,11 @@ export default function LeadForm() {
     );
   }
 
-  const errorsFor = (field: LeadField) => state?.properties?.[field]?.errors;
-
-  const fieldProps = (field: LeadField) => {
-    const errors = errorsFor(field);
-    return {
-      id: field,
-      name: field,
-      "aria-invalid": errors ? true : undefined,
-      "aria-describedby": errors ? `${field}-error` : undefined,
-      className: errors ? s.inputError : undefined,
-    };
-  };
-
-  const FieldError = ({ field }: { field: LeadField }) => {
-    const errors = errorsFor(field);
-    if (!errors?.length) {
-      return null;
-    }
-    return (
-      <span id={`${field}-error`} className={s.errorMessage} role="alert">
-        {errors.join(", ")}
-      </span>
-    );
-  };
+  const { errorsFor, fieldProps, FieldError } = getFieldHelpers<LeadField>(state);
 
   return (
     <form key={formKey} action={action} className={s.form}>
-      <div className={s.field}>
+      <div className={f.field}>
         <label htmlFor="company">Компания</label>
         <input
           {...fieldProps("company")}
@@ -92,7 +63,7 @@ export default function LeadForm() {
         <FieldError field="company" />
       </div>
 
-      <div className={s.field}>
+      <div className={f.field}>
         <label htmlFor="name">Контактное лицо</label>
         <input
           {...fieldProps("name")}
@@ -103,7 +74,7 @@ export default function LeadForm() {
         <FieldError field="name" />
       </div>
 
-      <div className={s.field}>
+      <div className={f.field}>
         <label htmlFor="email">Email</label>
         <input
           {...fieldProps("email")}
@@ -114,7 +85,7 @@ export default function LeadForm() {
         <FieldError field="email" />
       </div>
 
-      <div className={s.field}>
+      <div className={f.field}>
         <label htmlFor="phone">Телефон</label>
         <input
           {...fieldProps("phone")}
@@ -126,7 +97,7 @@ export default function LeadForm() {
         <FieldError field="phone" />
       </div>
 
-      <div className={s.field}>
+      <div className={f.field}>
         <label htmlFor="employees">Сколько сотрудников обучаем</label>
         <select
           {...fieldProps("employees")}
@@ -144,7 +115,7 @@ export default function LeadForm() {
         <FieldError field="employees" />
       </div>
 
-      <div className={`${s.field} ${s.fieldWide}`}>
+      <div className={`${f.field} ${f.fieldWide}`}>
         <label htmlFor="comment">Задачи команды (необязательно)</label>
         <textarea
           {...fieldProps("comment")}
@@ -161,11 +132,11 @@ export default function LeadForm() {
         tabIndex={-1}
         autoComplete="off"
         aria-hidden="true"
-        className={s.honeypot}
+        className={f.honeypot}
       />
 
-      <div className={`${s.field} ${s.fieldWide} ${s.consentField}`}>
-        <label className={s.consentLabel}>
+      <div className={`${f.field} ${f.fieldWide} ${f.consentField}`}>
+        <label className={f.consentLabel}>
           <input
             type="checkbox"
             id="consent"
@@ -184,9 +155,9 @@ export default function LeadForm() {
         <FieldError field="consent" />
       </div>
 
-      <div className={s.fieldWide} aria-live="polite">
+      <div className={f.fieldWide} aria-live="polite">
         {state?.errors?.length ? (
-          <div className={s.generalError} role="alert">
+          <div className={f.generalError} role="alert">
             {state.errors.map((error) => (
               <span key={error}>{error}</span>
             ))}
@@ -194,7 +165,7 @@ export default function LeadForm() {
         ) : null}
       </div>
 
-      <div className={s.fieldWide}>
+      <div className={f.fieldWide}>
         <Button type="submit" disabled={pending} aria-busy={pending}>
           {pending ? "Отправляем…" : "Отправить заявку"}
         </Button>

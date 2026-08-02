@@ -21,12 +21,15 @@ import CoursesCatalog from "./_components/CoursesCatalog";
 import BusinessTeaser from "./_components/BusinessTeaser";
 import FaqAccordion from "./_components/FaqAccordion";
 import { FAQ_B2C } from "./_components/faq-items";
+import ContactForm from "../components/contact-form/ContactForm";
+import cs from "../components/contact-form/style.module.css";
 
 const NAV_LINKS = [
   { href: "#about", label: "О преподавателе" },
   { href: "#courses", label: "Курсы" },
   { href: "#testimonials", label: "Видео" },
   { href: "#faq", label: "Вопросы" },
+  { href: "#contact", label: "Контакты" },
 ];
 
 export default async function Home() {
@@ -122,10 +125,18 @@ export default async function Home() {
 
         <LandingSection id="faq" title="Частые вопросы">
           <FaqAccordion items={FAQ_B2C} />
-          <p className={s.faqFooter}>
-            Не нашли ответ? Напишите на{" "}
-            <a href="mailto:mesenyashin@mail.ru">mesenyashin@mail.ru</a> или
-            позвоните <a href="tel:+78124673467">+7 812 467-34-67</a>.
+        </LandingSection>
+
+        <LandingSection id="contact" title="Остались вопросы?">
+          <p className={s.requestLead}>
+            Напишите — расскажем про курсы, доступ и порядок оплаты. Отвечаем в
+            течение рабочего дня.
+          </p>
+          <ContactForm source="landing" />
+          <p className={cs.contactFallback}>
+            Или свяжитесь напрямую:{" "}
+            <a href="mailto:mesenyashin@mail.ru">mesenyashin@mail.ru</a>,{" "}
+            <a href="tel:+78124673467">+7 812 467-34-67</a>.
           </p>
         </LandingSection>
       </main>

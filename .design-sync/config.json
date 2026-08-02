@@ -19,7 +19,6 @@
     "LessonMaterials": "/** Downloadable materials for the lesson; renders nothing when empty. */ materials: { id: number; name: string; /** Chooses the file-type icon. */ type: 'pdf' | 'presentation' | 'image' | 'archive' | 'other'; /** Human-readable file size, e.g. '1.2 MB'. */ size?: string; /** Download/href target. */ url: string; }[];",
     "LessonNavigation": "/** Title of the current lesson. */ lessonTitle: string; /** 1-based index of the current lesson. */ currentLesson: number; /** Total lessons in the module. */ totalLessons: number; /** Go to previous lesson; auto-disables on the first lesson. */ onPrevious?: () => void; /** Go to next lesson; auto-disables on the last lesson. */ onNext?: () => void;",
     "LessonItem": "/** All fields optional (Partial<Lesson>); only name is rendered. */ id?: number; /** Lesson title shown in the Paper. */ name?: string; description?: string | null; /** Duration in seconds. */ duration?: number; status?: 'public' | 'private'; videoURL?: string; createdAt?: Date; updatedAt?: Date;",
-    "ContactDialog": "/** Controls dialog visibility; render true to show contact info. */ open: boolean; /** Called when the dialog is dismissed. */ onClose: () => void;",
     "DeleteDialog": "/** Controls dialog visibility. */ open: boolean; /** Confirm destructive action (the red 'Да' button). */ onDelete: () => void; /** Cancel / dismiss (the 'Нет' button). */ onBack: () => void;",
     "AddSkillModal": "/** Controls modal visibility. */ isOpen: boolean; /** Dismiss the modal. */ onClose: () => void; /** Submit a new skill name; resolves with a success flag and optional error. */ onAdd: (name: string) => Promise<{ success: boolean; error?: string }>;",
     "VideoModal": "/** Source URL of the video played in the modal. */ videoSrc: string; /** Trigger button label. @default 'Узнать больше' */ buttonText?: string; /** Class applied to the trigger button. */ buttonClassName?: string;",
@@ -45,7 +44,6 @@
   },
   "overrides": {
     "Dialog": { "cardMode": "single", "viewport": "640x520" },
-    "ContactDialog": { "cardMode": "single", "viewport": "640x560" },
     "DeleteDialog": { "cardMode": "single", "viewport": "560x360" },
     "AddSkillModal": { "cardMode": "single", "viewport": "640x520" },
     "VideoModal": { "cardMode": "single", "viewport": "720x560" },
@@ -70,7 +68,6 @@
     "LessonMaterials": "src/app/components/lesson-materials/LessonMaterials.tsx",
     "LessonNavigation": "src/app/components/lesson-navigation/LessonNavigation.tsx",
     "LessonItem": "src/app/components/lesson-item/LessonItem.tsx",
-    "ContactDialog": "src/app/components/dialogs/contact-dialog.tsx",
     "DeleteDialog": "src/app/components/dialogs/delete-dialog.tsx",
     "AddSkillModal": "src/app/components/modals/AddSkillModal.tsx",
     "VideoModal": "src/app/components/video-modal/VideoModal.tsx",
