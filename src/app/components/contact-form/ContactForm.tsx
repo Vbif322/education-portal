@@ -118,7 +118,7 @@ export default function ContactForm({
       </div>
 
       <div className={`${f.field} ${f.fieldWide}`}>
-        <label htmlFor="message">Сообщение</label>
+        <label htmlFor="message">Сообщение (необязательно)</label>
         <textarea
           {...fieldProps("message")}
           rows={4}
@@ -146,7 +146,9 @@ export default function ContactForm({
             name="consent"
             defaultChecked={state?.fields?.consent === "on"}
             aria-invalid={errorsFor("consent") ? true : undefined}
-            aria-describedby={errorsFor("consent") ? "consent-error" : undefined}
+            aria-describedby={
+              errorsFor("consent") ? "consent-error" : undefined
+            }
           />
           <span>
             Я согласен на обработку персональных данных и принимаю{" "}
