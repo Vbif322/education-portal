@@ -33,12 +33,16 @@ function isHoneypotFilled(formData: FormData): boolean {
  * бесследно, поэтому при ошибке пишем её целиком в лог, а пользователю честно
  * говорим, что письмо не ушло, и даём контакты.
  *
+ * Reply-To на адрес заявителя здесь намеренно нет, хотя отвечать было бы
+ * удобнее: адрес почти всегда на freemail-домене и не совпадает с From, а это
+ * два балла FREEMAIL_REPLYTO_NEQ_FROM у rspamd на исходящей стороне хостинга.
+ * Адрес заявителя остаётся в теле письма — копировать оттуда.
+ *
  * Возвращает `null` при успехе или массив ошибок для формы.
  */
 async function deliver(mail: {
   subject: string;
   text: string;
-  replyTo: string;
 }): Promise<string[] | null> {
   try {
     await sendMail(mail);
@@ -119,7 +123,6 @@ export async function submitBusinessLead(
   const errors = await deliver({
     subject: `Заявка на корпоративное обучение — ${lead.company}`,
     text,
-    replyTo: lead.email,
   });
 
   if (errors) {
@@ -211,7 +214,6 @@ export async function submitContactLead(
     // в почтовом ящике.
     subject: `Обращение с сайта — ${lead.name}`,
     text,
-    replyTo: lead.email,
   });
 
   if (errors) {

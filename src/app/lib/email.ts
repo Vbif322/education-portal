@@ -2,9 +2,17 @@ import "server-only";
 import nodemailer, { type Transporter } from "nodemailer";
 
 /**
- * Минимальная обёртка над SMTP. Провайдер выбран под российскую доставку:
- * отправка через SMTP mail.ru/Яндекс на такой же ящик идёт внутри провайдера
- * и почти не задевает спам-фильтр, в отличие от зарубежных API-сервисов.
+ * Минимальная обёртка над SMTP.
+ *
+ * Письмо намеренно собрано так, чтобы не набирать очки у rspamd: он стоит и на
+ * исходящей стороне хостинга, и у большинства получателей, а его вердикт
+ * (`X-Spam-Status`) уезжает вместе с письмом и влияет на приёмную сторону.
+ * Отсюда отсутствие Reply-To, quoted-printable вместо base64, display-name в
+ * From и X-Mailer — см. комментарии по месту.
+ *
+ * Оговорка: репутацию исходящего IP всё это не лечит. Если провайдер отправки
+ * забанен у получателя (у нас так было с mail.ru), письмо отвергается до того,
+ * как дело дойдёт до содержимого, и помогает только смена транспорта.
  *
  * В отличие от SESSION_SECRET (см. `session.ts`), отсутствие конфигурации
  * НЕ роняет модуль на импорте: почта — опциональный канал, и без неё
@@ -15,7 +23,6 @@ import nodemailer, { type Transporter } from "nodemailer";
 type MailInput = {
   subject: string;
   text: string;
-  replyTo?: string;
 };
 
 type SmtpConfig = {
@@ -25,8 +32,11 @@ type SmtpConfig = {
   user: string;
   password: string;
   from: string;
+  fromName: string;
   to: string;
 };
+
+const DEFAULT_FROM_NAME = "Кирилл Месеняшин";
 
 let transporter: Transporter | null = null;
 let warned = false;
@@ -51,6 +61,8 @@ function readConfig(): SmtpConfig | null {
     user,
     password,
     from,
+    // Письмо без имени отправителя набирает FROM_NO_DN у rspamd.
+    fromName: process.env.EMAIL_FROM_NAME || DEFAULT_FROM_NAME,
     to,
   };
 }
@@ -59,17 +71,13 @@ export function isEmailConfigured(): boolean {
   return readConfig() !== null;
 }
 
-export async function sendMail({
-  subject,
-  text,
-  replyTo,
-}: MailInput): Promise<void> {
+export async function sendMail({ subject, text }: MailInput): Promise<void> {
   const config = readConfig();
   if (!config) {
     if (!warned) {
       warned = true;
       console.warn(
-        "[email] SMTP не настроен (SMTP_HOST/SMTP_USER/SMTP_PASSWORD/EMAIL_FROM/EMAIL_TO) — письма не отправляются"
+        "[email] SMTP не настроен (SMTP_HOST/SMTP_USER/SMTP_PASSWORD/EMAIL_FROM/EMAIL_TO) — письма не отправляются",
       );
     }
     throw new Error("SMTP не настроен");
@@ -89,11 +97,15 @@ export async function sendMail({
   }
 
   await transporter.sendMail({
-    from: config.from,
+    from: { name: config.fromName, address: config.from },
     to: config.to,
-    replyTo,
     subject,
     // Только plain text: HTML-часть здесь ничего не даёт и повышает спам-оценку.
     text,
+    // Для кириллицы nodemailer сам выбрал бы base64 (он короче), но голый
+    // base64-текст без HTML-части даёт MIME_BASE64_TEXT.
+    textEncoding: "quoted-printable",
+    // Письмо совсем без следов почтовой программы набирает MISSING_XM_UA.
+    headers: { "X-Mailer": "education-portal" },
   });
 }
