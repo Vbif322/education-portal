@@ -320,7 +320,7 @@ export async function deleteCourse(courseId: number) {
     const existingCourse = await db.query.courses.findFirst({
       where: eq(courses.id, courseId),
       with: {
-        coursesToModules: true,
+        modules: true,
         skillsToCourses: true,
       },
     });
@@ -331,13 +331,13 @@ export async function deleteCourse(courseId: number) {
 
     // Сохраняем полное состояние курса для аудита
     const existingWithRelations = existingCourse as typeof existingCourse & {
-      coursesToModules: Array<{ moduleId: number; order: number }>;
+      modules: Array<{ moduleId: number; order: number }>;
       skillsToCourses: Array<{ skillId: number }>;
     };
 
     const changesBefore = {
       ...existingCourse,
-      modules: existingWithRelations.coursesToModules.map((ctm) => ({
+      modules: existingWithRelations.modules.map((ctm) => ({
         moduleId: ctm.moduleId,
         order: ctm.order,
       })),

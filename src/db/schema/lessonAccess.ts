@@ -23,7 +23,7 @@ export const lessonAccess = prodSchema.table(
 );
 
 export const usersLessonAccessRelations = relations(users, ({ many }) => ({
-  lessonAccess: many(lessonAccess),
+  lessonAccess: many(lessonAccess, { relationName: "user" }),
 }));
 
 export const lessonsLessonAccessRelations = relations(lessons, ({ many }) => ({
@@ -34,6 +34,7 @@ export const lessonAccessRelations = relations(lessonAccess, ({ one }) => ({
   user: one(users, {
     fields: [lessonAccess.userId],
     references: [users.id],
+    relationName: "user",
   }),
   lesson: one(lessons, {
     fields: [lessonAccess.lessonId],
@@ -42,5 +43,6 @@ export const lessonAccessRelations = relations(lessonAccess, ({ one }) => ({
   grantedByUser: one(users, {
     fields: [lessonAccess.grantedBy],
     references: [users.id],
+    relationName: "grantedByUser",
   }),
 }));

@@ -50,7 +50,7 @@ export const lessonsToMaterialsRelations = relations(
       references: [lessons.id],
     }),
     material: one(materials, {
-      fields: [lessonsToMaterials.lessonId],
+      fields: [lessonsToMaterials.meterialId],
       references: [materials.id],
     }),
   })

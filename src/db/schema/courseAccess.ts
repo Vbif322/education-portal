@@ -23,7 +23,7 @@ export const courseAccess = prodSchema.table(
 );
 
 export const usersCourseAccessRelations = relations(users, ({ many }) => ({
-  courseAccess: many(courseAccess),
+  courseAccess: many(courseAccess, { relationName: "user" }),
 }));
 
 export const coursesCourseAccessRelations = relations(courses, ({ many }) => ({

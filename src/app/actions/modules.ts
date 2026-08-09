@@ -234,7 +234,7 @@ export async function deleteModule(moduleId: number) {
     const existingModule = await db.query.modules.findFirst({
       where: eq(modules.id, moduleId),
       with: {
-        modulesToLessons: true,
+        lessons: true,
       },
     });
 
@@ -244,12 +244,12 @@ export async function deleteModule(moduleId: number) {
 
     // Сохраняем полное состояние модуля для аудита
     const existingWithRelations = existingModule as typeof existingModule & {
-      modulesToLessons: Array<{ lessonId: number; order: number }>;
+      lessons: Array<{ lessonId: number; order: number }>;
     };
 
     const changesBefore = {
       ...existingModule,
-      lessons: existingWithRelations.modulesToLessons.map((mtl) => ({
+      lessons: existingWithRelations.lessons.map((mtl) => ({
         lessonId: mtl.lessonId,
         order: mtl.order,
       })),
