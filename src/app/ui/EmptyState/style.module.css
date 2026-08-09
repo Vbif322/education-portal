@@ -1,0 +1,216 @@
+/* Обёртка для `fullPage`: раньше эти стили дублировались инлайном
+   в not-found.tsx и error.tsx. */
+.viewport {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-12) var(--space-6);
+  /* Без ограничения ширины заголовок и действия расползаются по контейнеру —
+     раньше держалась только описание (46ch). */
+  max-width: 520px;
+  margin-inline: auto;
+  animation: fadeIn 0.24s ease-out;
+}
+
+.bordered {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.plain {
+  padding: var(--space-8) var(--space-4);
+}
+
+.lg {
+  padding: var(--space-12) var(--space-8);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-pill);
+}
+
+.lg .icon {
+  width: 72px;
+  height: 72px;
+}
+
+/* Тон медальона. Второй box-shadow — декоративный ореол-кольцо;
+   это подложка под конкретный тон, а не токен из globals.css. */
+.toneBrand {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 6px rgb(0 86 210 / 0.07);
+}
+
+.toneNeutral {
+  background-color: var(--color-surface-muted);
+  color: var(--color-fg-subtle);
+  box-shadow: 0 0 0 6px rgb(16 24 40 / 0.04);
+}
+
+.toneWarning {
+  background-color: var(--color-warning-soft);
+  color: var(--color-warning);
+  box-shadow: 0 0 0 6px rgb(180 83 9 / 0.07);
+}
+
+.toneDanger {
+  background-color: var(--color-danger-soft);
+  color: var(--color-danger);
+  box-shadow: 0 0 0 6px rgb(220 38 38 / 0.07);
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-fg);
+  margin: 0;
+}
+
+.lg .title {
+  font-size: var(--text-2xl);
+}
+
+.description {
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--color-fg-muted);
+  max-width: 46ch;
+  margin: 0;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  text-align: left;
+  width: 100%;
+  margin: var(--space-2) 0 0;
+  padding: var(--space-4) var(--space-5);
+  background-color: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--color-fg-muted);
+}
+
+.stepNumber {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+/* Вертикальный коннектор между номерами — связывает шаги в последовательность. */
+.stepNumber::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: var(--space-3);
+  background-color: var(--color-border-strong);
+}
+
+.step:last-child .stepNumber::after {
+  display: none;
+}
+
+.action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+/* Ссылка в слоте `action` выглядит как основной CTA (Button variant="filled",
+   size="md"). Раньше эти стили дублировались на каждом вызове. */
+.action a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-primary);
+  color: var(--color-fg-inverse);
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: 1.2;
+  transition: background-color 0.15s ease;
+}
+
+.action a:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.action a:active {
+  background-color: var(--color-primary-active);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .root,
+  .lg {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .title,
+  .lg .title {
+    font-size: var(--text-lg);
+  }
+
+  .icon,
+  .lg .icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .steps {
+    padding: var(--space-3) var(--space-4);
+  }
+}

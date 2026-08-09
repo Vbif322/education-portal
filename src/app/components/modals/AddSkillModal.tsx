@@ -3,6 +3,9 @@
 import { FC, FormEvent, useState } from "react";
 import s from "./AddSkillModal.module.css";
 import Button from "@/app/ui/Button/Button";
+import Dialog from "@/app/ui/Dialog/Dialog";
+import IconButton from "@/app/ui/IconButton/IconButton";
+import { X } from "lucide-react";
 
 type Props = {
   isOpen: boolean;
@@ -83,21 +86,18 @@ const AddSkillModal: FC<Props> = ({ isOpen, onClose, onAdd }) => {
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className={s.overlay} onClick={handleClose}>
-      <div className={s.modal} onClick={(e) => e.stopPropagation()}>
+    <Dialog open={isOpen} onClose={handleClose}>
+      <div className={s.modal}>
         <div className={s.header}>
-          <h3>Добавить новый навык</h3>
-          <button
-            type="button"
-            className={s.closeButton}
+          <h3 className={s.title}>Добавить новый навык</h3>
+          <IconButton
+            aria-label="Закрыть"
             onClick={handleClose}
             disabled={loading}
           >
-            ✕
-          </button>
+            <X size={18} />
+          </IconButton>
         </div>
 
         <form onSubmit={handleSubmit} className={s.form}>
@@ -118,24 +118,28 @@ const AddSkillModal: FC<Props> = ({ isOpen, onClose, onAdd }) => {
             />
           </div>
 
-          {error && <div className={s.error}>{error}</div>}
+          {error && (
+            <div className={s.error} role="alert">
+              {error}
+            </div>
+          )}
 
           <div className={s.formActions}>
             <Button
               type="button"
-              variant="text"
+              variant="outline"
               onClick={handleClose}
               disabled={loading}
             >
               Отмена
             </Button>
-            <Button type="submit" disabled={loading || !name.trim()}>
-              {loading ? "Добавление..." : "Добавить"}
+            <Button type="submit" loading={loading} disabled={!name.trim()}>
+              {loading ? "Добавление…" : "Добавить"}
             </Button>
           </div>
         </form>
       </div>
-    </div>
+    </Dialog>
   );
 };
 

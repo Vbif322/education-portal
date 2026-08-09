@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { db } from "@/db/db";
 import {
   courses,
@@ -288,7 +289,11 @@ export async function getCourseMetadataById(
   }
 }
 
-export async function getCourseById(
+/**
+ * Обёрнут в `cache()`: страница урока и её layout запрашивают дерево курса
+ * трижды за один рендер, а запрос тяжёлый (курс → темы → уроки → навыки).
+ */
+export const getCourseById = cache(async function getCourseById(
   id: number
 ): Promise<CourseFulldata | null> {
   try {
@@ -325,7 +330,7 @@ export async function getCourseById(
     console.error("Ошибка при получении курса:", error);
     return null;
   }
-}
+});
 
 export async function enrollInCourse(courseId: number) {
   const user = await getUser();
@@ -666,4 +671,283 @@ export async function getAllLessonsFromCourse(courseId: Course['id']) {
     console.error(error);
     return [];
   }
+}
+/* ------------------------------------------------------------------ *
+ * Батч-выборки для дашборда.
+ *
+ * В отличие от остального DAL эти функции НЕ глотают ошибки: `catch → []`
+ * маскирует падение БД под «нет курсов». Пусть их ловит error.tsx.
+ * ------------------------------------------------------------------ */
+
+export type CourseProgress = {
+  completed: number;
+  total: number;
+  percentage: number;
+};
+
+/**
+ * Прогресс сразу по нескольким курсам одним запросом — замена вызову
+ * `getCourseProgress` в цикле (N+1 на дашборде).
+ */
+export async function getCoursesProgress(
+  courseIds: number[]
+): Promise<Map<number, CourseProgress>> {
+  const result = new Map<number, CourseProgress>();
+  if (courseIds.length === 0) return result;
+
+  const user = await getUser();
+  if (!user) return result;
+
+  const rows = await db
+    .select({
+      courseId: coursesToModules.courseId,
+      total: sql<number>`COUNT(DISTINCT ${modulesToLessons.lessonId})::int`,
+      completed: sql<number>`COUNT(DISTINCT ${usersToLessons.lessonId}) FILTER (WHERE ${usersToLessons.completedAt} IS NOT NULL)::int`,
+    })
+    .from(coursesToModules)
+    .innerJoin(
+      modulesToLessons,
+      eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+    )
+    .leftJoin(
+      usersToLessons,
+      and(
+        eq(usersToLessons.lessonId, modulesToLessons.lessonId),
+        eq(usersToLessons.userId, user.id)
+      )
+    )
+    .where(inArray(coursesToModules.courseId, courseIds))
+    .groupBy(coursesToModules.courseId);
+
+  for (const row of rows) {
+    const total = Number(row.total) || 0;
+    const completed = Number(row.completed) || 0;
+    result.set(row.courseId, {
+      completed,
+      total,
+      percentage: total === 0 ? 0 : Math.round((completed / total) * 100),
+    });
+  }
+
+  // Курсы без тем/уроков в GROUP BY не попадают — добиваем нулями,
+  // чтобы карточка не осталась без прогресса.
+  for (const id of courseIds) {
+    if (!result.has(id)) {
+      result.set(id, { completed: 0, total: 0, percentage: 0 });
+    }
+  }
+
+  return result;
+}
+
+export type CourseAccessState = {
+  hasAccess: boolean;
+  /** `null` — бессрочно. Заполняется только для точечного гранта. */
+  expiresAt: Date | null;
+  source: "role" | "public" | "subscription" | "grant" | "none";
+};
+
+/**
+ * Батч-версия `canAccessCourse`: то же дерево правил (роль → публичность →
+ * подписка «Все включено» → грант на курс → грант на любой урок курса),
+ * но за четыре запроса на весь список вместо четырёх на каждый курс.
+ */
+export async function getCoursesAccess(
+  courseIds: number[]
+): Promise<Map<number, CourseAccessState>> {
+  const result = new Map<number, CourseAccessState>();
+  if (courseIds.length === 0) return result;
+
+  const user = await getOptionalUser();
+  if (!user) {
+    for (const id of courseIds) {
+      result.set(id, { hasAccess: false, expiresAt: null, source: "none" });
+    }
+    return result;
+  }
+
+  if (canManage(user)) {
+    for (const id of courseIds) {
+      result.set(id, { hasAccess: true, expiresAt: null, source: "role" });
+    }
+    return result;
+  }
+
+  const now = new Date();
+
+  const [privacyRows, sub, grants, lessonGrantRows] = await Promise.all([
+    db
+      .select({ id: courses.id, privacy: courses.privacy })
+      .from(courses)
+      .where(inArray(courses.id, courseIds)),
+    db.query.subscription.findFirst({
+      where: eq(subscription.userId, user.id),
+    }),
+    db
+      .select({
+        courseId: courseAccess.courseId,
+        expiresAt: courseAccess.expiresAt,
+      })
+      .from(courseAccess)
+      .where(
+        and(
+          eq(courseAccess.userId, user.id),
+          inArray(courseAccess.courseId, courseIds),
+          or(isNull(courseAccess.expiresAt), gt(courseAccess.expiresAt, now))
+        )
+      ),
+    // Доступ к любому уроку курса открывает курс — зеркалит canAccessCourse.
+    db
+      .selectDistinct({ courseId: coursesToModules.courseId })
+      .from(lessonAccess)
+      .innerJoin(
+        modulesToLessons,
+        eq(modulesToLessons.lessonId, lessonAccess.lessonId)
+      )
+      .innerJoin(
+        coursesToModules,
+        eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+      )
+      .where(
+        and(
+          eq(lessonAccess.userId, user.id),
+          inArray(coursesToModules.courseId, courseIds),
+          or(isNull(lessonAccess.expiresAt), gt(lessonAccess.expiresAt, now))
+        )
+      ),
+  ]);
+
+  const hasSubscription = sub?.type === "Все включено" && sub.endedAt > now;
+  const privacyById = new Map(privacyRows.map((r) => [r.id, r.privacy]));
+  const grantById = new Map(grants.map((g) => [g.courseId, g.expiresAt]));
+  const lessonGrantCourseIds = new Set(lessonGrantRows.map((r) => r.courseId));
+
+  for (const id of courseIds) {
+    if (privacyById.get(id) === "public") {
+      result.set(id, { hasAccess: true, expiresAt: null, source: "public" });
+    } else if (hasSubscription) {
+      result.set(id, {
+        hasAccess: true,
+        expiresAt: sub!.endedAt,
+        source: "subscription",
+      });
+    } else if (grantById.has(id)) {
+      result.set(id, {
+        hasAccess: true,
+        expiresAt: grantById.get(id) ?? null,
+        source: "grant",
+      });
+    } else if (lessonGrantCourseIds.has(id)) {
+      result.set(id, { hasAccess: true, expiresAt: null, source: "grant" });
+    } else {
+      result.set(id, { hasAccess: false, expiresAt: null, source: "none" });
+    }
+  }
+
+  return result;
+}
+
+export type ResumeTarget = {
+  courseId: number;
+  courseName: string;
+  lessonId: number;
+  lessonName: string;
+  /** Позиция урока в сквозном списке курса, с единицы. */
+  lessonPosition: number;
+  lessonTotal: number;
+  /** Секунды: сколько посмотрено и сколько всего. */
+  currentTime: number;
+  duration: number;
+  progress: CourseProgress;
+};
+
+/**
+ * Куда вернуть пользователя на дашборде: последний начатый и незавершённый
+ * урок.
+ *
+ * Ограничение: в `usersToLessons` нет `updatedAt`, поэтому «последняя
+ * активность» приближается через `startedAt`. Для точности нужна миграция
+ * с `updatedAt` и его обновление в `updateLessonProgress`.
+ */
+export async function getResumeTarget(): Promise<ResumeTarget | null> {
+  const user = await getUser();
+  if (!user) return null;
+
+  const [row] = await db
+    .select({
+      courseId: coursesToModules.courseId,
+      courseName: courses.name,
+      lessonId: lessons.id,
+      lessonName: lessons.name,
+      currentTime: usersToLessons.currentTime,
+      duration: usersToLessons.duration,
+      lessonDuration: lessons.duration,
+    })
+    .from(usersToLessons)
+    .innerJoin(lessons, eq(lessons.id, usersToLessons.lessonId))
+    .innerJoin(modulesToLessons, eq(modulesToLessons.lessonId, lessons.id))
+    .innerJoin(
+      coursesToModules,
+      eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+    )
+    .innerJoin(courses, eq(courses.id, coursesToModules.courseId))
+    .where(
+      and(
+        eq(usersToLessons.userId, user.id),
+        isNull(usersToLessons.completedAt)
+      )
+    )
+    .orderBy(sql`${usersToLessons.startedAt} DESC`)
+    .limit(1);
+
+  if (!row) return null;
+
+  const [orderedLessons, progressMap] = await Promise.all([
+    db
+      .select({ lessonId: modulesToLessons.lessonId })
+      .from(coursesToModules)
+      .innerJoin(
+        modulesToLessons,
+        eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+      )
+      .where(eq(coursesToModules.courseId, row.courseId))
+      .orderBy(asc(coursesToModules.order), asc(modulesToLessons.order)),
+    getCoursesProgress([row.courseId]),
+  ]);
+
+  const position = orderedLessons.findIndex((l) => l.lessonId === row.lessonId);
+
+  return {
+    courseId: row.courseId,
+    courseName: row.courseName,
+    lessonId: row.lessonId,
+    lessonName: row.lessonName,
+    lessonPosition: position >= 0 ? position + 1 : 1,
+    lessonTotal: orderedLessons.length,
+    currentTime: row.currentTime ?? 0,
+    duration: row.duration ?? row.lessonDuration ?? 0,
+    progress: progressMap.get(row.courseId) ?? {
+      completed: 0,
+      total: 0,
+      percentage: 0,
+    },
+  };
+}
+
+/**
+ * Id всех уроков, входящих хотя бы в один курс.
+ *
+ * Нужен дашборду, чтобы отделить самостоятельные уроки от уроков курса:
+ * раньше на их месте был пустой `Set` и секция дублировала «Мои курсы».
+ */
+export async function getLessonIdsInCourses(): Promise<Set<number>> {
+  const rows = await db
+    .selectDistinct({ lessonId: modulesToLessons.lessonId })
+    .from(coursesToModules)
+    .innerJoin(
+      modulesToLessons,
+      eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+    );
+
+  return new Set(rows.map((r) => r.lessonId));
 }

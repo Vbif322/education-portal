@@ -1,43 +1,40 @@
 import { FC, HTMLAttributes } from "react";
+import s from "./style.module.css";
 
 type Props = {
+  /** Процент заполнения, 0–100. Значения за пределами обрезаются. */
   value: number;
-  color?: string;
-  backgroundColor?: string;
+  size?: "sm" | "md";
+  tone?: "primary" | "success";
+  /** Доступное имя: без него полоса читается скринридером без контекста. */
+  label?: string;
 } & HTMLAttributes<HTMLDivElement>;
 
 const Progress: FC<Props> = ({
   value,
-  color = "#2196F3",
-  backgroundColor = "#E0E0E0",
+  size = "sm",
+  tone = "primary",
+  label,
+  className,
   ...props
 }) => {
-  const normalizedValue = Math.max(0, Math.min(100, value));
+  const normalizedValue = Math.max(0, Math.min(100, Math.round(value)));
 
-  const { style, ...other } = props;
   return (
     <div
-      style={{
-        width: "100%",
-        height: `${4}px`,
-        backgroundColor: backgroundColor,
-        borderRadius: `${4 / 2}px`, // Делаем края закругленными
-        overflow: "hidden", // Обрезаем внутреннюю полосу по границе
-        ...style,
-      }}
-      role="progressbar" // Роль для доступности (Accessibility)
+      className={[s.track, s[size], className].filter(Boolean).join(" ")}
+      role="progressbar"
       aria-valuenow={normalizedValue}
       aria-valuemin={0}
       aria-valuemax={100}
-      {...other}
+      aria-label={label}
+      {...props}
     >
       <div
-        style={{
-          width: `${normalizedValue}%`,
-          height: "100%",
-          backgroundColor: color,
-          transition: "width 0.3s",
-        }}
+        className={[s.fill, tone === "success" ? s.success : null]
+          .filter(Boolean)
+          .join(" ")}
+        style={{ width: `${normalizedValue}%` }}
       />
     </div>
   );

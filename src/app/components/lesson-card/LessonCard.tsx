@@ -15,8 +15,7 @@ const LessonCard: FC<Lesson & { progress?: boolean }> = ({
   progress,
   duration,
 }) => {
-
-  const router = useRouter()
+  const router = useRouter();
 
   return (
     <div className={s.card}>
@@ -26,14 +25,18 @@ const LessonCard: FC<Lesson & { progress?: boolean }> = ({
           {name}
         </p>
       </div>
-      <div style={{ flex: 1 }}>
+      <div className={s.body}>
         {description && <p className={s.description}>{description}</p>}
       </div>
       <div className={s.durationContainer}>
         <Clock className={s.durationIcon} size={16} />
         <span className={s.durationText}>{formatTime(duration)}</span>
       </div>
-      <Button onClick={() => router.push("/dashboard/lessons/" + id)}>
+      <Button
+        variant={progress ? "filled" : "outline"}
+        fullWidth
+        onClick={() => router.push("/dashboard/lessons/" + id)}
+      >
         {progress ? "Продолжить" : "Смотреть"}
       </Button>
     </div>

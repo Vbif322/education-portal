@@ -11,7 +11,6 @@ import { formatTime } from "@/app/utils/helpers";
 type Props = {
   data: Lesson[];
   handleChange: (arg01: Lesson["id"]) => void;
-  handleAttach: (arg01: Lesson["id"]) => void;
   handleDelete: (arg01: Lesson["id"]) => void;
   canDelete?: boolean;
 };
@@ -43,7 +42,6 @@ function reducer(
 const LessonTable: FC<Props> = ({
   data,
   handleChange,
-  handleAttach,
   handleDelete,
   canDelete = true,
 }) => {
@@ -101,13 +99,6 @@ const LessonTable: FC<Props> = ({
                       onClick={() => onChangeHandle(lessonItem)}
                     >
                       Изменить
-                    </Button>
-                    <Button
-                      variant="text"
-                      onClick={() => handleAttach(lessonItem.id)}
-                      disabled
-                    >
-                      Прикрепить материалы
                     </Button>
                     {canDelete && (
                       <Button

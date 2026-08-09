@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useTransition } from "react";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import Button from "@/app/ui/Button/Button";
 import s from "./LessonNavigation.module.css";
@@ -23,6 +23,10 @@ const LessonNavigation: FC<LessonNavigationProps> = ({
   const isFirst = currentLesson === 1;
   const isLast = currentLesson === totalLessons;
 
+  // Переход выполняет серверный экшен: без useTransition клик оставался без
+  // отклика и допускал дабл-клик.
+  const [isPending, startTransition] = useTransition();
+
   return (
     <div className={s.container}>
       <div className={s.header}>
@@ -33,9 +37,9 @@ const LessonNavigation: FC<LessonNavigationProps> = ({
       </div>
       <div className={s.buttons}>
         <Button
-          variant="text"
-          onClick={onPrevious}
-          disabled={isFirst}
+          variant="outline"
+          onClick={() => onPrevious && startTransition(() => onPrevious())}
+          disabled={isFirst || isPending}
           className={s.button}
         >
           <ChevronLeft size={20} />
@@ -43,7 +47,8 @@ const LessonNavigation: FC<LessonNavigationProps> = ({
         </Button>
         <Button
           variant="filled"
-          onClick={onNext}
+          onClick={() => onNext && startTransition(() => onNext())}
+          loading={isPending}
           className={s.button}
         >
           {isLast ? (

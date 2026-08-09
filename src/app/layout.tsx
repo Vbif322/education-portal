@@ -28,11 +28,14 @@ export default function RootLayout({
 }>) {
   const yandexMetrikaId = process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID;
   return (
-    <html lang="ru" data-scroll-behavior="smooth">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable}`}
-        style={{ minHeight: "100vh" }}
-      >
+    // Переменные шрифтов висят на <html>, а не на <body>: токен --font-sans
+    // собирается в :root и не увидел бы их уровнем ниже.
+    <html
+      lang="ru"
+      data-scroll-behavior="smooth"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+    >
+      <body style={{ minHeight: "100vh" }}>
         <ToastProvider>{children}</ToastProvider>
         <Suspense>
         {yandexMetrikaId && process.env.NODE_ENV === "production" && (

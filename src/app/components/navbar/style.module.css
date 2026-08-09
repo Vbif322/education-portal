@@ -12,20 +12,53 @@
 .menuList {
   display: flex;
   list-style-type: none;
-  gap: 32px;
+  gap: var(--space-8);
 }
 
-.menuList li {
-  padding: 16px;
-  font-size: 1.125rem;
+.tab {
+  display: block;
+  padding: var(--space-4);
+  font-size: var(--text-md);
+  font-weight: 500;
+  color: var(--color-fg-muted);
   cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.tab:hover {
+  color: var(--color-fg);
+}
+
+.tab__active {
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 .indicator {
   position: absolute;
   display: inline-block;
-  background: #2563eb;
+  background: var(--color-primary);
   height: 2px;
   bottom: -1px;
   transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 640px) {
+  /* Вкладок максимум три — вместо бургера дешевле горизонтальный скролл
+     без обрезки и без скрытых пунктов. */
+  .menuList {
+    gap: var(--space-4);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .menuList::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    padding: var(--space-3) var(--space-1);
+    font-size: var(--text-base);
+    white-space: nowrap;
+  }
 }

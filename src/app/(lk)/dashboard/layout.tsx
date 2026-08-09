@@ -1,6 +1,7 @@
 import { getUser } from "@/app/lib/dal";
 import Header from "@/app/components/header/Header";
 import { FC } from "react";
+import s from "./layout.module.css";
 
 const DashboardLayout: FC<
   Readonly<{
@@ -11,15 +12,7 @@ const DashboardLayout: FC<
   return (
     <>
       <Header variant="private" user={user || undefined} />
-      <div
-        style={{
-          padding: 32,
-          maxWidth: "1264px",
-          margin: "auto",
-        }}
-      >
-        {children}
-      </div>
+      <main className={s.container}>{children}</main>
     </>
   );
 };

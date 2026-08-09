@@ -9,6 +9,7 @@ import {
   useState,
   VideoHTMLAttributes,
 } from "react";
+import { AlertTriangle } from "lucide-react";
 import s from "./Player.module.css";
 
 type Props = {
@@ -17,7 +18,7 @@ type Props = {
 
 const Player: FC<Props> = ({ lessonId, ...props }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [error] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const [savedProgress, setSavedProgress] = useState(0);
   const [hasAutoCompleted, setHasAutoCompleted] = useState(false);
   const lastSaveTime = useRef<number>(0);
@@ -119,11 +120,36 @@ const Player: FC<Props> = ({ lessonId, ...props }) => {
     };
   }, [saveProgress]);
 
+  // Ошибка загрузки видео: раньше состояние не устанавливалось нигде,
+  // а её разметка использовала несуществующие в проекте Tailwind-классы.
+  const handleError = () => {
+    const code = videoRef.current?.error?.code;
+    setError(
+      code === MediaError.MEDIA_ERR_NETWORK
+        ? "Не удалось загрузить видео — проверьте соединение."
+        : code === MediaError.MEDIA_ERR_DECODE ||
+          code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED
+        ? "Формат видео не поддерживается этим браузером."
+        : "Видео недоступно. Попробуйте обновить страницу."
+    );
+  };
+
+  const retry = () => {
+    setError("");
+    videoRef.current?.load();
+  };
+
   if (error) {
     return (
-      <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-red-400">Ошибка: {error}</div>
+      <div className={s.container}>
+        <div className={s.videoWrapper}>
+          <div className={s.error} role="alert">
+            <AlertTriangle size={28} aria-hidden="true" />
+            <p className={s.errorText}>{error}</p>
+            <button type="button" className={s.retry} onClick={retry}>
+              Повторить
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -141,6 +167,7 @@ const Player: FC<Props> = ({ lessonId, ...props }) => {
           onLoadedMetadata={handleLoadedMetadata}
           onPause={handlePause}
           onEnded={handleEnded}
+          onError={handleError}
           preload="metadata"
           {...props}
         >

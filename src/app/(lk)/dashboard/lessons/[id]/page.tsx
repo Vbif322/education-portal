@@ -59,6 +59,11 @@ export default async function LessonPage({
   }
   const forbidden = "forbidden" in lesson ? true : false;
 
+  const materials =
+    "materials" in lesson && Array.isArray(lesson.materials)
+      ? (lesson.materials as { id: number; name: string; url: string }[])
+      : [];
+
   // Логируем успешный просмотр (только если есть доступ)
   if (!forbidden) {
     after(() =>
@@ -93,22 +98,26 @@ export default async function LessonPage({
             <p className={s.title}>Описание</p>
             <p className={s.text}>{lesson.description}</p>
           </Paper>
-          {"materials" in lesson &&
-            Array.isArray(lesson.materials) &&
-            lesson.materials.length > 0 &&
-            forbidden && (
-              <Paper>
-                <p className={s.title}>Материалы</p>
-                <div className={s.material__container}>
-                  <a href="#" className="link">
-                    Презентация
+          {/* Материалы показываются только при открытом доступе. Раньше
+              условие было инвертировано (`forbidden`), а ссылки вели на "#". */}
+          {!forbidden && materials.length > 0 && (
+            <Paper style={{ width: "100%" }}>
+              <p className={s.title}>Материалы</p>
+              <div className={s.material__container}>
+                {materials.map((material) => (
+                  <a
+                    key={material.id}
+                    href={material.url}
+                    className="link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {material.name}
                   </a>
-                  <a href="#" className="link">
-                    Контрольный лист
-                  </a>
-                </div>
-              </Paper>
-            )}
+                ))}
+              </div>
+            </Paper>
+          )}
         </div>
       </div>
     </>

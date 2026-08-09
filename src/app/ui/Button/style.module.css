@@ -1,37 +1,135 @@
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
   cursor: pointer;
-  padding: 8px 28px;
-  font-size: 1.125rem;
-  border: none;
-  border-radius: 0.5rem;
-  color: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-fg-inverse);
   background-color: transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease;
 }
 
+/* Размеры */
+.sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-base);
+}
+
+.md {
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-md);
+}
+
+.lg {
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-lg);
+}
+
+/* Варианты */
 .filled {
-  background-color: #2563eb;
+  background-color: var(--color-primary);
+  color: var(--color-fg-inverse);
+}
+
+.filled:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.filled:active:not(:disabled) {
+  background-color: var(--color-primary-active);
+}
+
+.outline {
+  background-color: var(--color-surface);
+  color: var(--color-fg);
+  border-color: var(--color-border);
+}
+
+.outline:hover:not(:disabled) {
+  background-color: var(--color-surface-muted);
+  border-color: var(--color-border-strong);
+}
+
+.dark {
+  background-color: var(--color-fg);
+  color: var(--color-fg-inverse);
+}
+
+.dark:hover:not(:disabled) {
+  background-color: #1f2937;
 }
 
 .text {
-  color: #000;
+  color: var(--color-fg);
 }
 
-.error {
-  background-color: #d32f2f;
-  color: #FFF;
+.text:hover:not(:disabled) {
+  background-color: var(--color-canvas);
 }
 
-.text:hover {
-  background-color: #efefef;
-  color: #000;
+.text:active:not(:disabled) {
+  background-color: var(--color-border);
 }
 
-.text:active {
-  background-color: #e1e1e1;
+.error.filled,
+.error.dark {
+  background-color: var(--color-danger);
+  color: var(--color-fg-inverse);
+}
+
+.error.filled:hover:not(:disabled),
+.error.dark:hover:not(:disabled) {
+  background-color: var(--color-danger-hover);
+}
+
+.error.text,
+.error.outline {
+  color: var(--color-danger);
+}
+
+.error.text:hover:not(:disabled),
+.error.outline:hover:not(:disabled) {
+  background-color: var(--color-danger-soft);
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .button:disabled {
   cursor: default;
-  color: #9e9e9e;
   pointer-events: none;
+  opacity: 0.55;
+}
+
+/* Состояние загрузки */
+.loading {
+  cursor: progress;
+}
+
+.spinner {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-pill);
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

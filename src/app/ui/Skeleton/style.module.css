@@ -1,0 +1,39 @@
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-canvas) 25%,
+    var(--color-surface-muted) 37%,
+    var(--color-canvas) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+.text {
+  height: 1em;
+  border-radius: var(--radius-sm);
+}
+
+.block {
+  border-radius: var(--radius-md);
+}
+
+.card {
+  min-height: 230px;
+  border-radius: var(--radius-md);
+}
+
+.row {
+  height: 48px;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}

@@ -1,13 +1,14 @@
 .container {
   display: grid;
   grid-template-columns: var(--aside-width) 1fr;
-  background-color: rgb(243 244 246);
+  background-color: var(--color-canvas);
   min-height: 100vh;
 }
 
 .main {
   width: 100%;
-  padding: 32px;
+  min-width: 0;
+  padding: var(--space-8);
 }
 
 @media (max-width: 1024px) {
@@ -16,12 +17,12 @@
   }
 
   .main {
-    padding: 24px 16px;
+    padding: var(--space-6) var(--space-4);
   }
 }
 
 @media (max-width: 640px) {
   .main {
-    padding: 16px;
+    padding: var(--space-4);
   }
 }

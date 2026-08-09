@@ -1,24 +1,42 @@
 .table__container {
-  border-radius: 4px;
-  box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2),
-    0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  /* Таблицы на 5–6 колонок иначе вылезают за экран на мобильных. */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table {
   width: 100%;
+  min-width: 640px;
   border-collapse: collapse;
-  border-spacing: 0px;
-  border-color: gray;
+  border-spacing: 0;
+  font-size: var(--text-base);
 }
 
 .table thead {
   text-align: left;
-  border-color: inherit;
-  height: 50px;
+  height: 48px;
+  background-color: var(--color-surface-muted);
+}
+
+.table th {
+  font-weight: 600;
+  color: var(--color-fg-subtle);
+  white-space: nowrap;
 }
 
 .table th,
 .table td {
-  padding: 6px 16px;
-  border-bottom: 1px solid rgb(224 224 224);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background-color: var(--color-surface-muted);
 }

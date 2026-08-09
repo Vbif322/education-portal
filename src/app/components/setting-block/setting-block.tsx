@@ -1,39 +1,40 @@
 import Paper from "@/app/ui/Paper/Paper";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 import s from "./style.module.css";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 type Props = {
   title: string;
-  rows: { navigate?: string; text1: string; text2: string }[];
+  rows: { navigate?: string; text1: string; text2: ReactNode }[];
+  /** Действие в шапке блока — например «Продлить». */
+  action?: ReactNode;
 };
 
-const SettingBlock: FC<Props> = ({ title, rows }) => {
+const SettingBlock: FC<Props> = ({ title, rows, action }) => {
   return (
-    <div className={s.container}>
+    <section className={s.container}>
+      <div className={s.header}>
+        <h2 className={s.title}>{title}</h2>
+        {action}
+      </div>
       <Paper className={s.paper}>
-        <p className={s.title}>{title}</p>
-        {rows.map((row, i) => {
-          return (
-            <div key={i}>
-              {row.navigate ? (
-                <Link href={"#"} className={s.link}>
-                  <p className={s.text1}>{row.text1}</p>
-                  <p>{row.text2}</p>
-                  <ChevronRight className={s.icon} />
-                </Link>
-              ) : (
-                <div className={s.link}>
-                  <p className={s.text1}>{row.text1}</p>
-                  <p className={s.text2}>{row.text2}</p>
-                </div>
-              )}
+        {rows.map((row, i) =>
+          row.navigate ? (
+            <Link key={i} href={row.navigate} className={s.link}>
+              <p className={s.text1}>{row.text1}</p>
+              <div className={s.text2}>{row.text2}</div>
+              <ChevronRight className={s.icon} size={18} />
+            </Link>
+          ) : (
+            <div key={i} className={s.link}>
+              <p className={s.text1}>{row.text1}</p>
+              <div className={s.text2}>{row.text2}</div>
             </div>
-          );
-        })}
+          )
+        )}
       </Paper>
-    </div>
+    </section>
   );
 };
 
