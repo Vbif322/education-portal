@@ -30,10 +30,31 @@
   gap: var(--space-2);
 }
 
+/* Заголовок секции и ссылка «смотреть всё» — в одной строке. */
+.sectionTitleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
 .title {
   font-size: var(--text-xl);
   font-weight: 700;
   margin: 0;
+}
+
+.sectionLink {
+  flex-shrink: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--link-color);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sectionLink:hover {
+  text-decoration: underline;
 }
 
 .sectionHint {

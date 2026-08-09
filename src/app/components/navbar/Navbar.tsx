@@ -24,6 +24,7 @@ const Navbar: FC<Props> = ({ user }) => {
 
   const tabs: Tab[] = [
     { href: "/dashboard", label: "Главная" },
+    { href: "/dashboard/lessons", label: "Все уроки" },
     ...(canManage(user)
       ? [
           { href: "/dashboard/admin", label: "Панель управления" },

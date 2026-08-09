@@ -11,6 +11,14 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Заголовок и бейдж доступа стоят в одной строке — как в CourseCard. */
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
 .titleContainer {
   display: flex;
   align-items: flex-start;
@@ -21,6 +29,10 @@
   color: var(--color-primary);
   flex-shrink: 0;
   margin-top: 2px;
+}
+
+.iconLocked {
+  color: var(--color-fg-subtle);
 }
 
 .title {

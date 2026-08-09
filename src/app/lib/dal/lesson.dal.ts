@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db } from "@/db/db";
-import { getUser } from "../dal";
+import { getOptionalUser, getUser } from "../dal";
 import { Lesson } from "@/@types/course";
 import {
   courseAccess,
@@ -13,7 +13,7 @@ import {
   subscription,
   usersToLessons,
 } from "@/db/schema";
-import { eq, and, or, gt, isNull, inArray } from "drizzle-orm";
+import { eq, and, or, gt, isNull, inArray, asc } from "drizzle-orm";
 import { canManage } from "../../utils/permissions";
 
 type CurrentUser = Awaited<ReturnType<typeof getUser>>;
@@ -142,6 +142,203 @@ export async function getAllLessons(
     console.log(error);
     return [];
   }
+}
+
+/**
+ * Уроки, открытые всем по правилам, не зависящим от пользователя: сам урок
+ * помечен `status = "public"` либо входит в курс с `privacy = "public"`.
+ *
+ * Это первые две ступени {@link canAccessLesson}, вынесенные в список: витрина
+ * получается одинаковой для новичка и для подписчика, поэтому её можно
+ * показывать на дашборде без проверки доступа на каждую карточку.
+ *
+ * Ошибки не глушим — сбой БД должен всплыть в `error.tsx`, а не притвориться
+ * «открытых уроков нет».
+ */
+export async function getOpenLessons(): Promise<Lesson[]> {
+  const publicCourseLessons = await db
+    .selectDistinct({ lessonId: modulesToLessons.lessonId })
+    .from(modulesToLessons)
+    .innerJoin(
+      coursesToModules,
+      eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+    )
+    .innerJoin(courses, eq(courses.id, coursesToModules.courseId))
+    .where(eq(courses.privacy, "public"));
+
+  const publicCourseLessonIds = publicCourseLessons.map((r) => r.lessonId);
+
+  const condition =
+    publicCourseLessonIds.length > 0
+      ? or(
+          eq(lessons.status, "public"),
+          inArray(lessons.id, publicCourseLessonIds)
+        )
+      : eq(lessons.status, "public");
+
+  return await db
+    .select()
+    .from(lessons)
+    .where(condition)
+    .orderBy(asc(lessons.id));
+}
+
+export type LessonAccessState = {
+  hasAccess: boolean;
+  /** `null` — бессрочно. Заполняется только для подписки и точечного гранта. */
+  expiresAt: Date | null;
+  source:
+    | "role"
+    | "public"
+    | "course-public"
+    | "subscription"
+    | "grant"
+    | "none";
+};
+
+/**
+ * Батч-версия {@link canAccessLesson}: то же дерево правил (роль → публичность
+ * урока → публичность родительского курса → подписка «Все включено» → грант на
+ * урок → грант на родительский курс), но за фиксированное число запросов на
+ * весь список вместо шести на каждый урок.
+ *
+ * Зеркалит `getCoursesAccess` из `course.dal.ts`; ошибки так же не глушим.
+ */
+export async function getLessonsAccess(
+  lessonIds: Lesson["id"][]
+): Promise<Map<number, LessonAccessState>> {
+  const result = new Map<number, LessonAccessState>();
+  if (lessonIds.length === 0) return result;
+
+  const user = await getOptionalUser();
+  if (!user) {
+    for (const id of lessonIds) {
+      result.set(id, { hasAccess: false, expiresAt: null, source: "none" });
+    }
+    return result;
+  }
+
+  if (canManage(user)) {
+    for (const id of lessonIds) {
+      result.set(id, { hasAccess: true, expiresAt: null, source: "role" });
+    }
+    return result;
+  }
+
+  const now = new Date();
+
+  const [statusRows, parentRows, sub, lessonGrants, courseGrants] =
+    await Promise.all([
+      db
+        .select({ id: lessons.id, status: lessons.status })
+        .from(lessons)
+        .where(inArray(lessons.id, lessonIds)),
+      // Урок → родительские курсы: нужны и для публичности курса,
+      // и для гранта `courseAccess`, поэтому берём одним запросом.
+      db
+        .selectDistinct({
+          lessonId: modulesToLessons.lessonId,
+          courseId: coursesToModules.courseId,
+          privacy: courses.privacy,
+        })
+        .from(modulesToLessons)
+        .innerJoin(
+          coursesToModules,
+          eq(coursesToModules.moduleId, modulesToLessons.moduleId)
+        )
+        .innerJoin(courses, eq(courses.id, coursesToModules.courseId))
+        .where(inArray(modulesToLessons.lessonId, lessonIds)),
+      db.query.subscription.findFirst({
+        where: eq(subscription.userId, user.id),
+      }),
+      db
+        .select({
+          lessonId: lessonAccess.lessonId,
+          expiresAt: lessonAccess.expiresAt,
+        })
+        .from(lessonAccess)
+        .where(
+          and(
+            eq(lessonAccess.userId, user.id),
+            inArray(lessonAccess.lessonId, lessonIds),
+            or(isNull(lessonAccess.expiresAt), gt(lessonAccess.expiresAt, now))
+          )
+        ),
+      db
+        .select({
+          courseId: courseAccess.courseId,
+          expiresAt: courseAccess.expiresAt,
+        })
+        .from(courseAccess)
+        .where(
+          and(
+            eq(courseAccess.userId, user.id),
+            or(isNull(courseAccess.expiresAt), gt(courseAccess.expiresAt, now))
+          )
+        ),
+    ]);
+
+  const hasSubscription = sub?.type === "Все включено" && sub.endedAt > now;
+  const statusById = new Map(statusRows.map((r) => [r.id, r.status]));
+  const lessonGrantById = new Map(
+    lessonGrants.map((g) => [g.lessonId, g.expiresAt])
+  );
+  const grantedCourseIds = new Map(
+    courseGrants.map((g) => [g.courseId, g.expiresAt])
+  );
+
+  const publicCourseLessonIds = new Set<number>();
+  const grantedCourseLessons = new Map<number, Date | null>();
+  for (const row of parentRows) {
+    if (row.privacy === "public") publicCourseLessonIds.add(row.lessonId);
+    if (grantedCourseIds.has(row.courseId)) {
+      const expiresAt = grantedCourseIds.get(row.courseId) ?? null;
+      // Урок может лежать в нескольких курсах: из грантов побеждает более
+      // долгий, бессрочный (`null`) — всегда.
+      if (!grantedCourseLessons.has(row.lessonId)) {
+        grantedCourseLessons.set(row.lessonId, expiresAt);
+      } else {
+        const current = grantedCourseLessons.get(row.lessonId)!;
+        if (current !== null && (expiresAt === null || expiresAt > current)) {
+          grantedCourseLessons.set(row.lessonId, expiresAt);
+        }
+      }
+    }
+  }
+
+  for (const id of lessonIds) {
+    if (statusById.get(id) === "public") {
+      result.set(id, { hasAccess: true, expiresAt: null, source: "public" });
+    } else if (publicCourseLessonIds.has(id)) {
+      result.set(id, {
+        hasAccess: true,
+        expiresAt: null,
+        source: "course-public",
+      });
+    } else if (hasSubscription) {
+      result.set(id, {
+        hasAccess: true,
+        expiresAt: sub!.endedAt,
+        source: "subscription",
+      });
+    } else if (lessonGrantById.has(id)) {
+      result.set(id, {
+        hasAccess: true,
+        expiresAt: lessonGrantById.get(id) ?? null,
+        source: "grant",
+      });
+    } else if (grantedCourseLessons.has(id)) {
+      result.set(id, {
+        hasAccess: true,
+        expiresAt: grantedCourseLessons.get(id) ?? null,
+        source: "grant",
+      });
+    } else {
+      result.set(id, { hasAccess: false, expiresAt: null, source: "none" });
+    }
+  }
+
+  return result;
 }
 
 export async function getUserLessons() {

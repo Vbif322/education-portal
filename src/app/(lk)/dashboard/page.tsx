@@ -3,7 +3,7 @@ import LessonCard from "@/app/components/lesson-card/LessonCard";
 import CourseCard from "@/app/components/course-card/CourseCard";
 import ResumeCard from "@/app/components/resume-card/ResumeCard";
 import EmptyState from "@/app/ui/EmptyState/EmptyState";
-import { getAllLessons, getUserLessons } from "@/app/lib/dal/lesson.dal";
+import { getOpenLessons, getUserLessons } from "@/app/lib/dal/lesson.dal";
 import {
   getUserCourses,
   getAllCourses,
@@ -15,16 +15,20 @@ import {
 import { getUser } from "@/app/lib/dal";
 import { BookOpen } from "lucide-react";
 import { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Главная",
 };
 
+/** Сколько открытых уроков показываем на дашборде — остальные на /dashboard/lessons. */
+const OPEN_LESSONS_PREVIEW = 6;
+
 export default async function Dashboard() {
-  const [user, allLessons, userLessons, userCourses, allCourses] =
+  const [user, openLessons, userLessons, userCourses, allCourses] =
     await Promise.all([
       getUser(),
-      getAllLessons(),
+      getOpenLessons(),
       getUserLessons(),
       getUserCourses(),
       getAllCourses({ withMetadata: true }),
@@ -55,9 +59,15 @@ export default async function Dashboard() {
   const standaloneLessons = userLessons.filter(
     (lesson) => !courseLessonIds.has(lesson.id)
   );
-  const otherLessons = allLessons.filter(
-    (lesson) =>
-      !startedLessonIds.has(lesson.id) && !courseLessonIds.has(lesson.id)
+
+  // Точка входа в контент для новичка: уроки, доступные без подписки. Раньше
+  // здесь была секция «Все уроки», но она отсекала всё, что входит в курсы, —
+  // то есть практически всю базу, и до открытых уроков было не добраться.
+  const standaloneLessonIds = new Set(
+    standaloneLessons.map((lesson) => lesson.id)
+  );
+  const openLessonsToShow = openLessons.filter(
+    (lesson) => !standaloneLessonIds.has(lesson.id)
   );
 
   // Курсы в процессе → не начатые → пройденные.
@@ -85,7 +95,8 @@ export default async function Dashboard() {
       {/* Новичку не нужна инструкция «выберите курс ниже» — каталог и так следующий
           блок. Пустое состояние остаётся только когда выбирать действительно не из чего. */}
       {hasNothing ? (
-        otherCourses.length === 0 && (
+        otherCourses.length === 0 &&
+        openLessonsToShow.length === 0 && (
           <EmptyState
             tone="neutral"
             icon={<BookOpen size={28} />}
@@ -153,12 +164,28 @@ export default async function Dashboard() {
         </section>
       )}
 
-      {otherLessons.length > 0 && (
+      {openLessonsToShow.length > 0 && (
         <section className={s.section}>
-          <h2 className={s.title}>Все уроки</h2>
+          <div className={s.sectionHead}>
+            <div className={s.sectionTitleRow}>
+              <h2 className={s.title}>Открытые уроки</h2>
+              {openLessonsToShow.length > OPEN_LESSONS_PREVIEW && (
+                <Link className={s.sectionLink} href="/dashboard/lessons">
+                  Все уроки →
+                </Link>
+              )}
+            </div>
+            <p className={s.sectionHint}>
+              Доступны без подписки — можно посмотреть прямо сейчас.
+            </p>
+          </div>
           <div className={s.card__container}>
-            {otherLessons.map((lesson) => (
-              <LessonCard key={lesson.id} {...lesson} />
+            {openLessonsToShow.slice(0, OPEN_LESSONS_PREVIEW).map((lesson) => (
+              <LessonCard
+                key={lesson.id}
+                {...lesson}
+                progress={startedLessonIds.has(lesson.id)}
+              />
             ))}
           </div>
         </section>
