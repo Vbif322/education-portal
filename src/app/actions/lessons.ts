@@ -10,16 +10,15 @@ import fs from "fs";
 import * as fsp from "fs/promises";
 import { auditService } from "@/lib/audit/audit.service";
 import { isAdmin } from "../utils/permissions";
+import { after } from "next/server";
 
 export async function deleteLesson(lessonId: number) {
-  let currentUser = null;
+  const currentUser = await getUser();
+  if (!isAdmin(currentUser)) {
+    return { success: false, error: "Недостаточно прав" };
+  }
 
   try {
-    currentUser = await getUser();
-    if (!isAdmin(currentUser)) {
-      return { success: false, error: "Недостаточно прав" };
-    }
-
     if (!Number.isInteger(lessonId)) {
       return { success: false, error: "Id должно быть числом" };
     }
@@ -50,26 +49,7 @@ export async function deleteLesson(lessonId: number) {
     }
 
     // Логируем удаление урока (асинхронно)
-    auditService
-      .logAdminAction({
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userRole: currentUser.role as "admin",
-        actionType: "lesson_delete",
-        resourceType: "lesson",
-        resourceId: String(lessonId),
-        changesBefore,
-        status: "success",
-      })
-      .catch((err) => console.error("Audit logging failed:", err));
-
-    revalidatePath("/dashboard/admin");
-    return { success: true };
-  } catch (error) {
-    console.error("Ошибка при удалении урока:", error);
-
-    // Логируем ошибку (асинхронно)
-    if (currentUser) {
+    after(() =>
       auditService
         .logAdminAction({
           userId: currentUser.id,
@@ -78,10 +58,33 @@ export async function deleteLesson(lessonId: number) {
           actionType: "lesson_delete",
           resourceType: "lesson",
           resourceId: String(lessonId),
-          status: "failure",
-          errorMessage: error instanceof Error ? error.message : String(error),
+          changesBefore,
+          status: "success",
         })
-        .catch((err) => console.error("Audit logging failed:", err));
+        .catch((err) => console.error("Audit logging failed:", err))
+    );
+
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error) {
+    console.error("Ошибка при удалении урока:", error);
+
+    // Логируем ошибку (асинхронно)
+    if (currentUser) {
+      after(() =>
+        auditService
+          .logAdminAction({
+            userId: currentUser.id,
+            userEmail: currentUser.email,
+            userRole: currentUser.role as "admin",
+            actionType: "lesson_delete",
+            resourceType: "lesson",
+            resourceId: String(lessonId),
+            status: "failure",
+            errorMessage: error instanceof Error ? error.message : String(error),
+          })
+          .catch((err) => console.error("Audit logging failed:", err))
+      );
     }
 
     return { success: false, error: "Ошибка при удалении урока" };

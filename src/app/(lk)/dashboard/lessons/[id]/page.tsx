@@ -7,6 +7,7 @@ import ContactModal from "./contact-modal";
 import { analyticsService } from "@/lib/analytics/analytics.service";
 import { getUser } from "@/app/lib/dal";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 const getLessonCached = cache(getLesson);
 
@@ -40,14 +41,16 @@ export default async function LessonPage({
   const { id } = await params;
 
   // Логируем попытку доступа (до проверок)
-  analyticsService
-    .trackActivity({
-      userId: user.id,
-      activityType: "lesson_access_attempt",
-      resourceType: "lesson",
-      resourceId: id
-    })
-    .catch((err) => console.error("Analytics tracking failed:", err));
+  after(() =>
+    analyticsService
+      .trackActivity({
+        userId: user.id,
+        activityType: "lesson_access_attempt",
+        resourceType: "lesson",
+        resourceId: id
+      })
+      .catch((err) => console.error("Analytics tracking failed:", err))
+  );
 
   const lesson = await getLessonCached(Number(id));
 
@@ -58,16 +61,22 @@ export default async function LessonPage({
 
   // Логируем успешный просмотр (только если есть доступ)
   if (!forbidden) {
-    addLessonToUser(Number(id));
+    after(() =>
+      addLessonToUser(Number(id)).catch((err) =>
+        console.error("Failed to add lesson to user:", err)
+      )
+    );
 
-    analyticsService
-      .trackActivity({
-        userId: user.id,
-        activityType: "lesson_view",
-        resourceType: "lesson",
-        resourceId: id
-      })
-      .catch((err) => console.error("Analytics tracking failed:", err));
+    after(() =>
+      analyticsService
+        .trackActivity({
+          userId: user.id,
+          activityType: "lesson_view",
+          resourceType: "lesson",
+          resourceId: id
+        })
+        .catch((err) => console.error("Analytics tracking failed:", err))
+    );
   }
 
   return (

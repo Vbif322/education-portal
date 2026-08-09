@@ -9,6 +9,7 @@ import { Subscription, User } from "@/@types/user";
 import { canManage, isAdmin } from "@/app/utils/permissions";
 import { auditService } from "@/lib/audit/audit.service";
 import { z } from "zod";
+import { after } from "next/server";
 
 const updateSubscriptionSchema = z.object({
   userId: z.uuid(),
@@ -59,39 +60,43 @@ export async function updateSubscription(
     }
 
     // Логируем изменение подписки (асинхронно)
-    auditService
-      .logAdminAction({
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userRole: currentUser.role as "admin" | "manager",
-        actionType: "subscription_update",
-        resourceType: "subscription",
-        resourceId: data.userId,
-        targetUserId: data.userId,
-        changesBefore,
-        changesAfter: { type: data.type, endedAt: data.endedAt },
-        status: "success",
-      })
-      .catch((err) => console.error("Audit logging failed:", err));
+    after(() =>
+      auditService
+        .logAdminAction({
+          userId: currentUser.id,
+          userEmail: currentUser.email,
+          userRole: currentUser.role as "admin" | "manager",
+          actionType: "subscription_update",
+          resourceType: "subscription",
+          resourceId: data.userId,
+          targetUserId: data.userId,
+          changesBefore,
+          changesAfter: { type: data.type, endedAt: data.endedAt },
+          status: "success",
+        })
+        .catch((err) => console.error("Audit logging failed:", err))
+    );
 
     revalidatePath(`/dashboard/users/${data.userId}`);
     return { success: true };
   } catch (error) {
     console.error(error);
 
-    auditService
-      .logAdminAction({
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userRole: currentUser.role as "admin" | "manager",
-        actionType: "subscription_update",
-        resourceType: "subscription",
-        resourceId: data.userId,
-        targetUserId: data.userId,
-        status: "failure",
-        errorMessage: error instanceof Error ? error.message : String(error),
-      })
-      .catch((err) => console.error("Audit logging failed:", err));
+    after(() =>
+      auditService
+        .logAdminAction({
+          userId: currentUser.id,
+          userEmail: currentUser.email,
+          userRole: currentUser.role as "admin" | "manager",
+          actionType: "subscription_update",
+          resourceType: "subscription",
+          resourceId: data.userId,
+          targetUserId: data.userId,
+          status: "failure",
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+        .catch((err) => console.error("Audit logging failed:", err))
+    );
 
     return { success: false, error: "Не удалось обновить подписку" };
   }
@@ -130,20 +135,22 @@ export async function grantCourseAccess(
 
     // Логируем предоставление доступа к курсу (асинхронно)
     if (targetUser) {
-      auditService
-        .logAccessChange({
-          action: "grant",
-          accessType: "course",
-          userId,
-          userEmail: targetUser.email,
-          resourceId: courseId,
-          resourceName: course?.name,
-          grantedBy: currentUser!.id,
-          grantedByEmail: currentUser!.email,
-          grantedByRole: currentUser!.role as "admin" | "manager",
-          expiresAt,
-        })
-        .catch((err) => console.error("Access logging failed:", err));
+      after(() =>
+        auditService
+          .logAccessChange({
+            action: "grant",
+            accessType: "course",
+            userId,
+            userEmail: targetUser.email,
+            resourceId: courseId,
+            resourceName: course?.name,
+            grantedBy: currentUser!.id,
+            grantedByEmail: currentUser!.email,
+            grantedByRole: currentUser!.role as "admin" | "manager",
+            expiresAt,
+          })
+          .catch((err) => console.error("Access logging failed:", err))
+      );
     }
 
     revalidatePath(`/dashboard/users/${userId}`);
@@ -179,19 +186,21 @@ export async function revokeCourseAccess(userId: string, courseId: number) {
 
     // Логируем отзыв доступа к курсу (асинхронно)
     if (targetUser) {
-      auditService
-        .logAccessChange({
-          action: "revoke",
-          accessType: "course",
-          userId,
-          userEmail: targetUser.email,
-          resourceId: courseId,
-          resourceName: course?.name,
-          grantedBy: currentUser!.id,
-          grantedByEmail: currentUser!.email,
-          grantedByRole: currentUser!.role as "admin" | "manager",
-        })
-        .catch((err) => console.error("Access logging failed:", err));
+      after(() =>
+        auditService
+          .logAccessChange({
+            action: "revoke",
+            accessType: "course",
+            userId,
+            userEmail: targetUser.email,
+            resourceId: courseId,
+            resourceName: course?.name,
+            grantedBy: currentUser!.id,
+            grantedByEmail: currentUser!.email,
+            grantedByRole: currentUser!.role as "admin" | "manager",
+          })
+          .catch((err) => console.error("Access logging failed:", err))
+      );
     }
 
     revalidatePath(`/dashboard/users/${userId}`);
@@ -235,20 +244,22 @@ export async function grantLessonAccess(
 
     // Логируем предоставление доступа к уроку (асинхронно)
     if (targetUser) {
-      auditService
-        .logAccessChange({
-          action: "grant",
-          accessType: "lesson",
-          userId,
-          userEmail: targetUser.email,
-          resourceId: lessonId,
-          resourceName: lesson?.name,
-          grantedBy: currentUser!.id,
-          grantedByEmail: currentUser!.email,
-          grantedByRole: currentUser!.role as "admin" | "manager",
-          expiresAt,
-        })
-        .catch((err) => console.error("Access logging failed:", err));
+      after(() =>
+        auditService
+          .logAccessChange({
+            action: "grant",
+            accessType: "lesson",
+            userId,
+            userEmail: targetUser.email,
+            resourceId: lessonId,
+            resourceName: lesson?.name,
+            grantedBy: currentUser!.id,
+            grantedByEmail: currentUser!.email,
+            grantedByRole: currentUser!.role as "admin" | "manager",
+            expiresAt,
+          })
+          .catch((err) => console.error("Access logging failed:", err))
+      );
     }
 
     revalidatePath(`/dashboard/users/${userId}`);
@@ -284,19 +295,21 @@ export async function revokeLessonAccess(userId: string, lessonId: number) {
 
     // Логируем отзыв доступа к уроку (асинхронно)
     if (targetUser) {
-      auditService
-        .logAccessChange({
-          action: "revoke",
-          accessType: "lesson",
-          userId,
-          userEmail: targetUser.email,
-          resourceId: lessonId,
-          resourceName: lesson?.name,
-          grantedBy: currentUser!.id,
-          grantedByEmail: currentUser!.email,
-          grantedByRole: currentUser!.role as "admin" | "manager",
-        })
-        .catch((err) => console.error("Access logging failed:", err));
+      after(() =>
+        auditService
+          .logAccessChange({
+            action: "revoke",
+            accessType: "lesson",
+            userId,
+            userEmail: targetUser.email,
+            resourceId: lessonId,
+            resourceName: lesson?.name,
+            grantedBy: currentUser!.id,
+            grantedByEmail: currentUser!.email,
+            grantedByRole: currentUser!.role as "admin" | "manager",
+          })
+          .catch((err) => console.error("Access logging failed:", err))
+      );
     }
 
     revalidatePath(`/dashboard/users/${userId}`);
@@ -356,40 +369,44 @@ export async function changeUserRole(userId: string, role: User['role']) {
     await db.update(users).set({ role: data.role }).where(eq(users.id, data.userId));
 
     // Логируем смену роли (асинхронно)
-    auditService
-      .logAdminAction({
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userRole: currentUser.role as "admin",
-        actionType: "user_role_change",
-        resourceType: "user",
-        resourceId: data.userId,
-        targetUserId: data.userId,
-        targetUserEmail: targetUser.email,
-        changesBefore: { role: targetUser.role },
-        changesAfter: { role: data.role },
-        status: "success",
-      })
-      .catch((err) => console.error("Audit logging failed:", err));
+    after(() =>
+      auditService
+        .logAdminAction({
+          userId: currentUser.id,
+          userEmail: currentUser.email,
+          userRole: currentUser.role as "admin",
+          actionType: "user_role_change",
+          resourceType: "user",
+          resourceId: data.userId,
+          targetUserId: data.userId,
+          targetUserEmail: targetUser.email,
+          changesBefore: { role: targetUser.role },
+          changesAfter: { role: data.role },
+          status: "success",
+        })
+        .catch((err) => console.error("Audit logging failed:", err))
+    );
 
     revalidatePath(`/dashboard/users/${data.userId}`);
     return { success: true };
   } catch (error) {
     console.error(error);
 
-    auditService
-      .logAdminAction({
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userRole: currentUser.role as "admin",
-        actionType: "user_role_change",
-        resourceType: "user",
-        resourceId: data.userId,
-        targetUserId: data.userId,
-        status: "failure",
-        errorMessage: error instanceof Error ? error.message : String(error),
-      })
-      .catch((err) => console.error("Audit logging failed:", err));
+    after(() =>
+      auditService
+        .logAdminAction({
+          userId: currentUser.id,
+          userEmail: currentUser.email,
+          userRole: currentUser.role as "admin",
+          actionType: "user_role_change",
+          resourceType: "user",
+          resourceId: data.userId,
+          targetUserId: data.userId,
+          status: "failure",
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+        .catch((err) => console.error("Audit logging failed:", err))
+    );
 
     return { success: false, error: "Не удалось изменить роль" };
   }

@@ -9,6 +9,7 @@ import { subscription, users } from "@/db/schema/users";
 import * as bcrypt from "bcrypt";
 import { createSession, deleteSession } from "../lib/session";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { eq } from "drizzle-orm";
 import z from "zod";
 import { analyticsService } from "@/lib/analytics/analytics.service";
@@ -81,13 +82,15 @@ export async function signin(
     .returning();
   await createSession(updated.id, updated.role, updated.sessionID);
 
-  analyticsService
-    .trackActivity({
-      userId: updated.id,
-      activityType: "login",
-      metadata: { newUser: false },
-    })
-    .catch((err) => console.error("Analytics tracking failed:", err));
+  after(() =>
+    analyticsService
+      .trackActivity({
+        userId: updated.id,
+        activityType: "login",
+        metadata: { newUser: false },
+      })
+      .catch((err) => console.error("Analytics tracking failed:", err))
+  );
 
   redirect("/dashboard");
 }
@@ -174,13 +177,15 @@ export async function signup(
 
   await createSession(newUser.id, newUser.role, newUser.sessionID);
 
-  analyticsService
-    .trackActivity({
-      userId: newUser.id,
-      activityType: "login",
-      metadata: { newUser: true },
-    })
-    .catch((err) => console.error("Analytics tracking failed:", err));
+  after(() =>
+    analyticsService
+      .trackActivity({
+        userId: newUser.id,
+        activityType: "login",
+        metadata: { newUser: true },
+      })
+      .catch((err) => console.error("Analytics tracking failed:", err))
+  );
 
   redirect("/dashboard");
 }
@@ -194,12 +199,14 @@ export async function logout() {
       .where(eq(users.id, cookie.userId));
 
     // Отслеживаем выход (асинхронно)
-    analyticsService
-      .trackActivity({
-        userId: cookie.userId,
-        activityType: "logout",
-      })
-      .catch((err) => console.error("Analytics tracking failed:", err));
+    after(() =>
+      analyticsService
+        .trackActivity({
+          userId: cookie.userId,
+          activityType: "logout",
+        })
+        .catch((err) => console.error("Analytics tracking failed:", err))
+    );
   }
   redirect("/");
 }
