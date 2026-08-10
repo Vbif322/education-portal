@@ -5,13 +5,11 @@ import s from "./style.module.css";
 import { useRouter } from "next/navigation";
 // import { Skill } from "./subcomponents/Skill";
 import Chip from "@/app/ui/Chip/Chip";
-import { enrollUserInCourse } from "@/app/actions/courses";
 import { CourseWithMetadata } from "@/@types/course";
 import { pluralize } from "@/app/utils/helpers";
 import ContactDialog from "@/app/components/dialogs/contact-dialog";
 import { User } from "@/@types/user";
 import { canManage } from "@/app/utils/permissions";
-import { useToast } from "@/app/ui/Toast/ToastProvider";
 
 type Props = {
   skills?: Array<{
@@ -22,14 +20,12 @@ type Props = {
       updatedAt: Date;
     };
   }>;
-  isEnrolled: boolean;
   hasAccess: boolean;
   user: Pick<User, "email" | "id" | "role"> | null;
 } & CourseWithMetadata;
 
 const UI: FC<Props> = ({
   skills,
-  isEnrolled,
   hasAccess,
   id,
   name,
@@ -40,36 +36,18 @@ const UI: FC<Props> = ({
   user,
 }) => {
   const router = useRouter();
-  const { showToast } = useToast();
-  const [isEnrolling, setIsEnrolling] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const handleEnroll = async () => {
-    setIsEnrolling(true);
-    try {
-      const result = await enrollUserInCourse(id);
-      if (result.success) {
-        router.push(id + "/lessons");
-      } else {
-        showToast(result.error || "Не удалось записаться на курс", "error");
-      }
-    } catch (error) {
-      console.error("Ошибка при записи на курс:", error);
-      showToast("Произошла ошибка при записи на курс", "error");
-    } finally {
-      setIsEnrolling(false);
-    }
-  };
+  // Раньше кнопка писала строку в `usersToCourses` («зачисление») — модель,
+  // независимую от реального доступа, из-за чего подпись была одинаковой
+  // и для купившего, и для закрытого курса. Теперь решает только доступ.
+  const canOpen = canManage(user) || hasAccess;
 
   const handleButtonClick = () => {
-    if (!canManage(user) && !hasAccess) {
-      setOpen(true);
+    if (canOpen) {
+      router.push(id + "/lessons");
     } else {
-      if (isEnrolled) {
-        router.push(id + "/lessons");
-      } else {
-        handleEnroll();
-      }
+      setOpen(true);
     }
   };
 
@@ -120,16 +98,8 @@ const UI: FC<Props> = ({
             <div className={s.background}></div>
             <h1 className={s.title}>{name}</h1>
             {description && <p className={s.description}>{description}</p>}
-            <button
-              className={s.button}
-              onClick={handleButtonClick}
-              disabled={isEnrolling}
-            >
-              {isEnrolling
-                ? "Записываемся..."
-                : isEnrolled
-                ? "Начать обучение"
-                : "Записаться на курс"}
+            <button className={s.button} onClick={handleButtonClick}>
+              {canOpen ? "Начать обучение" : "Получить доступ"}
             </button>
           </div>
           <div className={s.content}>

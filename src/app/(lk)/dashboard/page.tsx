@@ -9,12 +9,12 @@ import {
   getLessonsAccess,
 } from "@/app/lib/dal/lesson.dal";
 import {
-  getUserCourses,
   getAllCourses,
   getCoursesProgress,
   getCoursesAccess,
   getResumeTarget,
   getLessonIdsInCourses,
+  isOwnCourse,
 } from "@/app/lib/dal/course.dal";
 import { getUser } from "@/app/lib/dal";
 import { BookOpen } from "lucide-react";
@@ -29,25 +29,15 @@ export const metadata: Metadata = {
 const OPEN_LESSONS_PREVIEW = 6;
 
 export default async function Dashboard() {
-  const [user, openLessons, userLessons, userCourses, allCourses] =
-    await Promise.all([
-      getUser(),
-      getOpenLessons(),
-      getUserLessons(),
-      getUserCourses(),
-      getAllCourses({ withMetadata: true }),
-    ]);
-
-  const enrolledCourseIds = new Set(userCourses.map(({ course }) => course.id));
-  const otherCourses = allCourses.filter(
-    (course) => !enrolledCourseIds.has(course.id)
-  );
+  const [user, openLessons, userLessons, allCourses] = await Promise.all([
+    getUser(),
+    getOpenLessons(),
+    getUserLessons(),
+    getAllCourses({ withMetadata: true }),
+  ]);
 
   // Прогресс и доступ — батчем на все курсы сразу, вместо N запросов на карточку.
-  const allCourseIds = [
-    ...userCourses.map(({ course }) => course.id),
-    ...otherCourses.map((course) => course.id),
-  ];
+  const allCourseIds = allCourses.map((course) => course.id);
 
   const [progressMap, accessMap, resumeTarget, courseLessonIds] =
     await Promise.all([
@@ -56,6 +46,16 @@ export default async function Dashboard() {
       getResumeTarget(),
       getLessonIdsInCourses(),
     ]);
+
+  // «Мои курсы» больше не отдельная таблица «зачислений», жившая независимо от
+  // реального доступа, — раздел вычисляется из доступа и прогресса.
+  const myCourses = allCourses.filter((course) =>
+    isOwnCourse(accessMap.get(course.id), progressMap.get(course.id))
+  );
+  const myCourseIds = new Set(myCourses.map((course) => course.id));
+  const otherCourses = allCourses.filter(
+    (course) => !myCourseIds.has(course.id)
+  );
 
   // Отдельные уроки — только те, что не входят ни в один курс. Раньше здесь
   // был пустой Set и секция дублировала «Мои курсы».
@@ -82,14 +82,14 @@ export default async function Dashboard() {
   );
 
   // Курсы в процессе → не начатые → пройденные.
-  const sortedUserCourses = [...userCourses].sort((a, b) => {
-    const pa = progressMap.get(a.course.id)?.percentage ?? 0;
-    const pb = progressMap.get(b.course.id)?.percentage ?? 0;
+  const sortedMyCourses = [...myCourses].sort((a, b) => {
+    const pa = progressMap.get(a.id)?.percentage ?? 0;
+    const pb = progressMap.get(b.id)?.percentage ?? 0;
     const rank = (p: number) => (p === 100 ? 2 : p > 0 ? 0 : 1);
     return rank(pa) - rank(pb) || pb - pa;
   });
 
-  const hasNothing = userCourses.length === 0 && standaloneLessons.length === 0;
+  const hasNothing = myCourses.length === 0 && standaloneLessons.length === 0;
 
   return (
     <div className={s.page}>
@@ -117,15 +117,15 @@ export default async function Dashboard() {
         )
       ) : (
         <>
-          {sortedUserCourses.length > 0 && (
+          {sortedMyCourses.length > 0 && (
             <section className={s.section}>
               <h2 className={s.title}>Мои курсы</h2>
               <div className={s.card__container}>
-                {sortedUserCourses.map(({ course }) => (
+                {sortedMyCourses.map((course) => (
                   <CourseCard
                     key={course.id}
                     {...course}
-                    enrolled
+                    mine
                     progress={progressMap.get(course.id)}
                     access={accessMap.get(course.id)}
                     userEmail={user?.email}
