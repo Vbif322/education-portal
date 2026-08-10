@@ -7,7 +7,6 @@ export * from "./lessonAccess";
 export * from "./module";
 export * from "./modulesToLessons";
 export * from "./users";
-export * from "./usersToCourses";
 export * from "./usersToLessons";
 
 // Analytics tables

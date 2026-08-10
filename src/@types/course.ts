@@ -51,13 +51,6 @@ export type CourseFulldata = CourseWithModules & {
     }[];
 };
 
-export type UserCourseEnrollment = {
-  courseId: number;
-  userId: string;
-  enrolledAt: Date;
-  course: CourseWithMetadata;
-};
-
 export type LessonFormErrors = {
   errors: [];
   properties: {
