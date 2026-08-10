@@ -3,7 +3,11 @@ import LessonCard from "@/app/components/lesson-card/LessonCard";
 import CourseCard from "@/app/components/course-card/CourseCard";
 import ResumeCard from "@/app/components/resume-card/ResumeCard";
 import EmptyState from "@/app/ui/EmptyState/EmptyState";
-import { getOpenLessons, getUserLessons } from "@/app/lib/dal/lesson.dal";
+import {
+  getOpenLessons,
+  getUserLessons,
+  getLessonsAccess,
+} from "@/app/lib/dal/lesson.dal";
 import {
   getUserCourses,
   getAllCourses,
@@ -70,6 +74,13 @@ export default async function Dashboard() {
     (lesson) => !standaloneLessonIds.has(lesson.id)
   );
 
+  // «Отдельные уроки» — это начатые уроки, доступ к которым мог истечь, поэтому
+  // карточке нужно состояние доступа. Открытые уроки публичны по построению
+  // `getOpenLessons`, там бейдж всегда был бы «Открытый» — запрос не тратим.
+  const lessonAccessMap = await getLessonsAccess(
+    standaloneLessons.map((lesson) => lesson.id)
+  );
+
   // Курсы в процессе → не начатые → пройденные.
   const sortedUserCourses = [...userCourses].sort((a, b) => {
     const pa = progressMap.get(a.course.id)?.percentage ?? 0;
@@ -130,7 +141,13 @@ export default async function Dashboard() {
               <h2 className={s.title}>Отдельные уроки</h2>
               <div className={s.card__container}>
                 {standaloneLessons.map((lesson) => (
-                  <LessonCard key={lesson.id} progress {...lesson} />
+                  <LessonCard
+                    key={lesson.id}
+                    progress
+                    {...lesson}
+                    access={lessonAccessMap.get(lesson.id)}
+                    userEmail={user?.email}
+                  />
                 ))}
               </div>
             </section>
