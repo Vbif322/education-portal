@@ -1,19 +1,98 @@
+/**
+ * Токен-слой приложения — единственный источник цветов, типографики,
+ * отступов, радиусов, теней и z-index. Палитра выведена из CourseCard.
+ *
+ * Брейкпоинты (media queries не читают CSS-переменные, поэтому — соглашение):
+ *   640px  — мобильный
+ *   1024px — планшет
+ *   1280px — широкий десктоп
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand. #0056d2 даёт 6.3:1 на белом (AA для любого размера текста),
+     прежний #2563eb — 4.6:1, на грани для мелкого текста. */
+  --color-primary: #0056d2;
+  --color-primary-hover: #0049b3;
+  --color-primary-active: #003c94;
+  --color-primary-soft: #e2ecfb;
+
+  /* Нейтрали */
+  --color-fg: #111827;
+  --color-fg-muted: #4b5563;
+  --color-fg-subtle: #6b7280; /* мета и подписи — не мельче 13px */
+  --color-fg-inverse: #ffffff;
+  --color-border: #e5e7eb;
+  --color-border-strong: #d1d5db;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f9fafb;
+  --color-canvas: #f3f4f6;
+
+  /* Статусы */
+  --color-success: #0f8a5c;
+  --color-success-strong: #0b6d49;
+  --color-success-soft: #dcf2e8;
+  --color-warning: #b45309;
+  --color-warning-soft: #fef3c7;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-soft: #fee2e2;
+
+  /* Типографика */
+  /* Фолбэк внутри var() обязателен: без него незагруженная переменная делает
+     всё объявление невалидным и страница уезжает в дефолтный serif. */
+  --font-sans: var(--font-geist-sans, system-ui), -apple-system, "Segoe UI",
+    sans-serif;
+  --font-mono: var(--font-geist-mono, ui-monospace), monospace;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+
+  /* Отступы — шаг 4 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Радиусы */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* Тени — слоистая модель CourseCard */
+  --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow-md: 0 1px 2px rgb(16 24 40 / 0.04),
+    0 8px 24px -12px rgb(16 24 40 / 0.18);
+  --shadow-lg: 0 4px 6px rgb(16 24 40 / 0.06),
+    0 20px 40px -16px rgb(16 24 40 / 0.22);
+
+  /* Слои */
+  --z-header: 100;
+  --z-drawer: 200;
+  --z-dialog: 300;
+  --z-toast: 400;
+
+  --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-primary);
+
+  /* Размеры лэйаута */
   --aside-width: 320px;
   --header-height: 58px;
-  --link-color: #2563eb;
-  --link-color-hover: #1d4ed8;
-  --link-color-active: #1e40af;
-}
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
+  /* Совместимость: старые имена, пока не мигрированы все модули */
+  --background: var(--color-surface);
+  --foreground: var(--color-fg);
+  --link-color: var(--color-primary);
+  --link-color-hover: var(--color-primary-hover);
+  --link-color-active: var(--color-primary-active);
+}
 
 html,
 body {
@@ -22,9 +101,9 @@ body {
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--color-fg);
+  background: var(--color-surface);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -41,18 +120,30 @@ a {
 }
 
 .link {
-  color: var(--link-color);
+  color: var(--color-primary);
 }
 
 .link:hover {
-  color: var(--link-color-hover);
+  color: var(--color-primary-hover);
 }
 .link:active {
-  color: var(--link-color-active);
+  color: var(--color-primary-active);
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+/* База для клавиатурного фокуса: до этого в проекте не было ни одного правила. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

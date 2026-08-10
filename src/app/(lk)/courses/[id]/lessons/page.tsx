@@ -6,6 +6,7 @@ import {
 } from "@/app/lib/dal/course.dal";
 import { analyticsService } from "@/lib/analytics/analytics.service";
 import { getUser } from "@/app/lib/dal";
+import { after } from "next/server";
 
 interface LessonsPageProps {
   params: Promise<{
@@ -22,14 +23,16 @@ const LessonsPage: FC<LessonsPageProps> = async ({ params }) => {
   const courseId = Number(id);
 
   // Логируем попытку доступа (до проверок)
-  analyticsService
-    .trackActivity({
-      userId: user.id,
-      activityType: "course_access_attempt",
-      resourceType: "course",
-      resourceId: id
-    })
-    .catch((err) => console.error("Analytics tracking failed:", err));
+  after(() =>
+    analyticsService
+      .trackActivity({
+        userId: user.id,
+        activityType: "course_access_attempt",
+        resourceType: "course",
+        resourceId: id
+      })
+      .catch((err) => console.error("Analytics tracking failed:", err))
+  );
 
   const course = await getCourseById(courseId);
 
@@ -43,14 +46,16 @@ const LessonsPage: FC<LessonsPageProps> = async ({ params }) => {
   }
 
   // Логируем успешный просмотр (после всех проверок)
-  analyticsService
-    .trackActivity({
-      userId: user.id,
-      activityType: "course_view",
-      resourceType: "course",
-      resourceId: id
-    })
-    .catch((err) => console.error("Analytics tracking failed:", err));
+  after(() =>
+    analyticsService
+      .trackActivity({
+        userId: user.id,
+        activityType: "course_view",
+        resourceType: "course",
+        resourceId: id
+      })
+      .catch((err) => console.error("Analytics tracking failed:", err))
+  );
 
   // Получаем список завершенных уроков
   const completedLessons = await getCompletedLessonIds(courseId);

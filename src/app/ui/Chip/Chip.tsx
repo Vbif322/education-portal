@@ -1,22 +1,24 @@
-import { DetailedHTMLProps, FC, HTMLAttributes } from "react";
+import { FC, HTMLAttributes } from "react";
+import Badge from "../Badge/Badge";
 
 type Props = {
   text: string;
+  /** @deprecated Используйте `Badge` с пропом `variant`. */
   backgroundColor?: string;
-} & DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
+} & HTMLAttributes<HTMLSpanElement>;
 
-const Chip: FC<Props> = ({ text, backgroundColor = "#e8eef7", ...props }) => {
+/**
+ * @deprecated Тонкая обёртка над `Badge` для старых вызовов.
+ * В новом коде используйте `@/app/ui/Badge/Badge`.
+ */
+const Chip: FC<Props> = ({ text, backgroundColor, style, ...props }) => {
   return (
-    <span
-      style={{
-        padding: "4px 8px",
-        borderRadius: "16px",
-        backgroundColor,
-        ...props.style,
-      }}
+    <Badge
+      style={backgroundColor ? { backgroundColor, ...style } : style}
+      {...props}
     >
       {text}
-    </span>
+    </Badge>
   );
 };
 

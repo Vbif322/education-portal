@@ -15,6 +15,9 @@ import { deleteCourse } from "@/app/actions/courses";
 import { deleteModule } from "@/app/actions/modules";
 import { deleteLesson } from "@/app/actions/lessons";
 import { canManage, isAdmin } from "@/app/utils/permissions";
+import s from "./style.module.css";
+
+export const metadata = { title: "Панель управления" };
 
 export default async function AdminPage() {
   const user = await getUser();
@@ -27,76 +30,55 @@ export default async function AdminPage() {
     getAllModules(),
     getAllCourses(),
   ]);
-  const handleAttach = async () => {
-    "use server";
-    console.log("attach");
-  };
   const handleChange = async () => {
     "use server";
     revalidatePath("/dashboard/admin");
   };
+
   return (
-    <div>
-      <h4>Курсы</h4>
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "end",
-          marginBottom: "16px",
-        }}
-      >
-        <Link href={"admin/course/new"}>
-          <Button>Добавить курс</Button>
-        </Link>
-      </div>
-      <div>
+    <div className={s.page}>
+      <h1 className={s.pageTitle}>Панель управления</h1>
+
+      <section className={s.section}>
+        <div className={s.sectionHeader}>
+          <h2 className={s.sectionTitle}>Курсы</h2>
+          <Link href={"admin/course/new"}>
+            <Button size="sm">Добавить курс</Button>
+          </Link>
+        </div>
         <CourseTable
           data={courses}
           handleDelete={deleteCourse}
           canDelete={isAdmin(user)}
         />
-      </div>
-      <h4 style={{ marginTop: "64px" }}>Темы</h4>
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "end",
-          marginBottom: "16px",
-        }}
-      >
-        <Link href={"admin/module/new"}>
-          <Button>Добавить тему</Button>
-        </Link>
-      </div>
-      <div>
+      </section>
+
+      <section className={s.section}>
+        <div className={s.sectionHeader}>
+          <h2 className={s.sectionTitle}>Темы</h2>
+          <Link href={"admin/module/new"}>
+            <Button size="sm">Добавить тему</Button>
+          </Link>
+        </div>
         <ModuleTable
           data={modules}
           handleDelete={deleteModule}
           canDelete={isAdmin(user)}
         />
-      </div>
-      <h4 style={{ marginTop: "64px" }}>Уроки</h4>
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "end",
-          marginBottom: "16px",
-        }}
-      >
-        <LessonModal />
-      </div>
-      <div>
+      </section>
+
+      <section className={s.section}>
+        <div className={s.sectionHeader}>
+          <h2 className={s.sectionTitle}>Уроки</h2>
+          <LessonModal />
+        </div>
         <LessonTable
           data={lessons}
-          handleAttach={handleAttach}
           handleChange={handleChange}
           handleDelete={deleteLesson}
           canDelete={isAdmin(user)}
         />
-      </div>
+      </section>
     </div>
   );
 }

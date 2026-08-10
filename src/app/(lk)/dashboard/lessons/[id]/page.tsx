@@ -7,6 +7,7 @@ import ContactModal from "./contact-modal";
 import { analyticsService } from "@/lib/analytics/analytics.service";
 import { getUser } from "@/app/lib/dal";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 const getLessonCached = cache(getLesson);
 
@@ -40,14 +41,16 @@ export default async function LessonPage({
   const { id } = await params;
 
   // Логируем попытку доступа (до проверок)
-  analyticsService
-    .trackActivity({
-      userId: user.id,
-      activityType: "lesson_access_attempt",
-      resourceType: "lesson",
-      resourceId: id
-    })
-    .catch((err) => console.error("Analytics tracking failed:", err));
+  after(() =>
+    analyticsService
+      .trackActivity({
+        userId: user.id,
+        activityType: "lesson_access_attempt",
+        resourceType: "lesson",
+        resourceId: id
+      })
+      .catch((err) => console.error("Analytics tracking failed:", err))
+  );
 
   const lesson = await getLessonCached(Number(id));
 
@@ -56,18 +59,29 @@ export default async function LessonPage({
   }
   const forbidden = "forbidden" in lesson ? true : false;
 
+  const materials =
+    "materials" in lesson && Array.isArray(lesson.materials)
+      ? (lesson.materials as { id: number; name: string; url: string }[])
+      : [];
+
   // Логируем успешный просмотр (только если есть доступ)
   if (!forbidden) {
-    addLessonToUser(Number(id));
+    after(() =>
+      addLessonToUser(Number(id)).catch((err) =>
+        console.error("Failed to add lesson to user:", err)
+      )
+    );
 
-    analyticsService
-      .trackActivity({
-        userId: user.id,
-        activityType: "lesson_view",
-        resourceType: "lesson",
-        resourceId: id
-      })
-      .catch((err) => console.error("Analytics tracking failed:", err));
+    after(() =>
+      analyticsService
+        .trackActivity({
+          userId: user.id,
+          activityType: "lesson_view",
+          resourceType: "lesson",
+          resourceId: id
+        })
+        .catch((err) => console.error("Analytics tracking failed:", err))
+    );
   }
 
   return (
@@ -84,22 +98,26 @@ export default async function LessonPage({
             <p className={s.title}>Описание</p>
             <p className={s.text}>{lesson.description}</p>
           </Paper>
-          {"materials" in lesson &&
-            Array.isArray(lesson.materials) &&
-            lesson.materials.length > 0 &&
-            forbidden && (
-              <Paper>
-                <p className={s.title}>Материалы</p>
-                <div className={s.material__container}>
-                  <a href="#" className="link">
-                    Презентация
+          {/* Материалы показываются только при открытом доступе. Раньше
+              условие было инвертировано (`forbidden`), а ссылки вели на "#". */}
+          {!forbidden && materials.length > 0 && (
+            <Paper style={{ width: "100%" }}>
+              <p className={s.title}>Материалы</p>
+              <div className={s.material__container}>
+                {materials.map((material) => (
+                  <a
+                    key={material.id}
+                    href={material.url}
+                    className="link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {material.name}
                   </a>
-                  <a href="#" className="link">
-                    Контрольный лист
-                  </a>
-                </div>
-              </Paper>
-            )}
+                ))}
+              </div>
+            </Paper>
+          )}
         </div>
       </div>
     </>

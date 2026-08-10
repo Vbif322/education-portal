@@ -1,98 +1,194 @@
 import s from "./style.module.css";
 import LessonCard from "@/app/components/lesson-card/LessonCard";
 import CourseCard from "@/app/components/course-card/CourseCard";
-import { getAllLessons, getUserLessons } from "@/app/lib/dal/lesson.dal";
-import { getUserCourses, getAllCourses } from "@/app/lib/dal/course.dal";
+import ResumeCard from "@/app/components/resume-card/ResumeCard";
+import EmptyState from "@/app/ui/EmptyState/EmptyState";
+import { getOpenLessons, getUserLessons } from "@/app/lib/dal/lesson.dal";
+import {
+  getUserCourses,
+  getAllCourses,
+  getCoursesProgress,
+  getCoursesAccess,
+  getResumeTarget,
+  getLessonIdsInCourses,
+} from "@/app/lib/dal/course.dal";
+import { getUser } from "@/app/lib/dal";
+import { BookOpen } from "lucide-react";
 import { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: 'Главная',
-}
+  title: "Главная",
+};
+
+/** Сколько открытых уроков показываем на дашборде — остальные на /dashboard/lessons. */
+const OPEN_LESSONS_PREVIEW = 6;
 
 export default async function Dashboard() {
-  const [allLessons, userLessons, userCourses, allCourses] = await Promise.all([
-    getAllLessons(),
-    getUserLessons(),
-    getUserCourses(),
-    getAllCourses({ withMetadata: true }),
-  ]);
+  const [user, openLessons, userLessons, userCourses, allCourses] =
+    await Promise.all([
+      getUser(),
+      getOpenLessons(),
+      getUserLessons(),
+      getUserCourses(),
+      getAllCourses({ withMetadata: true }),
+    ]);
 
-  // Get lesson IDs that are part of enrolled courses
-  // Note: userCourses doesn't include modules, so this will be empty
-  // This appears to be dead code or incomplete implementation
-  const enrolledCourseLessonIds = new Set<number>();
-
-  // Filter user lessons to show only standalone lessons (not part of enrolled courses)
-  const standaloneLessons = userLessons.filter(
-    (lesson) => !enrolledCourseLessonIds.has(lesson.id)
-  );
-
-  // Get other lessons (not started)
-  const startedLessonIds = new Set(userLessons.map((lesson) => lesson.id));
-  const otherLessons = allLessons.filter(
-    (lesson) => !startedLessonIds.has(lesson.id)
-  );
-
-  // Get courses not enrolled in
   const enrolledCourseIds = new Set(userCourses.map(({ course }) => course.id));
   const otherCourses = allCourses.filter(
     (course) => !enrolledCourseIds.has(course.id)
   );
 
+  // Прогресс и доступ — батчем на все курсы сразу, вместо N запросов на карточку.
+  const allCourseIds = [
+    ...userCourses.map(({ course }) => course.id),
+    ...otherCourses.map((course) => course.id),
+  ];
+
+  const [progressMap, accessMap, resumeTarget, courseLessonIds] =
+    await Promise.all([
+      getCoursesProgress(allCourseIds),
+      getCoursesAccess(allCourseIds),
+      getResumeTarget(),
+      getLessonIdsInCourses(),
+    ]);
+
+  // Отдельные уроки — только те, что не входят ни в один курс. Раньше здесь
+  // был пустой Set и секция дублировала «Мои курсы».
+  const startedLessonIds = new Set(userLessons.map((lesson) => lesson.id));
+  const standaloneLessons = userLessons.filter(
+    (lesson) => !courseLessonIds.has(lesson.id)
+  );
+
+  // Точка входа в контент для новичка: уроки, доступные без подписки. Раньше
+  // здесь была секция «Все уроки», но она отсекала всё, что входит в курсы, —
+  // то есть практически всю базу, и до открытых уроков было не добраться.
+  const standaloneLessonIds = new Set(
+    standaloneLessons.map((lesson) => lesson.id)
+  );
+  const openLessonsToShow = openLessons.filter(
+    (lesson) => !standaloneLessonIds.has(lesson.id)
+  );
+
+  // Курсы в процессе → не начатые → пройденные.
+  const sortedUserCourses = [...userCourses].sort((a, b) => {
+    const pa = progressMap.get(a.course.id)?.percentage ?? 0;
+    const pb = progressMap.get(b.course.id)?.percentage ?? 0;
+    const rank = (p: number) => (p === 100 ? 2 : p > 0 ? 0 : 1);
+    return rank(pa) - rank(pb) || pb - pa;
+  });
+
+  const hasNothing = userCourses.length === 0 && standaloneLessons.length === 0;
+
   return (
-    <div>
-      {/* Enrolled Courses Section */}
-      {userCourses.length > 0 && (
-        <div>
-          <h3 className={s.title}>Мои курсы</h3>
-          <div className={s.card__container}>
-            {userCourses.map(({ course }) => {
-              return (
-                <CourseCard
-                  key={course.id}
-                  {...course}
-                  link={`/courses/${course.id}/lessons`}
-                />
-              );
-            })}
-          </div>
-        </div>
+    <div className={s.page}>
+      {/* Визуально шапки нет, но страница не должна остаться без единственного h1. */}
+      <h1 className={s.srOnly}>Личный кабинет</h1>
+
+      {resumeTarget && (
+        <section className={s.section}>
+          <h2 className={s.title}>Продолжить обучение</h2>
+          <ResumeCard target={resumeTarget} />
+        </section>
       )}
 
-      {/* Standalone Lessons in Progress */}
-      {standaloneLessons.length > 0 && (
-        <div style={{ marginTop: "3rem" }}>
-          <h3 className={s.title}>Продолжить обучение</h3>
-          <div className={s.selfcard__container}>
-            {standaloneLessons.map((lesson) => {
-              return <LessonCard key={lesson.id} progress {...lesson} />;
-            })}
-          </div>
-        </div>
+      {/* Новичку не нужна инструкция «выберите курс ниже» — каталог и так следующий
+          блок. Пустое состояние остаётся только когда выбирать действительно не из чего. */}
+      {hasNothing ? (
+        otherCourses.length === 0 &&
+        openLessonsToShow.length === 0 && (
+          <EmptyState
+            tone="neutral"
+            icon={<BookOpen size={28} />}
+            title="Курсов пока нет"
+            description="Курсы ещё не опубликованы — напишите куратору, он подберёт программу."
+          />
+        )
+      ) : (
+        <>
+          {sortedUserCourses.length > 0 && (
+            <section className={s.section}>
+              <h2 className={s.title}>Мои курсы</h2>
+              <div className={s.card__container}>
+                {sortedUserCourses.map(({ course }) => (
+                  <CourseCard
+                    key={course.id}
+                    {...course}
+                    enrolled
+                    progress={progressMap.get(course.id)}
+                    access={accessMap.get(course.id)}
+                    userEmail={user?.email}
+                    link={`/courses/${course.id}/lessons`}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {standaloneLessons.length > 0 && (
+            <section className={s.section}>
+              <h2 className={s.title}>Отдельные уроки</h2>
+              <div className={s.card__container}>
+                {standaloneLessons.map((lesson) => (
+                  <LessonCard key={lesson.id} progress {...lesson} />
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
 
-      {/* Available Courses */}
       {otherCourses.length > 0 && (
-        <div style={{ marginTop: "3rem" }}>
-          <h3 className={s.title}>Все курсы</h3>
-          <div className={s.card__container}>
-            {otherCourses.map((course) => {
-              return <CourseCard key={course.id} {...course} />;
-            })}
+        <section className={s.section} id="catalog">
+          <div className={s.sectionHead}>
+            <h2 className={s.title}>
+              {hasNothing ? "С чего начать" : "Доступные курсы"}
+            </h2>
+            {hasNothing && (
+              <p className={s.sectionHint}>
+                Выберите курс — доступ откроем после короткой заявки.
+              </p>
+            )}
           </div>
-        </div>
+          <div className={s.card__container}>
+            {otherCourses.map((course) => (
+              <CourseCard
+                key={course.id}
+                {...course}
+                progress={progressMap.get(course.id)}
+                access={accessMap.get(course.id)}
+                userEmail={user?.email}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* All Other Lessons */}
-      {otherLessons.length > 0 && (
-        <div style={{ marginTop: "3rem" }}>
-          <h3 className={s.title}>Все уроки</h3>
-          <div className={s.card__container}>
-            {otherLessons.map((lesson) => {
-              return <LessonCard key={lesson.id} {...lesson} />;
-            })}
+      {openLessonsToShow.length > 0 && (
+        <section className={s.section}>
+          <div className={s.sectionHead}>
+            <div className={s.sectionTitleRow}>
+              <h2 className={s.title}>Открытые уроки</h2>
+              {openLessonsToShow.length > OPEN_LESSONS_PREVIEW && (
+                <Link className={s.sectionLink} href="/dashboard/lessons">
+                  Все уроки →
+                </Link>
+              )}
+            </div>
+            <p className={s.sectionHint}>
+              Доступны без подписки — можно посмотреть прямо сейчас.
+            </p>
           </div>
-        </div>
+          <div className={s.card__container}>
+            {openLessonsToShow.slice(0, OPEN_LESSONS_PREVIEW).map((lesson) => (
+              <LessonCard
+                key={lesson.id}
+                {...lesson}
+                progress={startedLessonIds.has(lesson.id)}
+              />
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

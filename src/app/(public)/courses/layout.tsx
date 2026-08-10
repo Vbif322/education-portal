@@ -11,7 +11,10 @@ const CourseLayout: FC<
 
   return (
     <>
-      <Header variant={user ? "private" : "public"} />
+      <Header
+        variant={user ? "private" : "public"}
+        user={user || undefined}
+      />
       {children}
     </>
   );

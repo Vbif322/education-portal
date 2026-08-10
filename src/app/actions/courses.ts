@@ -9,6 +9,7 @@ import { z } from "zod";
 import { canManage, isAdmin } from "../utils/permissions";
 import { auditService } from "@/lib/audit/audit.service";
 import { getCourseById } from "@/app/lib/dal/course.dal";
+import { after } from "next/server";
 
 const courseSchema = z.object({
   name: z.string().min(1, "Название курса обязательно"),
@@ -38,14 +39,12 @@ export async function createCourse(data: {
   modules: { moduleId: number; order: number }[];
   skills: number[];
 }) {
-  let currentUser = null;
+  const currentUser = await getUser();
+  if (!canManage(currentUser)) {
+    return { success: false, error: "Недостаточно прав" };
+  }
 
   try {
-    currentUser = await getUser();
-    if (!canManage(currentUser)) {
-      return { success: false, error: "Недостаточно прав" };
-    }
-
     const validation = courseSchema.safeParse(data);
     if (!validation.success) {
       return {
@@ -105,22 +104,24 @@ export async function createCourse(data: {
     }
 
     // Логируем создание курса (асинхронно)
-    auditService
-      .logAdminAction({
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userRole: currentUser.role as "admin",
-        actionType: "course_create",
-        resourceType: "course",
-        resourceId: String(newCourse.id),
-        changesAfter: {
-          ...newCourse,
-          modules: modulesList,
-          skills: skillsList,
-        },
-        status: "success",
-      })
-      .catch((err) => console.error("Audit logging failed:", err));
+    after(() =>
+      auditService
+        .logAdminAction({
+          userId: currentUser.id,
+          userEmail: currentUser.email,
+          userRole: currentUser.role as "admin",
+          actionType: "course_create",
+          resourceType: "course",
+          resourceId: String(newCourse.id),
+          changesAfter: {
+            ...newCourse,
+            modules: modulesList,
+            skills: skillsList,
+          },
+          status: "success",
+        })
+        .catch((err) => console.error("Audit logging failed:", err))
+    );
 
     revalidatePath("/dashboard/admin");
     return { success: true, course: newCourse };
@@ -129,18 +130,20 @@ export async function createCourse(data: {
 
     // Логируем ошибку (асинхронно)
     if (currentUser) {
-      auditService
-        .logAdminAction({
-          userId: currentUser.id,
-          userEmail: currentUser.email,
-          userRole: currentUser.role as "admin",
-          actionType: "course_create",
-          resourceType: "course",
-          resourceId: "unknown",
-          status: "failure",
-          errorMessage: error instanceof Error ? error.message : String(error),
-        })
-        .catch((err) => console.error("Audit logging failed:", err));
+      after(() =>
+        auditService
+          .logAdminAction({
+            userId: currentUser.id,
+            userEmail: currentUser.email,
+            userRole: currentUser.role as "admin",
+            actionType: "course_create",
+            resourceType: "course",
+            resourceId: "unknown",
+            status: "failure",
+            errorMessage: error instanceof Error ? error.message : String(error),
+          })
+          .catch((err) => console.error("Audit logging failed:", err))
+      );
     }
 
     return { success: false, error: "Ошибка при создании курса" };
@@ -161,13 +164,12 @@ export async function updateCourse(
     showOnLanding: boolean;
   }
 ) {
-  let currentUser = null;
+  const currentUser = await getUser();
+  if (!canManage(currentUser)) {
+    return { success: false, error: "Недостаточно прав" };
+  }
 
   try {
-    currentUser = await getUser();
-    if (!canManage(currentUser)) {
-      return { success: false, error: "Недостаточно прав" };
-    }
     const validation = courseSchema.safeParse(data);
     if (!validation.success) {
       return {
@@ -253,30 +255,32 @@ export async function updateCourse(
     }
 
     // Логируем обновление курса (асинхронно)
-    auditService
-      .logAdminAction({
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userRole: currentUser.role,
-        actionType: "course_update",
-        resourceType: "course",
-        resourceId: String(courseId),
-        changesBefore,
-        changesAfter: {
-          id: courseId,
-          name,
-          description,
-          program,
-          format,
-          outcome,
-          privacy,
-          showOnLanding,
-          modules: modulesList,
-          skills: skillsList,
-        },
-        status: "success",
-      })
-      .catch((err) => console.error("Audit logging failed:", err));
+    after(() =>
+      auditService
+        .logAdminAction({
+          userId: currentUser.id,
+          userEmail: currentUser.email,
+          userRole: currentUser.role,
+          actionType: "course_update",
+          resourceType: "course",
+          resourceId: String(courseId),
+          changesBefore,
+          changesAfter: {
+            id: courseId,
+            name,
+            description,
+            program,
+            format,
+            outcome,
+            privacy,
+            showOnLanding,
+            modules: modulesList,
+            skills: skillsList,
+          },
+          status: "success",
+        })
+        .catch((err) => console.error("Audit logging failed:", err))
+    );
 
     revalidatePath("/dashboard/admin");
     return { success: true };
@@ -285,18 +289,20 @@ export async function updateCourse(
 
     // Логируем ошибку (асинхронно)
     if (currentUser) {
-      auditService
-        .logAdminAction({
-          userId: currentUser.id,
-          userEmail: currentUser.email,
-          userRole: currentUser.role as "admin" | "manager",
-          actionType: "course_update",
-          resourceType: "course",
-          resourceId: String(courseId),
-          status: "failure",
-          errorMessage: error instanceof Error ? error.message : String(error),
-        })
-        .catch((err) => console.error("Audit logging failed:", err));
+      after(() =>
+        auditService
+          .logAdminAction({
+            userId: currentUser.id,
+            userEmail: currentUser.email,
+            userRole: currentUser.role as "admin" | "manager",
+            actionType: "course_update",
+            resourceType: "course",
+            resourceId: String(courseId),
+            status: "failure",
+            errorMessage: error instanceof Error ? error.message : String(error),
+          })
+          .catch((err) => console.error("Audit logging failed:", err))
+      );
     }
 
     return { success: false, error: "Ошибка при обновлении курса" };
@@ -304,19 +310,17 @@ export async function updateCourse(
 }
 
 export async function deleteCourse(courseId: number) {
-  let currentUser = null;
+  const currentUser = await getUser();
+  if (!isAdmin(currentUser)) {
+    return { success: false, error: "Недостаточно прав" };
+  }
 
   try {
-    currentUser = await getUser();
-    if (!isAdmin(currentUser)) {
-      return { success: false, error: "Недостаточно прав" };
-    }
-
     // Получаем данные курса для аудита перед удалением
     const existingCourse = await db.query.courses.findFirst({
       where: eq(courses.id, courseId),
       with: {
-        coursesToModules: true,
+        modules: true,
         skillsToCourses: true,
       },
     });
@@ -327,13 +331,13 @@ export async function deleteCourse(courseId: number) {
 
     // Сохраняем полное состояние курса для аудита
     const existingWithRelations = existingCourse as typeof existingCourse & {
-      coursesToModules: Array<{ moduleId: number; order: number }>;
+      modules: Array<{ moduleId: number; order: number }>;
       skillsToCourses: Array<{ skillId: number }>;
     };
 
     const changesBefore = {
       ...existingCourse,
-      modules: existingWithRelations.coursesToModules.map((ctm) => ({
+      modules: existingWithRelations.modules.map((ctm) => ({
         moduleId: ctm.moduleId,
         order: ctm.order,
       })),
@@ -344,26 +348,7 @@ export async function deleteCourse(courseId: number) {
     await db.delete(courses).where(eq(courses.id, courseId));
 
     // Логируем удаление курса (асинхронно)
-    auditService
-      .logAdminAction({
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userRole: currentUser.role as "admin",
-        actionType: "course_delete",
-        resourceType: "course",
-        resourceId: String(courseId),
-        changesBefore,
-        status: "success",
-      })
-      .catch((err) => console.error("Audit logging failed:", err));
-
-    revalidatePath("/dashboard/admin");
-    return { success: true };
-  } catch (error) {
-    console.error("Ошибка при удалении курса:", error);
-
-    // Логируем ошибку (асинхронно)
-    if (currentUser) {
+    after(() =>
       auditService
         .logAdminAction({
           userId: currentUser.id,
@@ -372,10 +357,33 @@ export async function deleteCourse(courseId: number) {
           actionType: "course_delete",
           resourceType: "course",
           resourceId: String(courseId),
-          status: "failure",
-          errorMessage: error instanceof Error ? error.message : String(error),
+          changesBefore,
+          status: "success",
         })
-        .catch((err) => console.error("Audit logging failed:", err));
+        .catch((err) => console.error("Audit logging failed:", err))
+    );
+
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error) {
+    console.error("Ошибка при удалении курса:", error);
+
+    // Логируем ошибку (асинхронно)
+    if (currentUser) {
+      after(() =>
+        auditService
+          .logAdminAction({
+            userId: currentUser.id,
+            userEmail: currentUser.email,
+            userRole: currentUser.role as "admin",
+            actionType: "course_delete",
+            resourceType: "course",
+            resourceId: String(courseId),
+            status: "failure",
+            errorMessage: error instanceof Error ? error.message : String(error),
+          })
+          .catch((err) => console.error("Audit logging failed:", err))
+      );
     }
 
     return { success: false, error: "Ошибка при удалении курса" };

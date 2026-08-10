@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { decrypt } from "@/app/lib/session";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
 import { subscription, users } from "@/db/schema/users";
@@ -32,11 +33,14 @@ export const verifySession = cache(async () => {
     redirect("/api/auth/clear-session");
   }
 
-  // Асинхронное отслеживание визита (fire-and-forget)
+  // Отслеживание визита после отправки ответа: висячий промис в рендере
+  // ломает dev-трекинг Suspense в React 19 и может быть убит в serverless.
   // Сервис сам проверит, был ли уже визит сегодня
-  visitTrackingService
-    .trackVisit({ userId: session.userId })
-    .catch((err) => console.error("Visit tracking failed:", err));
+  after(() =>
+    visitTrackingService
+      .trackVisit({ userId: session.userId })
+      .catch((err) => console.error("Visit tracking failed:", err))
+  );
 
   return { isAuth: true, userId: session.userId, role: session.role };
 });

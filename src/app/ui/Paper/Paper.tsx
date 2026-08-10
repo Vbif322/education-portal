@@ -7,7 +7,7 @@ type Props = {
 
 const Paper: FC<Props> = ({ children, className, ...props }) => {
   return (
-    <div className={s.container + " " + className} {...props}>
+    <div className={[s.container, className].filter(Boolean).join(" ")} {...props}>
       {children}
     </div>
   );

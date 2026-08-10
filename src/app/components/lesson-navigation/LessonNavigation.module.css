@@ -1,47 +1,43 @@
 .container {
-  margin: 32px 0;
+  margin: var(--space-8) 0;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
-  gap: 16px;
+  margin-bottom: var(--space-6);
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 
 .title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: var(--text-2xl);
+  font-weight: 700;
   margin: 0;
-  color: #1a1a1a;
+  color: var(--color-fg);
 }
 
 .progress {
-  font-size: 0.875rem;
-  color: rgb(107 114 128);
-  background-color: rgb(243 244 246);
-  padding: 6px 12px;
-  border-radius: 16px;
+  font-size: var(--text-base);
+  color: var(--color-fg-subtle);
+  background-color: var(--color-canvas);
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-pill);
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .buttons {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
   justify-content: flex-end;
 }
 
 .button {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  gap: var(--space-2);
 }
 
 @media (max-width: 640px) {

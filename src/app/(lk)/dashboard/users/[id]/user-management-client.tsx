@@ -296,9 +296,6 @@ const UserManagementClient: FC<Props> = ({
       <Paper className={s.section}>
         <div className={s.section__header}>
           <h2 className={s.section__title}>История активности</h2>
-          <Button variant="text" onClick={() => {}}>
-            Подробная аналитика
-          </Button>
         </div>
 
         {/* Recent Logins */}

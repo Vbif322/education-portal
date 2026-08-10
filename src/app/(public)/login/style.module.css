@@ -2,34 +2,44 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  padding: var(--space-6) var(--space-4);
+  background: linear-gradient(135deg, #f5f7fa 0%, #e2ecfb 100%);
 }
+
 .paper {
-  padding: 32px;
-  border-radius: 1rem;
-  box-shadow: 0 0 #0000, 0 0 #0000, 0 20px 25px -5px rgb(0 0 0 / 0.1),
-    0 8px 10px -6px rgb(0 0 0 / 0.1);
-  background-color: rgb(255 255 255 / 0.7);
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  background-color: var(--color-surface);
 }
 
 .title {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-8);
+  font-size: var(--text-2xl);
 }
 
 .altAction {
   text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.875rem;
-  color: rgb(107 114 128);
+  margin-top: var(--space-6);
+  font-size: var(--text-base);
+  color: var(--color-fg-subtle);
 }
 
 .altAction a {
-  color: rgb(37 99 235);
+  color: var(--color-primary);
   text-decoration: none;
 }
 
 .altAction a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .paper {
+    padding: var(--space-6);
+  }
 }

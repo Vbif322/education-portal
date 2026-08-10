@@ -9,6 +9,7 @@ import { z } from "zod";
 import { auditService } from "@/lib/audit/audit.service";
 import { canManage, isAdmin } from "../utils/permissions";
 import { getModuleById } from "../lib/dal/module.dal";
+import { after } from "next/server";
 
 const moduleSchema = z.object({
   name: z.string().min(1, "Название модуля обязательно"),
@@ -26,14 +27,12 @@ export async function createModule(data: {
   description?: string;
   lessons: { lessonId: number; order: number }[];
 }) {
-  let currentUser = null;
+  const currentUser = await getUser();
+  if (!canManage(currentUser)) {
+    return { success: false, error: "Недостаточно прав" };
+  }
 
   try {
-    currentUser = await getUser();
-    if (!canManage(currentUser)) {
-      return { success: false, error: "Недостаточно прав" };
-    }
-
     const validation = moduleSchema.safeParse(data);
     if (!validation.success) {
       return {
@@ -66,18 +65,20 @@ export async function createModule(data: {
     }
 
     // Логируем создание модуля (асинхронно)
-    auditService
-      .logAdminAction({
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userRole: currentUser.role as "admin",
-        actionType: "module_create",
-        resourceType: "module",
-        resourceId: String(newModule.id),
-        changesAfter: { ...newModule, lessons: lessonsList },
-        status: "success",
-      })
-      .catch((err) => console.error("Audit logging failed:", err));
+    after(() =>
+      auditService
+        .logAdminAction({
+          userId: currentUser.id,
+          userEmail: currentUser.email,
+          userRole: currentUser.role as "admin",
+          actionType: "module_create",
+          resourceType: "module",
+          resourceId: String(newModule.id),
+          changesAfter: { ...newModule, lessons: lessonsList },
+          status: "success",
+        })
+        .catch((err) => console.error("Audit logging failed:", err))
+    );
 
     revalidatePath("/dashboard/admin");
     return { success: true, module: newModule };
@@ -86,18 +87,20 @@ export async function createModule(data: {
 
     // Логируем ошибку (асинхронно)
     if (currentUser) {
-      auditService
-        .logAdminAction({
-          userId: currentUser.id,
-          userEmail: currentUser.email,
-          userRole: currentUser.role as "admin",
-          actionType: "module_create",
-          resourceType: "module",
-          resourceId: "unknown",
-          status: "failure",
-          errorMessage: error instanceof Error ? error.message : String(error),
-        })
-        .catch((err) => console.error("Audit logging failed:", err));
+      after(() =>
+        auditService
+          .logAdminAction({
+            userId: currentUser.id,
+            userEmail: currentUser.email,
+            userRole: currentUser.role as "admin",
+            actionType: "module_create",
+            resourceType: "module",
+            resourceId: "unknown",
+            status: "failure",
+            errorMessage: error instanceof Error ? error.message : String(error),
+          })
+          .catch((err) => console.error("Audit logging failed:", err))
+      );
     }
 
     return { success: false, error: "Ошибка при создании модуля" };
@@ -112,14 +115,12 @@ export async function updateModule(
     lessons: { lessonId: number; order: number }[];
   }
 ) {
-  let currentUser = null;
+  const currentUser = await getUser();
+  if (!canManage(currentUser)) {
+    return { success: false, error: "Недостаточно прав" };
+  }
 
   try {
-    currentUser = await getUser();
-    if (!canManage(currentUser)) {
-      return { success: false, error: "Недостаточно прав" };
-    }
-
     const validation = moduleSchema.safeParse(data);
     if (!validation.success) {
       return {
@@ -174,32 +175,7 @@ export async function updateModule(
     }
 
     // Логируем обновление модуля (асинхронно)
-    auditService
-      .logAdminAction({
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userRole: currentUser.role as "admin",
-        actionType: "module_update",
-        resourceType: "module",
-        resourceId: String(moduleId),
-        changesBefore,
-        changesAfter: {
-          id: moduleId,
-          name,
-          description,
-          lessons: lessonsList,
-        },
-        status: "success",
-      })
-      .catch((err) => console.error("Audit logging failed:", err));
-
-    revalidatePath("/dashboard/admin");
-    return { success: true };
-  } catch (error) {
-    console.error("Ошибка при обновлении модуля:", error);
-
-    // Логируем ошибку (асинхронно)
-    if (currentUser) {
+    after(() =>
       auditService
         .logAdminAction({
           userId: currentUser.id,
@@ -208,10 +184,39 @@ export async function updateModule(
           actionType: "module_update",
           resourceType: "module",
           resourceId: String(moduleId),
-          status: "failure",
-          errorMessage: error instanceof Error ? error.message : String(error),
+          changesBefore,
+          changesAfter: {
+            id: moduleId,
+            name,
+            description,
+            lessons: lessonsList,
+          },
+          status: "success",
         })
-        .catch((err) => console.error("Audit logging failed:", err));
+        .catch((err) => console.error("Audit logging failed:", err))
+    );
+
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error) {
+    console.error("Ошибка при обновлении модуля:", error);
+
+    // Логируем ошибку (асинхронно)
+    if (currentUser) {
+      after(() =>
+        auditService
+          .logAdminAction({
+            userId: currentUser.id,
+            userEmail: currentUser.email,
+            userRole: currentUser.role as "admin",
+            actionType: "module_update",
+            resourceType: "module",
+            resourceId: String(moduleId),
+            status: "failure",
+            errorMessage: error instanceof Error ? error.message : String(error),
+          })
+          .catch((err) => console.error("Audit logging failed:", err))
+      );
     }
 
     return { success: false, error: "Ошибка при обновлении модуля" };
@@ -219,19 +224,17 @@ export async function updateModule(
 }
 
 export async function deleteModule(moduleId: number) {
-  let currentUser = null;
+  const currentUser = await getUser();
+  if (!isAdmin(currentUser)) {
+    return { success: false, error: "Недостаточно прав" };
+  }
 
   try {
-    currentUser = await getUser();
-    if (!isAdmin(currentUser)) {
-      return { success: false, error: "Недостаточно прав" };
-    }
-
     // Получаем данные модуля для аудита перед удалением
     const existingModule = await db.query.modules.findFirst({
       where: eq(modules.id, moduleId),
       with: {
-        modulesToLessons: true,
+        lessons: true,
       },
     });
 
@@ -241,12 +244,12 @@ export async function deleteModule(moduleId: number) {
 
     // Сохраняем полное состояние модуля для аудита
     const existingWithRelations = existingModule as typeof existingModule & {
-      modulesToLessons: Array<{ lessonId: number; order: number }>;
+      lessons: Array<{ lessonId: number; order: number }>;
     };
 
     const changesBefore = {
       ...existingModule,
-      lessons: existingWithRelations.modulesToLessons.map((mtl) => ({
+      lessons: existingWithRelations.lessons.map((mtl) => ({
         lessonId: mtl.lessonId,
         order: mtl.order,
       })),
@@ -256,26 +259,7 @@ export async function deleteModule(moduleId: number) {
     await db.delete(modules).where(eq(modules.id, moduleId));
 
     // Логируем удаление модуля (асинхронно)
-    auditService
-      .logAdminAction({
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userRole: currentUser.role as "admin",
-        actionType: "module_delete",
-        resourceType: "module",
-        resourceId: String(moduleId),
-        changesBefore,
-        status: "success",
-      })
-      .catch((err) => console.error("Audit logging failed:", err));
-
-    revalidatePath("/dashboard/admin");
-    return { success: true };
-  } catch (error) {
-    console.error("Ошибка при удалении модуля:", error);
-
-    // Логируем ошибку (асинхронно)
-    if (currentUser) {
+    after(() =>
       auditService
         .logAdminAction({
           userId: currentUser.id,
@@ -284,10 +268,33 @@ export async function deleteModule(moduleId: number) {
           actionType: "module_delete",
           resourceType: "module",
           resourceId: String(moduleId),
-          status: "failure",
-          errorMessage: error instanceof Error ? error.message : String(error),
+          changesBefore,
+          status: "success",
         })
-        .catch((err) => console.error("Audit logging failed:", err));
+        .catch((err) => console.error("Audit logging failed:", err))
+    );
+
+    revalidatePath("/dashboard/admin");
+    return { success: true };
+  } catch (error) {
+    console.error("Ошибка при удалении модуля:", error);
+
+    // Логируем ошибку (асинхронно)
+    if (currentUser) {
+      after(() =>
+        auditService
+          .logAdminAction({
+            userId: currentUser.id,
+            userEmail: currentUser.email,
+            userRole: currentUser.role as "admin",
+            actionType: "module_delete",
+            resourceType: "module",
+            resourceId: String(moduleId),
+            status: "failure",
+            errorMessage: error instanceof Error ? error.message : String(error),
+          })
+          .catch((err) => console.error("Audit logging failed:", err))
+      );
     }
 
     return { success: false, error: "Ошибка при удалении модуля" };

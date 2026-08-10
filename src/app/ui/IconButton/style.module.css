@@ -2,18 +2,32 @@
   cursor: pointer;
   background-color: transparent;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-pill);
+  color: var(--color-fg-muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .button:hover {
-  background-color: rgb(0 0 0 / 0.04);
+  background-color: var(--color-canvas);
+  color: var(--color-fg);
 }
 
 .button:active {
-  background-color: rgb(0 0 0 / 0.08);
+  background-color: var(--color-border);
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.button:disabled {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.55;
 }

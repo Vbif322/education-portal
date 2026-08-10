@@ -11,6 +11,7 @@ import { pluralize } from "@/app/utils/helpers";
 import ContactDialog from "@/app/components/dialogs/contact-dialog";
 import { User } from "@/@types/user";
 import { canManage } from "@/app/utils/permissions";
+import { useToast } from "@/app/ui/Toast/ToastProvider";
 
 type Props = {
   skills?: Array<{
@@ -39,6 +40,7 @@ const UI: FC<Props> = ({
   user,
 }) => {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -49,11 +51,11 @@ const UI: FC<Props> = ({
       if (result.success) {
         router.push(id + "/lessons");
       } else {
-        alert(result.error || "Не удалось записаться на курс");
+        showToast(result.error || "Не удалось записаться на курс", "error");
       }
     } catch (error) {
       console.error("Ошибка при записи на курс:", error);
-      alert("Произошла ошибка при записи на курс");
+      showToast("Произошла ошибка при записи на курс", "error");
     } finally {
       setIsEnrolling(false);
     }
