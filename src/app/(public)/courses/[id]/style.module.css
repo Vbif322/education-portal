@@ -1,33 +1,53 @@
-.container {
+/**
+ * Раскладка страницы курса — три секции подряд в нормальном потоке.
+ *
+ * Раньше `.blocks` был прибит к низу контейнера (`bottom: 0`), а `.content`
+ * к жёсткому `top: 360px`. Оба якоря ничего не знали друг о друге: `.content`
+ * вне потока не давал контейнеру высоты, поэтому на мобильном разросшийся
+ * герой утаскивал карточку вниз прямо на заголовок «О курсе». Теперь «наезд»
+ * карточки — это отрицательный margin, и порядок секций держится при любой
+ * высоте героя.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+
+  /* Насколько карточка со статистикой заходит на герой, и сколько остаётся
+     между кнопкой и её верхним краем. Нижний отступ героя считается из этой
+     пары: иначе стоит ему стать меньше «наезда» — и зазор схлопнется в ноль. */
+  --stats-overlap: var(--space-8);
+  --stats-gap: var(--space-4);
+}
+
+/* --- Герой --- */
+
+.hero {
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 32px;
-  position: relative;
-}
-
-.wrapper {
-  max-width: 1200px;
-  width: 100%;
-  padding-bottom: 64px;
-}
-
-.background {
-  top: 0;
-  left: 0;
-  bottom: 0;
-  position: absolute;
-  width: 100%;
+  /* Секция во всю ширину, поэтому заливка остаётся edge-to-edge. */
   background-color: rgb(0 86 210 / 0.05);
-  z-index: -1;
+  padding-block: var(--space-8) calc(var(--stats-overlap) + var(--stats-gap));
+  padding-inline: var(--space-8);
+}
+
+.hero__inner {
+  width: 100%;
+  max-width: 1200px;
 }
 
 .title {
-  font-size: 2rem;
+  font-size: var(--text-3xl);
+}
+
+.description {
+  margin-top: var(--space-3);
+  max-width: 70ch;
+  color: var(--color-fg-muted);
 }
 
 .button {
-  margin-top: 32px;
+  margin-top: var(--space-8);
   height: 64px;
   width: 296px;
   padding: 16px 40px;
@@ -36,7 +56,7 @@
   background: #2563eb;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
@@ -58,37 +78,93 @@
   background: #94a3b8;
 }
 
-.blocks {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translate(-50%, 50%);
-  background-color: #fff;
-  box-shadow: 0 8px 16px 0 rgb(0 0 0 / 16%);
-  border: 1px solid #e8eef7;
-  border-radius: 8px;
-  padding: 16px;
+/* --- Карточка со статистикой --- */
+
+.statsRow {
   display: flex;
+  justify-content: center;
+  padding-inline: var(--space-8);
+  /* «Наезд» на нижний край героя ≈ половина высоты карточки. */
+  margin-top: calc(var(--space-8) * -1);
 }
+
+.blocks {
+  display: flex;
+  max-width: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-4);
+}
+
+/* --- Контент --- */
 
 .content {
-  position: absolute;
-  top: 360px;
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: var(--space-8) var(--space-8) var(--space-12);
 }
 
-.content h3 {
-  font-size: 1.75rem;
+.sectionTitle {
+  font-size: var(--text-3xl);
 }
 
+/* Правила `.content h3` тут нет намеренно: селектор потомка (0,1,1) перебивал
+   `.content__subtitle` (0,1,0), и подзаголовки рендерились 1.75rem. */
 .content__subtitle {
-  margin-top: 32px;
-  font-size: 1.25rem;
+  margin-top: var(--space-8);
+  font-size: var(--text-xl);
   font-weight: 500;
 }
 
-.skills__container {
-  margin-top: 16px;
-  display: grid;
-  grid-template-columns: repeat(2, 420px);
-  gap: 16px;
+.program {
+  margin-top: var(--space-4);
+  white-space: pre-wrap;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.chips__empty {
+  color: var(--color-fg-subtle);
+}
+
+@media (max-width: 640px) {
+  /* Кнопка тут во всю ширину и упирается в такую же широкую карточку —
+     зазора десктопа мало, добавляем. Нижний отступ героя подтянется сам. */
+  .page {
+    --stats-gap: var(--space-6);
+  }
+
+  .hero {
+    padding-top: var(--space-6);
+    padding-inline: var(--space-4);
+  }
+
+  .title {
+    font-size: var(--text-2xl);
+  }
+
+  .button {
+    width: 100%;
+  }
+
+  .statsRow {
+    padding-inline: var(--space-4);
+  }
+
+  .blocks {
+    width: 100%;
+  }
+
+  .content {
+    padding-inline: var(--space-4);
+  }
 }

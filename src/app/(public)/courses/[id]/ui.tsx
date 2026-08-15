@@ -62,49 +62,51 @@ const UI: FC<Props> = ({
         title="Записаться на курс"
         intro={`Оставьте контакты — свяжемся и откроем доступ к курсу «${name}».`}
       />
-      <div className={s.container}>
-        <div className={s.blocks}>
-          <Block
-            title={`${moduleCount} ${pluralize(moduleCount, [
-              "тема",
-              "темы",
-              "тем",
-            ])}`}
-            // subtitle="Познакомьтесь с темой"
-          />
-          <Block
-            title={`${lessonCount} ${pluralize(lessonCount, [
-              "урок",
-              "урока",
-              "уроков",
-            ])}`}
-            // subtitle="Начинающий"
-            lastElement
-          />
-          {/* <Block
-          title={
-            <div style={{ display: "flex", alignItems: "center" }}>
-              4.6
-              <StarIcon
-                style={{ height: "16px", fill: "#0056d2", stroke: "none" }}
-              />
-            </div>
-          }
-          lastElement
-        /> */}
-        </div>
-        <div className={s.wrapper}>
-          <div className={s.hero}>
-            <div className={s.background}></div>
+      <div className={s.page}>
+        <section className={s.hero}>
+          <div className={s.hero__inner}>
             <h1 className={s.title}>{name}</h1>
             {description && <p className={s.description}>{description}</p>}
             <button className={s.button} onClick={handleButtonClick}>
               {canOpen ? "Начать обучение" : "Получить доступ"}
             </button>
           </div>
-          <div className={s.content}>
-            <h2 className={s.sectionTitle}>О курсе</h2>
-            {/* <h3 className={s.content__subtitle}>Чему вы научитесь</h3>
+        </section>
+
+        <div className={s.statsRow}>
+          <div className={s.blocks}>
+            <Block
+              title={`${moduleCount} ${pluralize(moduleCount, [
+                "тема",
+                "темы",
+                "тем",
+              ])}`}
+              // subtitle="Познакомьтесь с темой"
+            />
+            <Block
+              title={`${lessonCount} ${pluralize(lessonCount, [
+                "урок",
+                "урока",
+                "уроков",
+              ])}`}
+              // subtitle="Начинающий"
+            />
+            {/* <Block
+              title={
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  4.6
+                  <StarIcon
+                    style={{ height: "16px", fill: "#0056d2", stroke: "none" }}
+                  />
+                </div>
+              }
+            /> */}
+          </div>
+        </div>
+
+        <section className={s.content}>
+          <h2 className={s.sectionTitle}>О курсе</h2>
+          {/* <h3 className={s.content__subtitle}>Чему вы научитесь</h3>
           <div className={s.skills__container}>
             <Skill
               description={
@@ -127,34 +129,21 @@ const UI: FC<Props> = ({
               }
             />
           </div> */}
-            {program && (
-              <div className={s.wrapper}>
-                <h3 className={s.content__subtitle}>Программа курса</h3>
-                <p style={{ marginTop: "16px", whiteSpace: "pre-wrap" }}>
-                  {program}
-                </p>
-              </div>
+          {program && (
+            <>
+              <h3 className={s.content__subtitle}>Программа курса</h3>
+              <p className={s.program}>{program}</p>
+            </>
+          )}
+          <h3 className={s.content__subtitle}>Приобретаемые навыки</h3>
+          <div className={s.chips}>
+            {skills && skills.length > 0 ? (
+              skills.map(({ skill }) => <Chip key={skill.id} text={skill.name} />)
+            ) : (
+              <p className={s.chips__empty}>Навыки не указаны</p>
             )}
-            <h3 className={s.content__subtitle}>Приобретаемые навыки</h3>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "8px",
-                marginTop: "16px",
-                marginBottom: "32px",
-              }}
-            >
-              {skills && skills.length > 0 ? (
-                skills.map(({ skill }) => (
-                  <Chip key={skill.id} text={skill.name} />
-                ))
-              ) : (
-                <p style={{ color: "#666" }}>Навыки не указаны</p>
-              )}
-            </div>
           </div>
-        </div>
+        </section>
       </div>
     </>
   );
