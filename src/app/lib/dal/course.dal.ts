@@ -4,7 +4,6 @@ import { cache } from "react";
 import { db } from "@/db/db";
 import {
   courses,
-  usersToCourses,
   coursesToModules,
   modules,
   modulesToLessons,
@@ -25,7 +24,6 @@ import {
   CourseWithMetadata,
   LandingCourse,
   Skill,
-  UserCourseEnrollment,
 } from "@/@types/course";
 
 // Helper functions to create reusable subqueries
@@ -332,83 +330,6 @@ export const getCourseById = cache(async function getCourseById(
   }
 });
 
-export async function enrollInCourse(courseId: number) {
-  const user = await getUser();
-  if (!user) return null;
-  try {
-    const result = await db
-      .insert(usersToCourses)
-      .values({ courseId, userId: user.id })
-      .onConflictDoNothing()
-      .returning();
-    return result[0] || null;
-  } catch (error) {
-    console.error("Ошибка при записи на курс:", error);
-    return null;
-  }
-}
-
-export async function isUserEnrolledInCourse(courseId: number) {
-  const user = await getUser();
-  if (!user) return false;
-  try {
-    const enrollment = await db.query.usersToCourses.findFirst({
-      where: and(
-        eq(usersToCourses.userId, user.id),
-        eq(usersToCourses.courseId, courseId)
-      ),
-    });
-    return !!enrollment;
-  } catch (error) {
-    console.error("Ошибка при проверке записи на курс:", error);
-    return false;
-  }
-}
-
-export async function getUserCourses(): Promise<UserCourseEnrollment[]> {
-  const user = await getUser();
-  if (!user) return [];
-  try {
-    const moduleCountSubquery = createModuleCountSubquery();
-    const lessonCountSubquery = createLessonCountSubquery();
-
-    const result = await db
-      .select({
-        courseId: usersToCourses.courseId,
-        userId: usersToCourses.userId,
-        enrolledAt: usersToCourses.enrolledAt,
-        course: {
-          id: courses.id,
-          name: courses.name,
-          description: courses.description,
-          program: courses.program,
-          format: courses.format,
-          outcome: courses.outcome,
-          privacy: courses.privacy,
-          createdAt: courses.createdAt,
-          updatedAt: courses.updatedAt,
-          showOnLanding: courses.showOnLanding,
-          moduleCount: sql<number>`COALESCE(${moduleCountSubquery.moduleCount}, 0)`,
-          lessonCount: sql<number>`COALESCE(${lessonCountSubquery.lessonCount}, 0)`,
-        },
-      })
-      .from(usersToCourses)
-      .innerJoin(courses, eq(usersToCourses.courseId, courses.id))
-      .leftJoin(
-        moduleCountSubquery,
-        eq(courses.id, moduleCountSubquery.courseId)
-      )
-      .leftJoin(
-        lessonCountSubquery,
-        eq(courses.id, lessonCountSubquery.courseId)
-      )
-      .where(eq(usersToCourses.userId, user.id));
-    return result;
-  } catch (error) {
-    console.error("Ошибка при получении курсов пользователя:", error);
-    return [];
-  }
-}
 
 export async function getCourseProgress(courseId: number) {
   const user = await getUser();
@@ -845,6 +766,32 @@ export async function getCoursesAccess(
   }
 
   return result;
+}
+
+/**
+ * Попадает ли курс в раздел «Мои курсы».
+ *
+ * Раньше это определяла отдельная таблица `usersToCourses` («зачисление»),
+ * которая жила независимо от реального доступа: пользователь мог быть зачислен
+ * без доступа к урокам или иметь доступ без зачисления. Теперь раздел
+ * вычисляется из доступа и прогресса.
+ *
+ * Почему не любой `hasAccess`: подписка «Все включено» и роль admin/manager
+ * открывают сразу весь каталог, а публичные курсы — открыты всем. По такому
+ * правилу «Мои курсы» вобрали бы в себя весь каталог, а раздел «Доступные
+ * курсы» опустел бы. Поэтому «своим» курс делает либо точечная выдача
+ * (`courseAccess`/`lessonAccess`), либо начатое обучение.
+ *
+ * Следствие: курс, доступ к которому отозвали, остаётся в «Моих курсах», пока
+ * есть прогресс, — но уже с бейджем «Нужен доступ». Это намеренно: скрывать
+ * начатый курс молча хуже, чем показать его закрытым.
+ */
+export function isOwnCourse(
+  access: CourseAccessState | undefined,
+  progress: CourseProgress | undefined
+): boolean {
+  if (!access?.hasAccess) return false;
+  return access.source === "grant" || (progress?.percentage ?? 0) > 0;
 }
 
 export type ResumeTarget = {

@@ -7,7 +7,7 @@ import Badge from "@/app/ui/Badge/Badge";
 import EmptyState from "@/app/ui/EmptyState/EmptyState";
 import Paper from "@/app/ui/Paper/Paper";
 import { getUser, getUserSubscription } from "@/app/lib/dal";
-import { getUserCourses, getCoursesProgress } from "@/app/lib/dal/course.dal";
+import { getAllCourses, getCoursesProgress } from "@/app/lib/dal/course.dal";
 import {
   formatSubscriptionDate,
   getSubscriptionStatus,
@@ -28,13 +28,17 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
-  const [userSub, userCourses] = await Promise.all([
+  const [userSub, allCourses] = await Promise.all([
     getUserSubscription(),
-    getUserCourses(),
+    getAllCourses(),
   ]);
 
+  // Счётчики выводятся из одного прогресса, доступ для них не нужен: курсы без
+  // активности приходят с нулями и не проходят фильтры ниже. Раньше список
+  // ограничивался «зачислениями» (`usersToCourses`) — модель, не связанная с
+  // реальным доступом, из-за чего цифры расходились с дашбордом.
   const progressMap = await getCoursesProgress(
-    userCourses.map(({ course }) => course.id)
+    allCourses.map((course) => course.id)
   );
 
   const progressValues = [...progressMap.values()];

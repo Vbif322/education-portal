@@ -1,0 +1,27 @@
+.block {
+  /* Равные колонки: на мобильном карточка тянется во всю ширину экрана. */
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding-inline: var(--space-12);
+  padding-block: var(--space-2);
+}
+
+.block:not(:last-child) {
+  border-right: 2px solid var(--color-border);
+}
+
+.block__title {
+  font-weight: 600;
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-1);
+}
+
+@media (max-width: 640px) {
+  .block {
+    padding-inline: var(--space-4);
+  }
+}

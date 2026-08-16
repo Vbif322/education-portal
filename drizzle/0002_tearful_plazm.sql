@@ -1,0 +1,1 @@
+DROP TABLE "prod"."users_to_courses" CASCADE;

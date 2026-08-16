@@ -5,13 +5,11 @@ import s from "./style.module.css";
 import { useRouter } from "next/navigation";
 // import { Skill } from "./subcomponents/Skill";
 import Chip from "@/app/ui/Chip/Chip";
-import { enrollUserInCourse } from "@/app/actions/courses";
 import { CourseWithMetadata } from "@/@types/course";
 import { pluralize } from "@/app/utils/helpers";
 import ContactDialog from "@/app/components/dialogs/contact-dialog";
 import { User } from "@/@types/user";
 import { canManage } from "@/app/utils/permissions";
-import { useToast } from "@/app/ui/Toast/ToastProvider";
 
 type Props = {
   skills?: Array<{
@@ -22,14 +20,12 @@ type Props = {
       updatedAt: Date;
     };
   }>;
-  isEnrolled: boolean;
   hasAccess: boolean;
   user: Pick<User, "email" | "id" | "role"> | null;
 } & CourseWithMetadata;
 
 const UI: FC<Props> = ({
   skills,
-  isEnrolled,
   hasAccess,
   id,
   name,
@@ -40,36 +36,18 @@ const UI: FC<Props> = ({
   user,
 }) => {
   const router = useRouter();
-  const { showToast } = useToast();
-  const [isEnrolling, setIsEnrolling] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const handleEnroll = async () => {
-    setIsEnrolling(true);
-    try {
-      const result = await enrollUserInCourse(id);
-      if (result.success) {
-        router.push(id + "/lessons");
-      } else {
-        showToast(result.error || "Не удалось записаться на курс", "error");
-      }
-    } catch (error) {
-      console.error("Ошибка при записи на курс:", error);
-      showToast("Произошла ошибка при записи на курс", "error");
-    } finally {
-      setIsEnrolling(false);
-    }
-  };
+  // Раньше кнопка писала строку в `usersToCourses` («зачисление») — модель,
+  // независимую от реального доступа, из-за чего подпись была одинаковой
+  // и для купившего, и для закрытого курса. Теперь решает только доступ.
+  const canOpen = canManage(user) || hasAccess;
 
   const handleButtonClick = () => {
-    if (!canManage(user) && !hasAccess) {
-      setOpen(true);
+    if (canOpen) {
+      router.push(id + "/lessons");
     } else {
-      if (isEnrolled) {
-        router.push(id + "/lessons");
-      } else {
-        handleEnroll();
-      }
+      setOpen(true);
     }
   };
 
@@ -84,57 +62,51 @@ const UI: FC<Props> = ({
         title="Записаться на курс"
         intro={`Оставьте контакты — свяжемся и откроем доступ к курсу «${name}».`}
       />
-      <div className={s.container}>
-        <div className={s.blocks}>
-          <Block
-            title={`${moduleCount} ${pluralize(moduleCount, [
-              "тема",
-              "темы",
-              "тем",
-            ])}`}
-            // subtitle="Познакомьтесь с темой"
-          />
-          <Block
-            title={`${lessonCount} ${pluralize(lessonCount, [
-              "урок",
-              "урока",
-              "уроков",
-            ])}`}
-            // subtitle="Начинающий"
-            lastElement
-          />
-          {/* <Block
-          title={
-            <div style={{ display: "flex", alignItems: "center" }}>
-              4.6
-              <StarIcon
-                style={{ height: "16px", fill: "#0056d2", stroke: "none" }}
-              />
-            </div>
-          }
-          lastElement
-        /> */}
-        </div>
-        <div className={s.wrapper}>
-          <div className={s.hero}>
-            <div className={s.background}></div>
+      <div className={s.page}>
+        <section className={s.hero}>
+          <div className={s.hero__inner}>
             <h1 className={s.title}>{name}</h1>
             {description && <p className={s.description}>{description}</p>}
-            <button
-              className={s.button}
-              onClick={handleButtonClick}
-              disabled={isEnrolling}
-            >
-              {isEnrolling
-                ? "Записываемся..."
-                : isEnrolled
-                ? "Начать обучение"
-                : "Записаться на курс"}
+            <button className={s.button} onClick={handleButtonClick}>
+              {canOpen ? "Начать обучение" : "Получить доступ"}
             </button>
           </div>
-          <div className={s.content}>
-            <h2 className={s.sectionTitle}>О курсе</h2>
-            {/* <h3 className={s.content__subtitle}>Чему вы научитесь</h3>
+        </section>
+
+        <div className={s.statsRow}>
+          <div className={s.blocks}>
+            <Block
+              title={`${moduleCount} ${pluralize(moduleCount, [
+                "тема",
+                "темы",
+                "тем",
+              ])}`}
+              // subtitle="Познакомьтесь с темой"
+            />
+            <Block
+              title={`${lessonCount} ${pluralize(lessonCount, [
+                "урок",
+                "урока",
+                "уроков",
+              ])}`}
+              // subtitle="Начинающий"
+            />
+            {/* <Block
+              title={
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  4.6
+                  <StarIcon
+                    style={{ height: "16px", fill: "#0056d2", stroke: "none" }}
+                  />
+                </div>
+              }
+            /> */}
+          </div>
+        </div>
+
+        <section className={s.content}>
+          <h2 className={s.sectionTitle}>О курсе</h2>
+          {/* <h3 className={s.content__subtitle}>Чему вы научитесь</h3>
           <div className={s.skills__container}>
             <Skill
               description={
@@ -157,34 +129,21 @@ const UI: FC<Props> = ({
               }
             />
           </div> */}
-            {program && (
-              <div className={s.wrapper}>
-                <h3 className={s.content__subtitle}>Программа курса</h3>
-                <p style={{ marginTop: "16px", whiteSpace: "pre-wrap" }}>
-                  {program}
-                </p>
-              </div>
+          {program && (
+            <>
+              <h3 className={s.content__subtitle}>Программа курса</h3>
+              <p className={s.program}>{program}</p>
+            </>
+          )}
+          <h3 className={s.content__subtitle}>Приобретаемые навыки</h3>
+          <div className={s.chips}>
+            {skills && skills.length > 0 ? (
+              skills.map(({ skill }) => <Chip key={skill.id} text={skill.name} />)
+            ) : (
+              <p className={s.chips__empty}>Навыки не указаны</p>
             )}
-            <h3 className={s.content__subtitle}>Приобретаемые навыки</h3>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "8px",
-                marginTop: "16px",
-                marginBottom: "32px",
-              }}
-            >
-              {skills && skills.length > 0 ? (
-                skills.map(({ skill }) => (
-                  <Chip key={skill.id} text={skill.name} />
-                ))
-              ) : (
-                <p style={{ color: "#666" }}>Навыки не указаны</p>
-              )}
-            </div>
           </div>
-        </div>
+        </section>
       </div>
     </>
   );

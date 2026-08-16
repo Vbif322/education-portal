@@ -1,25 +1,29 @@
 "use client";
 
 import { FC, useEffect, useState } from "react";
-import { Check, Play, Lock, ListTree, X } from "lucide-react";
+import { Check, Lock, ListTree, X } from "lucide-react";
 import s from "./style.module.css";
 import { CourseWithModules } from "@/@types/course";
 import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import IconButton from "@/app/ui/IconButton/IconButton";
+import type { LessonAccessState } from "@/app/lib/dal/lesson.dal";
 
 interface AsideProps {
   course: CourseWithModules;
   progress?: number;
   completedLessonIds?: Set<number>;
+  /**
+   * Доступ по каждому уроку. Без карты сайдбар ведёт себя как раньше —
+   * все уроки кликабельны.
+   */
+  lessonAccess?: Map<number, LessonAccessState>;
 }
 
-const getStatusIcon = (status: "completed" | "current" | "locked") => {
+const getStatusIcon = (status: "completed" | "locked") => {
   switch (status) {
     case "completed":
       return <Check size={14} className={s.statusIcon} />;
-    case "current":
-      return <Play size={14} className={s.statusIcon} />;
     case "locked":
       return <Lock size={14} className={s.statusIcon} />;
     default:
@@ -31,6 +35,7 @@ const Aside: FC<AsideProps> = ({
   course,
   progress = 0,
   completedLessonIds = new Set(),
+  lessonAccess,
 }) => {
   const params = useParams();
   const pathname = usePathname();
@@ -111,6 +116,48 @@ const Aside: FC<AsideProps> = ({
                 {module.lessons.map(({ lesson, order }) => {
                   const isActive = currentLessonId === lesson.id;
                   const isCompleted = completedLessonIds.has(lesson.id);
+                  // Закрываем только при явном `hasAccess: false`. Урока нет в
+                  // карте (или карта не пришла) — считаем открытым, иначе сбой
+                  // запроса заблокировал бы весь курс.
+                  const locked = lessonAccess?.get(lesson.id)?.hasAccess === false;
+
+                  // Замок важнее галочки: он объясняет, почему урок не кликается.
+                  const marker = locked
+                    ? getStatusIcon("locked")
+                    : isCompleted
+                    ? getStatusIcon("completed")
+                    : order + 1;
+
+                  const content = (
+                    <>
+                      <span
+                        className={`${s.lesson__number} ${
+                          isCompleted && !locked
+                            ? s.lesson__number_completed
+                            : ""
+                        } ${isActive ? s.lesson__number_active : ""}`}
+                      >
+                        {marker}
+                      </span>
+                      <p className={s.lesson__name}>{lesson.name}</p>
+                      {isActive && (
+                        <span className={s.currentBadge}>Текущий</span>
+                      )}
+                    </>
+                  );
+
+                  if (locked) {
+                    return (
+                      <span
+                        key={lesson.id}
+                        className={`${s.lesson} ${s.lesson__locked}`}
+                        aria-disabled="true"
+                        title="Урок закрыт — нужен доступ"
+                      >
+                        {content}
+                      </span>
+                    );
+                  }
 
                   return (
                     <Link
@@ -121,17 +168,7 @@ const Aside: FC<AsideProps> = ({
                       }`}
                       aria-current={isActive ? "page" : undefined}
                     >
-                      <span
-                        className={`${s.lesson__number} ${
-                          isCompleted ? s.lesson__number_completed : ""
-                        } ${isActive ? s.lesson__number_active : ""}`}
-                      >
-                        {isCompleted ? getStatusIcon("completed") : order + 1}
-                      </span>
-                      <p className={s.lesson__name}>{lesson.name}</p>
-                      {isActive && (
-                        <span className={s.currentBadge}>Текущий</span>
-                      )}
+                      {content}
                     </Link>
                   );
                 })}

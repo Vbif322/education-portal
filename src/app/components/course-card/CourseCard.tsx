@@ -9,12 +9,7 @@ import Progress from "@/app/ui/Progress/Progress";
 import ContactDialog from "@/app/components/dialogs/contact-dialog";
 import { BookOpen, Check, Lock } from "lucide-react";
 import { CourseWithMetadata } from "@/@types/course";
-
-export type CourseAccessState = {
-  hasAccess: boolean;
-  /** Когда доступ закончится; `null` — бессрочный. */
-  expiresAt?: Date | null;
-};
+import type { CourseAccessState } from "@/app/lib/dal/course.dal";
 
 interface CourseCardProps extends Partial<CourseWithMetadata> {
   progress?: {
@@ -24,8 +19,8 @@ interface CourseCardProps extends Partial<CourseWithMetadata> {
   };
   /** Состояние реального доступа (`courseAccess`/подписка/роль). */
   access?: CourseAccessState;
-  /** Записан ли пользователь на курс (`usersToCourses`). */
-  enrolled?: boolean;
+  /** Курс уже в разделе «Мои курсы» — см. `isOwnCourse` в `course.dal.ts`. */
+  mine?: boolean;
   link?: string;
   /** Переопределяет подпись кнопки (например, «Программа курса» на /business). */
   ctaLabel?: string;
@@ -46,7 +41,7 @@ const CourseCard: FC<CourseCardProps> = ({
   id,
   progress,
   access,
-  enrolled,
+  mine,
   moduleCount,
   lessonCount,
   link,
@@ -83,21 +78,15 @@ const CourseCard: FC<CourseCardProps> = ({
     return <Badge variant="success">Доступен</Badge>;
   })();
 
-  // Матрица «зачислен × есть доступ»: до этого обе модели были не разведены
-  // и любой курс предлагал «Записаться».
-  //
-  // Незачисленный ведётся на страницу курса — запись происходит там, поэтому
-  // подпись «Открыть курс», а не «Начать обучение».
+  // Понятия «зачисление» больше нет: раздел «Мои курсы» вычисляется из доступа
+  // и прогресса (`isOwnCourse`), поэтому ветка «Записаться» ушла — записываться
+  // некуда, доступ либо есть, либо его нужно получить.
   const ctaLabel =
     ctaLabelOverride ??
     (locked
-      ? enrolled
+      ? mine
         ? "Продлить доступ"
         : "Получить доступ"
-      : !enrolled
-      ? accessKnown
-        ? "Открыть курс"
-        : "Записаться"
       : isCompleted
       ? "Пройти заново"
       : isInProgress

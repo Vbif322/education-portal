@@ -1080,6 +1080,10 @@
     text-align: center;
   }
 
+  .sectionTitle {
+    font-size: 2rem;
+  }
+
   .subtitle {
     font-size: 1.125rem;
     text-align: center;
