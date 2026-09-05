@@ -13,6 +13,7 @@ import {
 import VideoModal from "../components/video-modal/VideoModal";
 import InlineVideoPlayer from "../components/inline-video-player/InlineVideoPlayer";
 import { getOptionalUser } from "../lib/dal";
+import { LEAD_GOALS } from "../lib/metrika";
 import LandingHeader from "./_components/LandingHeader";
 import LandingHero from "./_components/LandingHero";
 import LandingSection from "./_components/LandingSection";
@@ -145,7 +146,7 @@ export default async function Home() {
           title="Остались вопросы?"
           lead="Напишите — расскажем про курсы, доступ и порядок оплаты. Отвечаем в течение рабочего дня."
         >
-          <ContactForm source="landing" />
+          <ContactForm source="landing" goal={LEAD_GOALS.main} />
           <p className={cs.contactFallback}>
             Или свяжитесь напрямую:{" "}
             <a href="mailto:mesenyashin@mail.ru">mesenyashin@mail.ru</a>,{" "}

@@ -129,7 +129,7 @@ export async function submitBusinessLead(
     return { fields, errors };
   }
 
-  return { ok: true };
+  return { ok: true, delivered: true };
 }
 
 function readContactFields(formData: FormData) {
@@ -220,5 +220,5 @@ export async function submitContactLead(
     return { fields, errors };
   }
 
-  return { ok: true };
+  return { ok: true, delivered: true };
 }

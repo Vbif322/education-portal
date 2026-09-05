@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { submitBusinessLead } from "@/app/actions/lead";
 import { EMPLOYEE_RANGES, type EmployeeRange, type LeadField } from "@/app/lib/lead";
-import { reachGoal } from "@/app/lib/metrika";
+import { LEAD_GOALS, reachGoal } from "@/app/lib/metrika";
 import { getFieldHelpers } from "@/app/components/form-fields/field-helpers";
 import f from "@/app/components/form-fields/fields.module.css";
 import Button from "@/app/ui/Button/Button";
@@ -31,8 +31,10 @@ export default function LeadForm() {
       return;
     }
     setFormKey((key) => key + 1);
-    if (state.ok) {
-      reachGoal("b2b_lead");
+    // Цель — только на подтверждённой доставке письма: honeypot-заглушка
+    // возвращает ok без delivered, и конверсию боту засчитывать нельзя.
+    if (state.ok && state.delivered) {
+      reachGoal(LEAD_GOALS.business);
     }
   }, [state]);
 

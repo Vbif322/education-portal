@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { submitContactLead } from "@/app/actions/lead";
 import type { ContactField, ContactSource } from "@/app/lib/lead";
-import { reachGoal } from "@/app/lib/metrika";
+import { reachGoal, type LeadGoal } from "@/app/lib/metrika";
 import { getFieldHelpers } from "@/app/components/form-fields/field-helpers";
 import f from "@/app/components/form-fields/fields.module.css";
 import Button from "@/app/ui/Button/Button";
@@ -15,6 +15,13 @@ type Props = {
   source: ContactSource;
   /** Id курса/урока, если источник к ним привязан. Только цифры. */
   sourceId?: string;
+  /**
+   * Цель Метрики, которую слать при подтверждённой доставке заявки. Задаётся
+   * точкой монтирования, а не выводится из `source`: одна и та же модалка с
+   * `source="course"` открывается и на публичной странице курса (цель нужна),
+   * и внутри ЛК (цель не нужна). Без пропа цель не отправляется.
+   */
+  goal?: LeadGoal;
   /** Подставить email залогиненного пользователя (поле остаётся редактируемым). */
   defaultEmail?: string;
   /** `section` — карточка на лендинге, `dialog` — узкая форма внутри модалки. */
@@ -29,6 +36,7 @@ type Props = {
 export default function ContactForm({
   source,
   sourceId,
+  goal,
   defaultEmail,
   variant = "section",
   submitLabel = "Отправить",
@@ -48,11 +56,12 @@ export default function ContactForm({
       return;
     }
     setFormKey((key) => key + 1);
-    if (state.ok) {
-      // Одна цель на все три точки входа, источник — параметром.
-      reachGoal("contact_lead", { source });
+    // Цель — только на подтверждённой доставке письма: honeypot-заглушка
+    // возвращает ok без delivered, и конверсию боту засчитывать нельзя.
+    if (state.ok && state.delivered && goal) {
+      reachGoal(goal);
     }
-  }, [state, source]);
+  }, [state, goal]);
 
   if (state?.ok) {
     return (

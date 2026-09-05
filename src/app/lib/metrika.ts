@@ -16,3 +16,16 @@ export function reachGoal(goal: string, params?: Record<string, unknown>): void 
   }
   window.ym?.(id, "reachGoal", goal, params);
 }
+
+/**
+ * Цели лид-форм, заведённые в интерфейсе Метрики. Держим их здесь, чтобы имена
+ * не разъезжались по компонентам: каждая цель отправляется ровно из одной формы
+ * и только после подтверждённой доставки заявки.
+ */
+export const LEAD_GOALS = {
+  main: "lead_main_success",
+  business: "lead_business_success",
+  course: "lead_course_success",
+} as const;
+
+export type LeadGoal = (typeof LEAD_GOALS)[keyof typeof LEAD_GOALS];
