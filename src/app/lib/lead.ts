@@ -35,6 +35,12 @@ export type ContactField = "name" | "email" | "phone" | "message" | "consent";
 export type FormStateFor<F extends string> =
   | {
       ok?: boolean;
+      /**
+       * Письмо действительно ушло. Honeypot-заглушка возвращает `ok` без
+       * `delivered`: боту показываем панель успеха, но цель Метрики не
+       * засчитываем — иначе конверсии раздувают боты.
+       */
+      delivered?: boolean;
       fields?: Partial<Record<F, string>>;
       errors?: string[];
       properties?: Partial<Record<F, { errors: string[] }>>;

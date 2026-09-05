@@ -8,6 +8,7 @@ import Chip from "@/app/ui/Chip/Chip";
 import { CourseWithMetadata } from "@/@types/course";
 import { pluralize } from "@/app/utils/helpers";
 import ContactDialog from "@/app/components/dialogs/contact-dialog";
+import { LEAD_GOALS } from "@/app/lib/metrika";
 import { User } from "@/@types/user";
 import { canManage } from "@/app/utils/permissions";
 
@@ -58,6 +59,7 @@ const UI: FC<Props> = ({
         onClose={() => setOpen(false)}
         source="course"
         sourceId={String(id)}
+        goal={LEAD_GOALS.course}
         defaultEmail={user?.email}
         title="Записаться на курс"
         intro={`Оставьте контакты — свяжемся и откроем доступ к курсу «${name}».`}
