@@ -9,9 +9,17 @@ const guestOnlyRoutes = ["/login", "/register"];
 // Публичная страница курса: ровно один числовой сегмент (/courses/123).
 // Не матчит /courses/123/lessons/... — платный плеер остаётся защищённым.
 const COURSE_DETAIL = /^\/courses\/\d+\/?$/;
+// Картинка ссылки для соцсетей: Next отдаёт её отдельным маршрутом
+// /courses/123/opengraph-image-<hash>. Её запрашивают краулеры и мессенджеры
+// без cookie — без этого исключения в превью уезжала бы страница логина.
+const COURSE_OG_IMAGE = /^\/courses\/\d+\/opengraph-image[\w-]*\/?$/;
 
 function isPublicRoute(path: string): boolean {
-  return publicRoutes.includes(path) || COURSE_DETAIL.test(path);
+  return (
+    publicRoutes.includes(path) ||
+    COURSE_DETAIL.test(path) ||
+    COURSE_OG_IMAGE.test(path)
+  );
 }
 
 export default async function middleware(req: NextRequest) {

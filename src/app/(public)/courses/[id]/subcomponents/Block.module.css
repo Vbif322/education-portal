@@ -1,27 +1,51 @@
 .block {
-  /* Равные колонки: на мобильном карточка тянется во всю ширину экрана. */
-  flex: 1 1 0;
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-1);
+  min-width: 0;
   text-align: center;
-  padding-inline: var(--space-12);
+  padding-inline: var(--space-6);
   padding-block: var(--space-2);
 }
 
-.block:not(:last-child) {
-  border-right: 2px solid var(--color-border);
+/* Разделители рисуют сами ячейки: у сетки нет способа развести их иначе, а
+   лишние элементы-полоски сломали бы порядок чтения. */
+.block:not(:first-child) {
+  border-left: 1px solid var(--color-border);
+}
+
+.block__icon {
+  display: inline-flex;
+  color: var(--color-primary);
 }
 
 .block__title {
   font-weight: 600;
-  font-size: var(--text-xl);
-  margin-bottom: var(--space-1);
+  font-size: var(--text-lg);
+  /* Длинный `format` («С наставником») не должен рвать сетку. */
+  overflow-wrap: anywhere;
+}
+
+.block__subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-fg-subtle);
 }
 
 @media (max-width: 640px) {
   .block {
-    padding-inline: var(--space-4);
+    padding-inline: var(--space-3);
+  }
+
+  /* Сетка 2×2: у первой ячейки каждой строки левой границы быть не должно,
+     а вторая строка отделяется сверху. */
+  .block:nth-child(odd) {
+    border-left: none;
+  }
+
+  .block:nth-child(n + 3) {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-3);
   }
 }

@@ -29,3 +29,18 @@ export const LEAD_GOALS = {
 } as const;
 
 export type LeadGoal = (typeof LEAD_GOALS)[keyof typeof LEAD_GOALS];
+
+/**
+ * Цели «полпути»: намерение, а не результат. Держим их отдельно от
+ * {@link LEAD_GOALS} намеренно — там контракт «цель уходит только после
+ * подтверждённой доставки заявки», и клик по кнопке его бы нарушил.
+ *
+ * Нужны, чтобы по рекламному трафику была видна воронка целиком
+ * (показ → клик по CTA → заявка), а не только её итог: без среднего шага
+ * нельзя отличить «объявление приводит не тех» от «форма отпугивает».
+ */
+export const CTA_GOALS = {
+  courseAccess: "course_cta_click",
+} as const;
+
+export type CtaGoal = (typeof CTA_GOALS)[keyof typeof CTA_GOALS];
