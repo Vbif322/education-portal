@@ -1,4 +1,5 @@
 // Existing tables
+export * from "./authTokens";
 export * from "./course";
 export * from "./courseAccess";
 export * from "./coursesToModules";

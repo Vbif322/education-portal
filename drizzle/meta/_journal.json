@@ -22,6 +22,20 @@
       "when": 1786384216521,
       "tag": "0002_tearful_plazm",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788891805079,
+      "tag": "0003_easy_thundra",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788894395402,
+      "tag": "0004_dapper_wild_child",
+      "breakpoints": true
     }
   ]
 }

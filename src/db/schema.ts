@@ -3,6 +3,7 @@ export * from "./schema/lesson";
 export * from "./schema/module";
 export * from "./schema/modulesToLessons";
 export * from "./schema/coursesToModules";
+export * from "./schema/authTokens";
 export * from "./schema/users";
 export * from "./schema/usersToLessons";
 export * from "./schema/courseAccess";
