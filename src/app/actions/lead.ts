@@ -9,6 +9,7 @@ import {
 import type { ContactFormState, ContactSource, LeadFormState } from "@/app/lib/lead";
 import { checkRateLimit, getClientIp } from "@/app/lib/rate-limit";
 import { sendMail } from "@/app/lib/email";
+import { formatUtmLines, readUtmFromFormData } from "@/app/lib/utm";
 
 const LEAD_MAX = 5;
 const LEAD_WINDOW_MS = 60 * 60 * 1000; // час
@@ -194,6 +195,10 @@ export async function submitContactLead(
     ? `${SOURCE_LABELS[source]} #${sourceId}`
     : SOURCE_LABELS[source];
 
+  // Метки рекламной кампании: приходят скрытыми полями, санитизируются в
+  // `readUtmFromFormData`. Пустой набор не добавляет в письмо ни строки.
+  const utmLines = formatUtmLines(readUtmFromFormData(formData));
+
   const text = [
     "Тип: обращение частного лица (B2C)",
     `Имя: ${lead.name}`,
@@ -205,6 +210,7 @@ export async function submitContactLead(
     "",
     "---",
     `Источник: ${sourceLine}`,
+    ...utmLines,
     `Время: ${moscowTime()} (Europe/Moscow)`,
     `IP: ${ip}`,
   ].join("\n");

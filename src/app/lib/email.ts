@@ -10,6 +10,16 @@ import nodemailer, { type Transporter } from "nodemailer";
  * Отсюда отсутствие Reply-To, quoted-printable вместо base64, display-name в
  * From и X-Mailer — см. комментарии по месту.
  *
+ * Отдельно про транзакционные письма (сброс пароля, вход по ссылке). До них
+ * весь исходящий поток шёл на один известный ящик (EMAIL_TO), владелец
+ * которого может внести отправителя в белый список. Транзакционные письма
+ * уходят на произвольные домены пользователей, и там начинает работать то,
+ * чего раньше не было: грейлистинг незнакомого IP, доля жалоб «спам»,
+ * отказы на несуществующие адреса, репутация домена у каждого получателя
+ * отдельно. Обработки bounce'ов у нас нет вовсе — письмо, отвергнутое после
+ * 250 OK, пропадает молча. Практический минимум перед продом — выделенный
+ * домен отправки с SPF/DKIM/DMARC.
+ *
  * Оговорка: репутацию исходящего IP всё это не лечит. Если провайдер отправки
  * забанен у получателя (у нас так было с mail.ru), письмо отвергается до того,
  * как дело дойдёт до содержимого, и помогает только смена транспорта.
@@ -23,6 +33,15 @@ import nodemailer, { type Transporter } from "nodemailer";
 type MailInput = {
   subject: string;
   text: string;
+  /**
+   * Явный получатель. Без него письмо уходит на EMAIL_TO — так работают заявки
+   * с /business и обращения с лендинга, их поведение не меняется.
+   *
+   * Значение приходит из users.email (провалидирован zod'ом при регистрации),
+   * но CR/LF режем всё равно: адрес попадает в SMTP-заголовок, и перевод
+   * строки в нём — это инъекция заголовков (ср. noNewlines в definitions.ts).
+   */
+  to?: string;
 };
 
 type SmtpConfig = {
@@ -71,7 +90,7 @@ export function isEmailConfigured(): boolean {
   return readConfig() !== null;
 }
 
-export async function sendMail({ subject, text }: MailInput): Promise<void> {
+export async function sendMail({ subject, text, to }: MailInput): Promise<void> {
   const config = readConfig();
   if (!config) {
     if (!warned) {
@@ -98,7 +117,7 @@ export async function sendMail({ subject, text }: MailInput): Promise<void> {
 
   await transporter.sendMail({
     from: { name: config.fromName, address: config.from },
-    to: config.to,
+    to: (to ?? config.to).replace(/[\r\n]/g, ""),
     subject,
     // Только plain text: HTML-часть здесь ничего не даёт и повышает спам-оценку.
     text,

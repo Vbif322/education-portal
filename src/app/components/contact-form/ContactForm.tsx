@@ -5,6 +5,7 @@ import Link from "next/link";
 import { submitContactLead } from "@/app/actions/lead";
 import type { ContactField, ContactSource } from "@/app/lib/lead";
 import { reachGoal, type LeadGoal } from "@/app/lib/metrika";
+import { captureUtm, UTM_KEYS, type UtmParams } from "@/app/lib/utm";
 import { getFieldHelpers } from "@/app/components/form-fields/field-helpers";
 import f from "@/app/components/form-fields/fields.module.css";
 import Button from "@/app/ui/Button/Button";
@@ -50,6 +51,15 @@ export default function ContactForm({
   // согласия вернулся бы к исходному состоянию. Перемонтируем форму на каждый
   // ответ сервера — тогда все поля восстанавливаются из state.fields.
   const [formKey, setFormKey] = useState(0);
+  // Метки рекламной кампании. Состояние живёт вне формы: она перемонтируется
+  // на каждый ответ сервера, а метки должны пережить неудачную отправку.
+  // Читаем в эффекте, а не через useSearchParams, чтобы не тащить страницу в
+  // Suspense-границу ради значения, нужного только в момент submit.
+  const [utm, setUtm] = useState<UtmParams>({});
+
+  useEffect(() => {
+    setUtm(captureUtm());
+  }, []);
 
   useEffect(() => {
     if (!state) {
@@ -91,6 +101,11 @@ export default function ContactForm({
       {sourceId ? (
         <input type="hidden" name="sourceId" value={sourceId} />
       ) : null}
+      {UTM_KEYS.map((key) =>
+        utm[key] ? (
+          <input key={key} type="hidden" name={key} value={utm[key]} />
+        ) : null
+      )}
 
       <div className={f.field}>
         <label htmlFor="name">Имя</label>

@@ -9,18 +9,51 @@ export const loginFormSchema = z.object({
   password: z.string().min(1, { message: "Введите пароль" }),
 });
 
+/**
+ * Парольная политика. Одна на регистрацию и на сброс пароля: задающий новый
+ * пароль должен упереться ровно в те же правила, иначе через восстановление
+ * можно завести пароль слабее, чем разрешает регистрация.
+ * В loginFormSchema она НЕ применяется — см. комментарий выше.
+ */
+export const passwordSchema = z
+  .string()
+  .min(8, { message: "Пароль не должен быть меньше 8 символов" })
+  .regex(/[a-zA-Z]/, {
+    message: "Пароль должен содержать хотя бы одну букву",
+  })
+  .regex(/[0-9]/, { message: "Пароль должен содержать хотя бы одну цифру" })
+  .trim();
+
 // Схема регистрации: усиленная парольная политика (min 8 + сложность).
 export const registerFormSchema = z.object({
   email: z.email({ message: "Введите email в формате email@email.ru" }).trim(),
-  password: z
-    .string()
-    .min(8, { message: "Пароль не должен быть меньше 8 символов" })
-    .regex(/[a-zA-Z]/, {
-      message: "Пароль должен содержать хотя бы одну букву",
-    })
-    .regex(/[0-9]/, { message: "Пароль должен содержать хотя бы одну цифру" })
-    .trim(),
+  password: passwordSchema,
 });
+
+// --- восстановление доступа ---
+
+// Запрос ссылки: сброс пароля и вход по ссылке отличаются только назначением
+// токена, поле у форм одно и то же.
+export const forgotPasswordSchema = z.object({
+  email: z.email({ message: "Введите email в формате email@email.ru" }).trim(),
+});
+
+export const magicLinkSchema = forgotPasswordSchema;
+
+// Задание нового пароля. Верхнеуровневый .refine не выполняется, если упала
+// валидация внутри объекта, поэтому при слишком коротком пароле сообщение о
+// несовпадении появится только после его исправления — приемлемо.
+export const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    // .trim() обязателен для симметрии: passwordSchema тримит, и без этого
+    // " abc12345 " не совпало бы само с собой.
+    confirm: z.string().trim(),
+  })
+  .refine((data) => data.password === data.confirm, {
+    message: "Пароли не совпадают",
+    path: ["confirm"],
+  });
 
 // Обратная совместимость на время миграции: старое имя ссылается на схему
 // регистрации (единственное прежнее использование было в signin).

@@ -3,15 +3,36 @@ import { decrypt } from "@/app/lib/session";
 import { cookies } from "next/headers";
 
 // 1. Specify protected and public routes
-const publicRoutes = ["/login", "/register", "/", "/business", "/privacy"];
+const publicRoutes = [
+  "/login",
+  "/register",
+  "/",
+  "/business",
+  "/privacy",
+  "/forgot-password",
+  "/reset-password",
+];
 // Роуты, с которых залогиненного пользователя надо увести в /dashboard.
+// Восстановления пароля здесь намеренно НЕТ: сценарий «кажется, в моём
+// аккаунте кто-то сидит» подразумевает живую сессию, и увод в /dashboard
+// сделал бы ссылку из письма нерабочей, а токен — висящим до истечения срока.
+// К тому же /forgot-password — сегодня единственный способ сменить пароль:
+// экрана смены пароля в кабинете нет.
 const guestOnlyRoutes = ["/login", "/register"];
 // Публичная страница курса: ровно один числовой сегмент (/courses/123).
 // Не матчит /courses/123/lessons/... — платный плеер остаётся защищённым.
 const COURSE_DETAIL = /^\/courses\/\d+\/?$/;
+// Картинка ссылки для соцсетей: Next отдаёт её отдельным маршрутом
+// /courses/123/opengraph-image-<hash>. Её запрашивают краулеры и мессенджеры
+// без cookie — без этого исключения в превью уезжала бы страница логина.
+const COURSE_OG_IMAGE = /^\/courses\/\d+\/opengraph-image[\w-]*\/?$/;
 
 function isPublicRoute(path: string): boolean {
-  return publicRoutes.includes(path) || COURSE_DETAIL.test(path);
+  return (
+    publicRoutes.includes(path) ||
+    COURSE_DETAIL.test(path) ||
+    COURSE_OG_IMAGE.test(path)
+  );
 }
 
 export default async function middleware(req: NextRequest) {

@@ -68,7 +68,12 @@ export async function signin(
 
   const user = found[0];
   // bcrypt.compare только если пользователь найден (без преждевременного hash).
-  const isMatch = user ? await bcrypt.compare(password, user.password) : false;
+  // password = NULL у аккаунтов, созданных подтверждением почты: пароль им
+  // ещё не задан, войти по нему нельзя — но и ошибка должна быть та же самая,
+  // иначе форма расскажет, каким способом человек регистрировался.
+  const isMatch = user?.password
+    ? await bcrypt.compare(password, user.password)
+    : false;
 
   if (!user || !isMatch) {
     // Единое сообщение — на входе enumeration закрыт.

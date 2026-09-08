@@ -15,7 +15,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Абсолютный адрес сайта нужен для og:image и canonical: и то, и другое
+// поисковики и мессенджеры требуют абсолютной ссылкой. Без переменной Next
+// подставит localhost — в разработке это нормально, на проде переменную надо
+// задать (и не забыть про пересборку: NEXT_PUBLIC_* вшиваются на этапе сборки).
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
 export const metadata: Metadata = {
+  ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
   title: "Бизнес с Кириллом Месеняшиным",
   description:
     "Кирилл Месеняшин - эксперт-практик с 20-летним опытом в области организационного развития и совершенствования cистем управления",

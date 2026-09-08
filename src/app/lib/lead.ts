@@ -30,22 +30,11 @@ export type ContactSource = (typeof CONTACT_SOURCES)[number];
 
 export type ContactField = "name" | "email" | "phone" | "message" | "consent";
 
-// Состояние формы заявки (useActionState). Форма вывода совпадает с
-// z.treeifyError(), как в AuthFormState.
-export type FormStateFor<F extends string> =
-  | {
-      ok?: boolean;
-      /**
-       * Письмо действительно ушло. Honeypot-заглушка возвращает `ok` без
-       * `delivered`: боту показываем панель успеха, но цель Метрики не
-       * засчитываем — иначе конверсии раздувают боты.
-       */
-      delivered?: boolean;
-      fields?: Partial<Record<F, string>>;
-      errors?: string[];
-      properties?: Partial<Record<F, { errors: string[] }>>;
-    }
-  | undefined;
+// Состояние формы заявки (useActionState). Тип переехал в form-state.ts, когда
+// им начали пользоваться формы восстановления доступа; ре-экспорт оставлен,
+// чтобы не трогать импорты в компонентах заявок.
+export type { FormStateFor } from "./form-state";
+import type { FormStateFor } from "./form-state";
 
 export type LeadFormState = FormStateFor<LeadField>;
 export type ContactFormState = FormStateFor<ContactField>;

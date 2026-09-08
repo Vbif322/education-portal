@@ -1,0 +1,56 @@
+/* Раскладка форм восстановления доступа. Стили самих полей — общие,
+   в `@/app/components/form-fields/fields.module.css`. */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Подсказка под полем пароля — как в форме регистрации. */
+.hint {
+  color: rgb(107 114 128);
+  font-size: 0.8125rem;
+  line-height: 1.2rem;
+}
+
+/* Разделитель между входом по паролю и входом по ссылке. */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: var(--space-6) 0 var(--space-4);
+  color: var(--color-fg-subtle);
+  font-size: 0.875rem;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgb(229 231 235);
+}
+
+.forgot {
+  text-align: center;
+  margin-top: var(--space-3);
+  font-size: 0.9375rem;
+}
+
+.forgot a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.forgot a:hover {
+  text-decoration: underline;
+}
+
+/* Пояснение над полем в форме входа по ссылке. */
+.lead {
+  margin: 0;
+  color: var(--color-fg-subtle);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}

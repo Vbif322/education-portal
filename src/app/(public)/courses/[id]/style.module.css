@@ -1,23 +1,24 @@
 /**
- * Раскладка страницы курса — три секции подряд в нормальном потоке.
+ * Посадочная страница курса — то, что открывается при переходе по рекламе.
  *
- * Раньше `.blocks` был прибит к низу контейнера (`bottom: 0`), а `.content`
- * к жёсткому `top: 360px`. Оба якоря ничего не знали друг о друге: `.content`
- * вне потока не давал контейнеру высоты, поэтому на мобильном разросшийся
- * герой утаскивал карточку вниз прямо на заголовок «О курсе». Теперь «наезд»
- * карточки — это отрицательный margin, и порядок секций держится при любой
- * высоте героя.
+ * Секции идут подряд в нормальном потоке. Единственное исключение — карточка
+ * фактов: она «наезжает» на нижний край героя отрицательным margin'ом.
+ * Раньше это было сделано абсолютным позиционированием, из-за чего на мобильном
+ * разросшийся герой утаскивал карточку прямо на заголовок следующей секции.
+ *
+ * Цвета берём только из токен-слоя (`globals.css`). Лендинг пока живёт на
+ * старом захардкоженном #2563eb — его миграция отдельная задача.
  */
 
 .page {
   display: flex;
   flex-direction: column;
 
-  /* Насколько карточка со статистикой заходит на герой, и сколько остаётся
-     между кнопкой и её верхним краем. Нижний отступ героя считается из этой
-     пары: иначе стоит ему стать меньше «наезда» — и зазор схлопнется в ноль. */
+  /* Насколько карточка заходит на герой и сколько остаётся между кнопкой и её
+     верхним краем. Нижний отступ героя считается из этой пары: иначе стоит ему
+     стать меньше «наезда» — и зазор схлопнется в ноль. */
   --stats-overlap: var(--space-8);
-  --stats-gap: var(--space-4);
+  --stats-gap: var(--space-6);
 }
 
 /* --- Герой --- */
@@ -26,8 +27,8 @@
   display: flex;
   justify-content: center;
   /* Секция во всю ширину, поэтому заливка остаётся edge-to-edge. */
-  background-color: rgb(0 86 210 / 0.05);
-  padding-block: var(--space-8) calc(var(--stats-overlap) + var(--stats-gap));
+  background-color: var(--color-primary-soft);
+  padding-block: var(--space-6) calc(var(--stats-overlap) + var(--stats-gap));
   padding-inline: var(--space-8);
 }
 
@@ -36,124 +37,564 @@
   max-width: 1200px;
 }
 
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-base);
+  color: var(--color-fg-muted);
+  transition: color 0.15s ease;
+}
+
+.backLink:hover {
+  color: var(--color-primary);
+}
+
 .title {
   font-size: var(--text-3xl);
+  line-height: 1.2;
+  max-width: 24ch;
 }
 
 .description {
   margin-top: var(--space-3);
   max-width: 70ch;
+  font-size: var(--text-md);
+  line-height: 1.6;
   color: var(--color-fg-muted);
 }
 
-.button {
-  margin-top: var(--space-8);
-  height: 64px;
-  width: 296px;
-  padding: 16px 40px;
-  font-size: 1.125rem;
-  font-weight: 600;
-  background: #2563eb;
-  color: white;
-  border: none;
+/* Обещание результата — главный ответ на вопрос рекламного визитёра, поэтому
+   выделено подложкой, а не спрятано в общий текст. */
+.outcome {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  max-width: 70ch;
+  background: var(--color-surface);
+  border-left: 3px solid var(--color-primary);
   border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  font-size: var(--text-md);
+  line-height: 1.6;
 }
 
-.button:hover:not(:disabled) {
-  background: #1d4ed8;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+.outcome__icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-primary);
 }
 
-.button:active:not(:disabled) {
-  transform: translateY(0);
+.outcome__label {
+  font-weight: 600;
 }
 
-.button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  background: #94a3b8;
+.benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-5);
+  list-style: none;
 }
 
-/* --- Карточка со статистикой --- */
+.benefit {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+}
 
+.benefit__icon {
+  flex-shrink: 0;
+  color: var(--color-success);
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+}
+
+/* Обёртка над кнопкой героя: за её видимостью следит IntersectionObserver,
+   решающий, показывать ли липкую панель. */
+.ctaAnchor {
+  display: inline-flex;
+}
+
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.ctaSecondary:hover {
+  background: var(--color-primary);
+  color: var(--color-fg-inverse);
+}
+
+/* --- Карточка фактов --- */
+
+/* Карточка держится левого края контента, а не центра экрана: под
+   лево-выровненным героем центрированная карточка читалась как чужой элемент. */
 .statsRow {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  width: 100%;
+  /* padding входит в max-width: иначе контент секции встаёт на 32px правее
+     заголовка героя, у которого ограничитель ширины лежит ВНУТРИ padding'а. */
+  max-width: calc(1200px + var(--space-8) * 2);
+  margin-inline: auto;
   padding-inline: var(--space-8);
-  /* «Наезд» на нижний край героя ≈ половина высоты карточки. */
-  margin-top: calc(var(--space-8) * -1);
+  margin-top: calc(var(--stats-overlap) * -1);
 }
 
 .blocks {
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   max-width: 100%;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   padding: var(--space-4);
 }
 
-/* --- Контент --- */
+/* --- Общая секция --- */
 
-.content {
+.section {
   width: 100%;
-  max-width: 1200px;
+  /* См. комментарий у .statsRow: padding учтён в max-width, чтобы все секции
+     стояли на одной вертикали с заголовком героя. */
+  max-width: calc(1200px + var(--space-8) * 2);
   margin-inline: auto;
-  padding: var(--space-8) var(--space-8) var(--space-12);
+  padding: var(--space-12) var(--space-8) 0;
+  /* Якорные ссылки не должны прятать заголовок под шапку приложения. */
+  scroll-margin-top: calc(var(--header-height) + var(--space-4));
 }
 
 .sectionTitle {
-  font-size: var(--text-3xl);
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-5);
 }
 
-/* Правила `.content h3` тут нет намеренно: селектор потомка (0,1,1) перебивал
-   `.content__subtitle` (0,1,0), и подзаголовки рендерились 1.75rem. */
-.content__subtitle {
-  margin-top: var(--space-8);
+/* FaqAccordion приехал с лендинга со своим `max-width: 800px; margin: auto`.
+   Чужой CSS-модуль не переопределяем — вместо этого зажимаем его в обёртку
+   ровно той же ширины: `auto`-поля схлопываются в ноль, и список встаёт под
+   заголовок секции, а не по центру экрана, как все остальные блоки страницы. */
+.faqWrap {
+  max-width: 800px;
+}
+
+/* --- Преподаватель --- */
+
+.instructor {
+  display: flex;
+  gap: var(--space-6);
+  align-items: flex-start;
+  padding: var(--space-6);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.instructor__photo {
+  flex-shrink: 0;
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: var(--radius-md);
+}
+
+.instructor__body {
+  min-width: 0;
+}
+
+.instructor__name {
   font-size: var(--text-xl);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.program {
-  margin-top: var(--space-4);
-  white-space: pre-wrap;
+.instructor__role {
+  margin-top: var(--space-2);
+  max-width: 70ch;
+  line-height: 1.6;
+  color: var(--color-fg-muted);
 }
 
-.chips {
+.instructor__facts {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-4);
-  margin-bottom: var(--space-8);
+  gap: var(--space-4) var(--space-6);
+  margin-top: var(--space-5);
+  list-style: none;
 }
 
-.chips__empty {
+.instructor__fact {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.instructor__factIcon {
+  display: inline-flex;
+  color: var(--color-primary);
+}
+
+.instructor__factValue {
+  display: block;
+  font-size: var(--text-md);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.instructor__factLabel {
+  display: block;
+  font-size: var(--text-sm);
   color: var(--color-fg-subtle);
 }
+
+.instructor__more {
+  display: inline-block;
+  margin-top: var(--space-5);
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+.instructor__more:hover {
+  text-decoration: underline;
+}
+
+/* --- Программа --- */
+
+.program {
+  margin-bottom: var(--space-6);
+  max-width: 70ch;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--color-fg-muted);
+}
+
+.modules {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  counter-reset: none;
+}
+
+.module {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.module__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Штатный треугольник убираем в обоих движках — его заменяет шеврон. */
+.module__summary::-webkit-details-marker {
+  display: none;
+}
+
+.module__summary::marker {
+  content: "";
+}
+
+.module__summary:hover {
+  background: var(--color-surface-muted);
+}
+
+.module__index {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: var(--text-base);
+}
+
+.module__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.module__name {
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.module__meta {
+  font-size: var(--text-sm);
+  color: var(--color-fg-subtle);
+}
+
+.module__chevron {
+  flex-shrink: 0;
+  color: var(--color-fg-subtle);
+  transition: transform 0.2s ease;
+}
+
+.module[open] .module__chevron {
+  transform: rotate(180deg);
+}
+
+.module__description {
+  padding: 0 var(--space-4) var(--space-3) calc(var(--space-4) * 2 + 32px);
+  color: var(--color-fg-muted);
+  line-height: 1.6;
+}
+
+.lessons {
+  list-style: none;
+  padding: 0 var(--space-4) var(--space-4) calc(var(--space-4) * 2 + 32px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lesson {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-fg-muted);
+}
+
+.lesson__icon {
+  flex-shrink: 0;
+  color: var(--color-fg-subtle);
+}
+
+.lesson__name {
+  flex: 1;
+  min-width: 0;
+}
+
+.lesson__duration {
+  flex-shrink: 0;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-fg-subtle);
+}
+
+/* --- Навыки --- */
+
+.skills {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  list-style: none;
+}
+
+.skill {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  line-height: 1.5;
+}
+
+.skill__icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-success);
+}
+
+/* --- Как устроено обучение --- */
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-6);
+}
+
+/* --- Финальный призыв --- */
+
+.finalCta {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-12);
+  padding: var(--space-12) var(--space-8);
+  background: var(--color-primary-soft);
+}
+
+.finalCta__inner {
+  width: 100%;
+  max-width: 1200px;
+  text-align: center;
+}
+
+.finalCta__title {
+  font-size: var(--text-2xl);
+}
+
+.finalCta__text {
+  margin: var(--space-3) auto var(--space-6);
+  max-width: 60ch;
+  font-size: var(--text-md);
+  color: var(--color-fg-muted);
+}
+
+.finalCta__contacts {
+  margin-top: var(--space-5);
+  font-size: var(--text-base);
+  color: var(--color-fg-muted);
+}
+
+.finalCta__contacts a {
+  color: var(--color-primary);
+}
+
+.finalCta__contacts a:hover {
+  text-decoration: underline;
+}
+
+/* --- Липкая панель --- */
+
+/* Панель и её распорка живут только на мобильном: на десктопе кнопка героя и
+   финальный призыв закрывают ту же задачу, а полоса внизу мешала бы читать.
+
+   Высота объявлена один раз на обоих селекторах: панель `fixed`, поэтому место
+   под неё держит распорка, и стоит двум числам разъехаться — панель снова
+   накроет футер. Общая переменная делает расхождение невозможным.
+   Панель — сосед `.page`, а не потомок, так что объявить переменную там нельзя:
+   наследование идёт вниз по дереву. */
+.stickyBar,
+.stickyBarSpacer {
+  --sticky-bar-height: calc(68px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Распорка стоит после футера и резервирует ровно высоту панели. */
+.stickyBarSpacer {
+  display: none;
+  height: var(--sticky-bar-height);
+}
+
+/* Панель и распорка включаются только в мобильной media query ниже.
+   `display` здесь обязан остаться `none`: правило идёт последним среди равных
+   по специфичности, и любое значение отсюда перебило бы общий выключатель —
+   ровно из-за этого панель однажды всплыла на десктопе поверх футера. */
+.stickyBar {
+  display: none;
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: var(--z-header);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  animation: stickyBarIn 0.2s ease-out;
+  height: var(--sticky-bar-height);
+  /* Нижняя вырезка экрана (home indicator) добавляется к отступу, а не съедает
+     кнопку: та же величина уже заложена в высоту выше. */
+  padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+}
+
+@keyframes stickyBarIn {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.stickyBar__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stickyBar__button {
+  flex-shrink: 0;
+}
+
+/* --- Планшет --- */
+
+@media (max-width: 1024px) {
+  .features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- Мобильный --- */
 
 @media (max-width: 640px) {
   /* Кнопка тут во всю ширину и упирается в такую же широкую карточку —
      зазора десктопа мало, добавляем. Нижний отступ героя подтянется сам. */
   .page {
-    --stats-gap: var(--space-6);
+    --stats-gap: var(--space-8);
+  }
+
+  .stickyBar {
+    display: flex;
+  }
+
+  .stickyBarSpacer {
+    display: block;
+  }
+
+  /* Кнопка героя во всю ширину: ui/Button принимает fullWidth пропом, а он не
+     умеет быть отзывчивым — ширину задаёт CSS. */
+  .ctaAnchor > button {
+    width: 100%;
   }
 
   .hero {
-    padding-top: var(--space-6);
+    padding-top: var(--space-4);
     padding-inline: var(--space-4);
   }
 
   .title {
     font-size: var(--text-2xl);
+    max-width: none;
   }
 
-  .button {
-    width: 100%;
+  .ctaRow {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .ctaAnchor {
+    display: block;
+  }
+
+  .ctaSecondary {
+    justify-content: center;
   }
 
   .statsRow {
@@ -162,9 +603,37 @@
 
   .blocks {
     width: 100%;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
   }
 
-  .content {
-    padding-inline: var(--space-4);
+  .section {
+    padding: var(--space-8) var(--space-4) 0;
+  }
+
+  .instructor {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-5);
+  }
+
+  .instructor__facts {
+    justify-content: center;
+  }
+
+  .module__description,
+  .lessons {
+    padding-left: var(--space-4);
+  }
+
+  .skills,
+  .features {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .finalCta {
+    padding: var(--space-8) var(--space-4);
   }
 }

@@ -5,7 +5,10 @@ import { prodSchema } from "../schemaHelpers";
 export const users = prodSchema.table("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: varchar({ length: 255 }).notNull().unique(),
-  password: varchar({ length: 255 }).notNull(),
+  // Необязателен: аккаунт, созданный подтверждением почты, пароля не имеет —
+  // такой пользователь заходит по ссылке, пока не задаст пароль через
+  // «Забыли пароль?». signin обязан считать NULL несовпадением, а не падать.
+  password: varchar({ length: 255 }),
   sessionID: uuid("session_id").unique(),
   role: varchar({ enum: ["user", "manager", "admin"] })
     .notNull()
