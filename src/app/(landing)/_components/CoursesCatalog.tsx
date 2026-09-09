@@ -3,7 +3,7 @@ import { getLandingCourses } from "@/app/lib/dal/course.dal";
 import s from "../landing.module.css";
 
 type Props = {
-  /** Подпись кнопки карточки: на /business «Записаться» вводит в заблуждение. */
+  /** Подпись кнопки карточки: B2B-каталог переопределяет на «Программа курса». */
   ctaLabel?: string;
 };
 

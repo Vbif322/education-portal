@@ -14,7 +14,7 @@ const VISIBLE_SKILLS = 4;
 
 type Props = {
   course: LandingCourse;
-  /** Подпись кнопки карточки: на /business «Записаться» вводит в заблуждение. */
+  /** Подпись кнопки карточки: B2B-каталог переопределяет на «Программа курса». */
   ctaLabel?: string;
 };
 
@@ -33,7 +33,7 @@ type Props = {
  */
 export default function LandingCourseCard({
   course,
-  ctaLabel = "Записаться",
+  ctaLabel = "Подробнее о курсе",
 }: Props) {
   const {
     id,
