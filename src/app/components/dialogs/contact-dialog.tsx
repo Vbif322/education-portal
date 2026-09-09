@@ -5,7 +5,6 @@ import ContactForm from "@/app/components/contact-form/ContactForm";
 import Button from "@/app/ui/Button/Button";
 import type { ContactSource } from "@/app/lib/lead";
 import type { LeadGoal } from "@/app/lib/metrika";
-import Link from "next/link";
 import React from "react";
 import s from "./style.module.css";
 
