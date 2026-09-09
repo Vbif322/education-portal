@@ -55,23 +55,6 @@ const ContactDialog = ({
             </Button>
           }
         />
-
-        {/* Прямые контакты остаются: диалог видит человек, которого уже
-            заблокировали от контента, а SMTP может быть не настроен. */}
-        <p className={s.fallbackTitle}>Или свяжитесь напрямую:</p>
-        <div className={s.contactMethods}>
-          <a className={s.contactLink} href="mailto:mesenyashin@mail.ru">
-            📧 mesenyashin@mail.ru
-          </a>
-          <a className={s.contactLink} href="tel:+78124673467">
-            📞 +7 812 467-34-67
-          </a>
-        </div>
-
-        <p className={s.b2bHint}>
-          Обучаете сотрудников?{" "}
-          <Link href="/business">Корпоративное обучение →</Link>
-        </p>
       </div>
     </Dialog>
   );
