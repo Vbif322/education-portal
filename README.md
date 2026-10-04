@@ -28,23 +28,27 @@ cp .env.example .env
 # затем сгенерируйте SESSION_SECRET и впишите его в .env:
 openssl rand -base64 32
 
-# 3. Поднять PostgreSQL (Docker). Значения совпадают с .env.example
-docker compose up -d
+# 3. Поднять PostgreSQL (Docker) и создать схему prod со всеми таблицами.
+#    Значения совпадают с .env.example
+npm run db:up && npm run db:migrate
 
-# 4. Создать схему prod и все таблицы
-npm run db:migrate
-
-# 5. Создать стартового администратора (email/пароль из .env)
+# 4. Создать стартового администратора (email/пароль из .env)
 npm run db:seed
 
-# 6. Запустить приложение
-npm run dev
+# 5. Запустить базу и приложение
+npm run dev:all
 ```
+
+`npm run dev:all` — команда на каждый день: поднимает контейнер с базой, ждёт,
+пока он станет `healthy`, применяет новые миграции и запускает dev-сервер.
+Ctrl+C останавливает только приложение, база продолжает работать в фоне;
+остановить её — `npm run db:down` (данные в томе `pgdata` сохраняются).
 
 Откройте [http://localhost:3000](http://localhost:3000). Вход — на странице `/login`
 (по умолчанию `admin@example.com` / `admin12345`, см. `SEED_ADMIN_*` в `.env`).
 
-> Если используете свой PostgreSQL вместо Docker — пропустите шаг 3 и укажите свой `DATABASE_URL` в `.env`.
+> Если используете свой PostgreSQL вместо Docker — укажите свой `DATABASE_URL` в `.env`,
+> вместо `db:up` и `dev:all` запускайте `npm run db:migrate` и `npm run dev`.
 
 ## Переменные окружения
 
@@ -108,6 +112,8 @@ DNS домена SPF-`include` и DKIM-запись этого сервиса.
 
 | Команда | Назначение |
 |---|---|
+| `npm run db:up` | Поднять PostgreSQL в Docker и дождаться готовности |
+| `npm run db:down` | Остановить контейнер с базой (данные сохраняются) |
 | `npm run db:generate` | Сгенерировать SQL-миграцию после изменения схемы (в `drizzle/`) |
 | `npm run db:migrate` | Применить миграции к базе |
 | `npm run db:push` | Быстро синхронизировать схему с базой без файлов миграций (для локальной разработки) |
@@ -121,6 +127,7 @@ DNS домена SPF-`include` и DKIM-запись этого сервиса.
 | Команда | Назначение |
 |---|---|
 | `npm run dev` | Dev-сервер (Turbopack) на порту 3000 |
+| `npm run dev:all` | База в Docker + миграции + dev-сервер одной командой |
 | `npm run build` | Production-сборка |
 | `npm run start` | Production-сервер на порту 3000 |
 | `npm run start:prod` | Production-сервер на порту 9000 |

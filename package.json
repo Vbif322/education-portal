@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:all": "npm run db:up && npm run dev",
     "build": "next build",
     "start": "next start",
     "start:prod": "next start -p 9000",
     "lint": "next lint",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
