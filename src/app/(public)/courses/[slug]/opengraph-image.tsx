@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getCourseById } from "@/app/lib/dal/course.dal";
+import { getCourseBySlug } from "@/app/lib/dal/course.dal";
 
 /**
  * Картинка ссылки для соцсетей и мессенджеров.
@@ -14,12 +14,11 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 type Props = {
-  params: { id: string };
+  params: { slug: string };
 };
 
 export default async function Image({ params }: Props) {
-  const courseId = Number.parseInt(params.id, 10);
-  const course = Number.isNaN(courseId) ? null : await getCourseById(courseId);
+  const course = await getCourseBySlug(params.slug);
 
   const title = course?.name ?? "Курсы по менеджменту";
   const subtitle =

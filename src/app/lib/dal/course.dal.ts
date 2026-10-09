@@ -15,7 +15,18 @@ import {
   lessonAccess,
   subscription,
 } from "@/db/schema";
-import { eq, and, or, gt, isNull, asc, count, sql, inArray } from "drizzle-orm";
+import {
+  eq,
+  and,
+  or,
+  gt,
+  isNull,
+  asc,
+  count,
+  sql,
+  inArray,
+  type SQL,
+} from "drizzle-orm";
 import { getUser, getOptionalUser } from "../dal";
 import { canManage } from "../../utils/permissions";
 import {
@@ -107,6 +118,7 @@ export async function getAllCourses(
         .select({
           id: courses.id,
           name: courses.name,
+          slug: courses.slug,
           description: courses.description,
           program: courses.program,
           format: courses.format,
@@ -168,6 +180,7 @@ export async function getLandingCourses(): Promise<LandingCourse[]> {
       .select({
         id: courses.id,
         name: courses.name,
+        slug: courses.slug,
         description: courses.description,
         program: courses.program,
         format: courses.format,
@@ -243,6 +256,7 @@ export async function getCourseMetadataById(
       .select({
         id: courses.id,
         name: courses.name,
+        slug: courses.slug,
         description: courses.description,
         program: courses.program,
         format: courses.format,
@@ -288,15 +302,37 @@ export async function getCourseMetadataById(
 }
 
 /**
- * Обёрнут в `cache()`: страница урока и её layout запрашивают дерево курса
+ * Обёрнуты в `cache()`: страница урока и её layout запрашивают дерево курса
  * трижды за один рендер, а запрос тяжёлый (курс → темы → уроки → навыки).
  */
 export const getCourseById = cache(async function getCourseById(
   id: number
 ): Promise<CourseFulldata | null> {
+  return findCourseFulldata(eq(courses.id, id));
+});
+
+export const getCourseBySlug = cache(async function getCourseBySlug(
+  slug: string
+): Promise<CourseFulldata | null> {
+  return findCourseFulldata(eq(courses.slug, slug));
+});
+
+/** Только для редиректа со старых адресов /courses/<id>. */
+export async function getCourseSlugById(id: number): Promise<string | null> {
+  const [row] = await db
+    .select({ slug: courses.slug })
+    .from(courses)
+    .where(eq(courses.id, id))
+    .limit(1);
+  return row?.slug ?? null;
+}
+
+async function findCourseFulldata(
+  where: SQL
+): Promise<CourseFulldata | null> {
   try {
     const course = await db.query.courses.findFirst({
-      where: eq(courses.id, id),
+      where,
       with: {
         modules: {
           columns: { order: true },
@@ -328,7 +364,7 @@ export const getCourseById = cache(async function getCourseById(
     console.error("Ошибка при получении курса:", error);
     return null;
   }
-});
+}
 
 
 export async function getCourseProgress(courseId: number) {
@@ -796,6 +832,7 @@ export function isOwnCourse(
 
 export type ResumeTarget = {
   courseId: number;
+  courseSlug: string;
   courseName: string;
   lessonId: number;
   lessonName: string;
@@ -823,6 +860,7 @@ export async function getResumeTarget(): Promise<ResumeTarget | null> {
   const [row] = await db
     .select({
       courseId: coursesToModules.courseId,
+      courseSlug: courses.slug,
       courseName: courses.name,
       lessonId: lessons.id,
       lessonName: lessons.name,
@@ -866,6 +904,7 @@ export async function getResumeTarget(): Promise<ResumeTarget | null> {
 
   return {
     courseId: row.courseId,
+    courseSlug: row.courseSlug,
     courseName: row.courseName,
     lessonId: row.lessonId,
     lessonName: row.lessonName,

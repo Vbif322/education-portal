@@ -1,16 +1,14 @@
 import { FC } from "react";
 import { notFound, redirect } from "next/navigation";
-import {
-  getCourseById,
-  getCompletedLessonIds,
-} from "@/app/lib/dal/course.dal";
+import { getCompletedLessonIds } from "@/app/lib/dal/course.dal";
+import { resolveCourse } from "@/app/lib/course-route";
 import { analyticsService } from "@/lib/analytics/analytics.service";
 import { getUser } from "@/app/lib/dal";
 import { after } from "next/server";
 
 interface LessonsPageProps {
   params: Promise<{
-    id: string;
+    slug: string;
   }>;
 }
 
@@ -19,22 +17,21 @@ const LessonsPage: FC<LessonsPageProps> = async ({ params }) => {
   if (!user) {
     redirect("/login")
   }
-  const { id } = await params;
-  const courseId = Number(id);
+  const { slug } = await params;
+  const course = await resolveCourse(slug, "/lessons");
 
-  // Логируем попытку доступа (до проверок)
+  // Логируем попытку доступа (до проверок). Статистика ведётся по id курса,
+  // как и до перехода на slug; для несуществующего курса пишем сам адрес.
   after(() =>
     analyticsService
       .trackActivity({
         userId: user.id,
         activityType: "course_access_attempt",
         resourceType: "course",
-        resourceId: id
+        resourceId: course ? String(course.id) : slug
       })
       .catch((err) => console.error("Analytics tracking failed:", err))
   );
-
-  const course = await getCourseById(courseId);
 
   if (!course) {
     notFound();
@@ -52,13 +49,13 @@ const LessonsPage: FC<LessonsPageProps> = async ({ params }) => {
         userId: user.id,
         activityType: "course_view",
         resourceType: "course",
-        resourceId: id
+        resourceId: String(course.id)
       })
       .catch((err) => console.error("Analytics tracking failed:", err))
   );
 
   // Получаем список завершенных уроков
-  const completedLessons = await getCompletedLessonIds(courseId);
+  const completedLessons = await getCompletedLessonIds(course.id);
 
   // Создаем плоский список всех уроков в правильном порядке
   const allLessons: number[] = [];
@@ -77,7 +74,7 @@ const LessonsPage: FC<LessonsPageProps> = async ({ params }) => {
   // Если все уроки завершены, редиректим на последний урок
   const targetLessonId = firstIncompleteLesson ?? allLessons[allLessons.length - 1];
 
-  redirect(`/courses/${id}/lessons/${targetLessonId}`);
+  redirect(`/courses/${course.slug}/lessons/${targetLessonId}`);
 };
 
 export default LessonsPage;

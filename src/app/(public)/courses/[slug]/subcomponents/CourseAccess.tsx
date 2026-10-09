@@ -47,6 +47,7 @@ function useCourseAccess(): CourseAccessValue {
 
 type ProviderProps = {
   courseId: number;
+  courseSlug: string;
   courseName: string;
   /** Доступ уже есть — роль, подписка или индивидуальная выдача. */
   canOpen: boolean;
@@ -56,6 +57,7 @@ type ProviderProps = {
 
 export function CourseAccessProvider({
   courseId,
+  courseSlug,
   courseName,
   canOpen,
   defaultEmail,
@@ -82,7 +84,7 @@ export function CourseAccessProvider({
 
   const activate = useCallback(() => {
     if (canOpen) {
-      router.push(`/courses/${courseId}/lessons`);
+      router.push(`/courses/${courseSlug}/lessons`);
       return;
     }
 
@@ -90,7 +92,7 @@ export function CourseAccessProvider({
     // конверсией по рекламе не является.
     reachGoal(CTA_GOALS.courseAccess, { courseId });
     setDialogOpen(true);
-  }, [canOpen, courseId, router]);
+  }, [canOpen, courseId, courseSlug, router]);
 
   const value = useMemo<CourseAccessValue>(
     () => ({

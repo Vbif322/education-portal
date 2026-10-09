@@ -161,7 +161,7 @@ const Aside: FC<AsideProps> = ({
 
                   return (
                     <Link
-                      href={`/courses/${course.id}/lessons/${lesson.id}`}
+                      href={`/courses/${course.slug}/lessons/${lesson.id}`}
                       key={lesson.id}
                       className={`${s.lesson} ${
                         isActive ? s.lesson__active : ""

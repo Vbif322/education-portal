@@ -9,6 +9,7 @@ import { modules } from "./schema/module";
 import { lessons } from "./schema/lesson";
 import { coursesToModules } from "./schema/coursesToModules";
 import { modulesToLessons } from "./schema/modulesToLessons";
+import { slugify } from "../app/utils/slug";
 
 /**
  * Наполнение портала демо-контентом: курсы, модули (темы) и уроки,
@@ -369,6 +370,7 @@ async function main() {
         .insert(courses)
         .values({
           name: c.name,
+          slug: slugify(c.name),
           description: c.description,
           program: c.program,
           format: c.format,

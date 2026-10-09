@@ -39,6 +39,7 @@ const CourseCard: FC<CourseCardProps> = ({
   name,
   description,
   id,
+  slug,
   progress,
   access,
   mine,
@@ -100,7 +101,7 @@ const CourseCard: FC<CourseCardProps> = ({
       setContactOpen(true);
       return;
     }
-    router.push(link ? link : "/courses/" + id);
+    router.push(link ? link : "/courses/" + slug);
   };
 
   return (

@@ -4,15 +4,17 @@ import { db } from "@/db/db";
 import { courses, coursesToModules, skillsToCourses } from "@/db/schema";
 import { getUser } from "@/app/lib/dal";
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 import { canManage, isAdmin } from "../utils/permissions";
 import { auditService } from "@/lib/audit/audit.service";
 import { getCourseById } from "@/app/lib/dal/course.dal";
+import { isValidSlug, slugify } from "@/app/utils/slug";
 import { after } from "next/server";
 
 const courseSchema = z.object({
   name: z.string().min(1, "Название курса обязательно"),
+  slug: z.string().trim().toLowerCase().optional(),
   description: z.string().optional(),
   program: z.string().optional(),
   format: z.string().trim().max(64).optional(),
@@ -28,8 +30,41 @@ const courseSchema = z.object({
   skills: z.array(z.number()),
 });
 
+/**
+ * Адрес страницы курса: введённый в форме или, если поле пустое, из названия.
+ * Возвращает текст ошибки для формы, если адрес некорректен или занят другим
+ * курсом (`exceptId` — сам редактируемый курс).
+ */
+async function resolveSlug(
+  name: string,
+  slug: string | undefined,
+  exceptId?: number
+): Promise<{ slug: string } | { error: string }> {
+  const value = slug || slugify(name);
+  if (!isValidSlug(value)) {
+    return {
+      error:
+        "Адрес страницы: только латиница, цифры и дефис, и не одни цифры",
+    };
+  }
+  const [taken] = await db
+    .select({ id: courses.id })
+    .from(courses)
+    .where(
+      exceptId === undefined
+        ? eq(courses.slug, value)
+        : and(eq(courses.slug, value), ne(courses.id, exceptId))
+    )
+    .limit(1);
+  if (taken) {
+    return { error: `Адрес /courses/${value} уже занят другим курсом` };
+  }
+  return { slug: value };
+}
+
 export async function createCourse(data: {
   name: string;
+  slug?: string;
   description?: string;
   program?: string;
   format?: string;
@@ -56,6 +91,7 @@ export async function createCourse(data: {
 
     const {
       name,
+      slug: slugInput,
       description,
       program,
       format,
@@ -66,11 +102,17 @@ export async function createCourse(data: {
       skills: skillsList,
     } = validation.data;
 
+    const slugResult = await resolveSlug(name, slugInput);
+    if ("error" in slugResult) {
+      return { success: false, error: slugResult.error };
+    }
+
     // Создаем курс
     const [newCourse] = await db
       .insert(courses)
       .values({
         name,
+        slug: slugResult.slug,
         description: description || null,
         program,
         // Пустое поле формы — это NULL, а не "": карточка лендинга скрывает
@@ -154,6 +196,7 @@ export async function updateCourse(
   courseId: number,
   data: {
     name: string;
+    slug?: string;
     description?: string;
     program?: string;
     format?: string;
@@ -181,6 +224,7 @@ export async function updateCourse(
 
     const {
       name,
+      slug: slugInput,
       description,
       program,
       format,
@@ -196,6 +240,11 @@ export async function updateCourse(
 
     if (!existingCourse) {
       return { success: false, error: "Курс не найден" };
+    }
+
+    const slugResult = await resolveSlug(name, slugInput, courseId);
+    if ("error" in slugResult) {
+      return { success: false, error: slugResult.error };
     }
 
     // Сохраняем состояние до изменений для аудита
@@ -214,6 +263,7 @@ export async function updateCourse(
       .update(courses)
       .set({
         name,
+        slug: slugResult.slug,
         description: description || null,
         program,
         format: format || null,
@@ -268,6 +318,7 @@ export async function updateCourse(
           changesAfter: {
             id: courseId,
             name,
+            slug: slugResult.slug,
             description,
             program,
             format,

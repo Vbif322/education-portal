@@ -7,6 +7,7 @@ import Button from "@/app/ui/Button/Button";
 import { useRouter } from "next/navigation";
 import AddSkillModal from "@/app/components/modals/AddSkillModal";
 import { createSkill } from "@/app/actions/skills";
+import { SLUG_MAX_LENGTH, slugify } from "@/app/utils/slug";
 
 type Props = {
   modules: Module[];
@@ -16,6 +17,7 @@ type Props = {
   submitButtonText: string;
   onSubmit: (data: {
     name: string;
+    slug?: string;
     description?: string;
     program?: string;
     format?: string;
@@ -36,6 +38,10 @@ const CourseForm: FC<Props> = ({
   onSubmit,
 }) => {
   const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  // Пока адрес не правили руками, он следует за названием. У существующего
+  // курса — никогда: переименование не должно ломать ссылки на страницу.
+  const [slugTouched, setSlugTouched] = useState(Boolean(course));
   const [description, setDescription] = useState("");
   const [program, setProgram] = useState('')
   const [format, setFormat] = useState("");
@@ -64,6 +70,8 @@ const CourseForm: FC<Props> = ({
   useEffect(() => {
     if (course) {
       setName(course.name);
+      setSlug(course.slug);
+      setSlugTouched(true);
       setDescription(course.description || "");
       setProgram(course.program || '')
       setFormat(course.format || "");
@@ -89,6 +97,7 @@ const CourseForm: FC<Props> = ({
     try {
       const result = await onSubmit({
         name,
+        slug,
         description,
         program,
         format,
@@ -198,9 +207,32 @@ const CourseForm: FC<Props> = ({
             id="name"
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (!slugTouched) setSlug(slugify(e.target.value));
+            }}
             required
             placeholder="Введите название курса"
+            className={s.input}
+          />
+        </div>
+
+        <div className={s.formGroup}>
+          <label htmlFor="slug">Адрес страницы: /courses/{slug || "…"}</label>
+          <input
+            id="slug"
+            type="text"
+            value={slug}
+            onChange={(e) => {
+              setSlug(e.target.value.toLowerCase());
+              setSlugTouched(true);
+            }}
+            maxLength={SLUG_MAX_LENGTH}
+            // Те же правила, что isValidSlug: хотя бы одна буква, иначе адрес
+            // спутается со старым /courses/<id>.
+            pattern="(?=.*[a-z])[a-z0-9]+(-[a-z0-9]+)*"
+            title="Латиница, цифры и дефис; не одни цифры"
+            placeholder="Заполнится из названия"
             className={s.input}
           />
         </div>
