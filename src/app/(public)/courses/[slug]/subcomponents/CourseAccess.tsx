@@ -18,7 +18,7 @@ import s from "../style.module.css";
 /**
  * Единственный клиентский островок страницы курса.
  *
- * Кнопка «Получить доступ» стоит в трёх местах (герой, финальный блок, липкая
+ * Кнопка «Узнать условия обучения» стоит в трёх местах (герой, финальный блок, липкая
  * панель), а диалог заявки должен быть один: два смонтированных `ContactDialog`
  * означали бы две независимые формы и два состояния успеха. Поэтому состояние
  * живёт в провайдере, а кнопки — тонкие потребители контекста.
@@ -75,7 +75,7 @@ export function CourseAccessProvider({
     }
 
     const observer = new IntersectionObserver(([entry]) =>
-      setHeroCtaVisible(entry.isIntersecting)
+      setHeroCtaVisible(entry.isIntersecting),
     );
     observer.observe(heroCta);
 
@@ -96,11 +96,11 @@ export function CourseAccessProvider({
 
   const value = useMemo<CourseAccessValue>(
     () => ({
-      label: canOpen ? "Начать обучение" : "Получить доступ",
+      label: canOpen ? "Начать обучение" : "Узнать условия обучения",
       activate,
       registerHeroCta: setHeroCta,
     }),
-    [canOpen, activate]
+    [canOpen, activate],
   );
 
   return (
@@ -125,7 +125,11 @@ export function CourseAccessProvider({
           <div className={s.stickyBarSpacer} aria-hidden="true" />
           <div className={s.stickyBar}>
             <span className={s.stickyBar__name}>{courseName}</span>
-            <Button size="md" onClick={activate} className={s.stickyBar__button}>
+            <Button
+              size="md"
+              onClick={activate}
+              className={s.stickyBar__button}
+            >
               {value.label}
             </Button>
           </div>

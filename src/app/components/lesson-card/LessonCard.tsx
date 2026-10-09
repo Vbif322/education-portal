@@ -99,7 +99,11 @@ const LessonCard: FC<Props> = ({
         fullWidth
         onClick={onCtaClick}
       >
-        {locked ? "Получить доступ" : progress ? "Продолжить" : "Смотреть"}
+        {locked
+          ? "Узнать условия обучения"
+          : progress
+            ? "Продолжить"
+            : "Смотреть"}
       </Button>
 
       {locked && (

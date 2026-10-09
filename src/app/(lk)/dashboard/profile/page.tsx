@@ -38,13 +38,13 @@ export default async function ProfilePage() {
   // ограничивался «зачислениями» (`usersToCourses`) — модель, не связанная с
   // реальным доступом, из-за чего цифры расходились с дашбордом.
   const progressMap = await getCoursesProgress(
-    allCourses.map((course) => course.id)
+    allCourses.map((course) => course.id),
   );
 
   const progressValues = [...progressMap.values()];
   const stats = {
     inProgress: progressValues.filter(
-      (p) => p.percentage > 0 && p.percentage < 100
+      (p) => p.percentage > 0 && p.percentage < 100,
     ).length,
     completed: progressValues.filter((p) => p.percentage === 100).length,
     lessonsDone: progressValues.reduce((sum, p) => sum + p.completed, 0),
@@ -99,7 +99,7 @@ export default async function ProfilePage() {
               action={
                 <RequestAccessButton
                   email={user.email}
-                  label="Получить доступ"
+                  label="Узнать условия обучения"
                   dialogTitle="Доступ к курсам"
                 />
               }

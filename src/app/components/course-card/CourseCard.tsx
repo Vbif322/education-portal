@@ -87,14 +87,15 @@ const CourseCard: FC<CourseCardProps> = ({
     (locked
       ? mine
         ? "Продлить доступ"
-        : "Получить доступ"
+        : "Узнать условия обучения"
       : isCompleted
-      ? "Пройти заново"
-      : isInProgress
-      ? "Продолжить курс"
-      : "Начать обучение");
+        ? "Пройти заново"
+        : isInProgress
+          ? "Продолжить курс"
+          : "Начать обучение");
 
-  const ctaVariant = locked || isCompleted ? "outline" : isInProgress ? "filled" : "dark";
+  const ctaVariant =
+    locked || isCompleted ? "outline" : isInProgress ? "filled" : "dark";
 
   const onCtaClick = () => {
     if (locked && !ctaLabelOverride) {
@@ -165,11 +166,7 @@ const CourseCard: FC<CourseCardProps> = ({
           {moduleCount !== undefined && lessonCount !== undefined && " • "}
           {lessonCount !== undefined &&
             `${lessonCount} ${
-              lessonCount === 1
-                ? "урок"
-                : lessonCount < 5
-                ? "урока"
-                : "уроков"
+              lessonCount === 1 ? "урок" : lessonCount < 5 ? "урока" : "уроков"
             }`}
         </p>
       )}
