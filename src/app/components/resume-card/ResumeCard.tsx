@@ -20,7 +20,7 @@ const ResumeCard: FC<Props> = ({ target }) => {
 
   return (
     <Link
-      href={`/courses/${target.courseId}/lessons/${target.lessonId}`}
+      href={`/courses/${target.courseSlug}/lessons/${target.lessonId}`}
       className={s.card}
     >
       <div className={s.body}>

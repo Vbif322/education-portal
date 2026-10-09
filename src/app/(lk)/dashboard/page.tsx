@@ -129,7 +129,7 @@ export default async function Dashboard() {
                     progress={progressMap.get(course.id)}
                     access={accessMap.get(course.id)}
                     userEmail={user?.email}
-                    link={`/courses/${course.id}/lessons`}
+                    link={`/courses/${course.slug}/lessons`}
                   />
                 ))}
               </div>

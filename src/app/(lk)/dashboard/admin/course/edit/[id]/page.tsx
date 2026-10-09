@@ -27,14 +27,7 @@ export default async function EditCoursePage({ params }: Props) {
     notFound();
   }
 
-  const handleUpdate = async (data: {
-    name: string;
-    description?: string;
-    privacy: "public" | "private";
-    modules: { moduleId: number; order: number }[];
-    skills: number[];
-    showOnLanding: boolean;
-  }) => {
+  const handleUpdate = async (data: Parameters<typeof updateCourse>[1]) => {
     "use server";
     return updateCourse(courseId, data);
   };

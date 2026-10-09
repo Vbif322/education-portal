@@ -104,12 +104,12 @@ export async function POST(
       await completeLessonProgress(lessonId);
 
       // Ревалидация пути для обновления прогресса в sidebar
-      const courseIdMatch = request.headers
+      const courseSlugMatch = request.headers
         .get("referer")
-        ?.match(/\/courses\/(\d+)\//);
-      if (courseIdMatch) {
-        const courseId = courseIdMatch[1];
-        revalidatePath(`/courses/${courseId}/lessons`);
+        ?.match(/\/courses\/([a-z0-9-]+)\/lessons\//);
+      if (courseSlugMatch) {
+        const courseSlug = courseSlugMatch[1];
+        revalidatePath(`/courses/${courseSlug}/lessons`);
       }
     }
     return NextResponse.json({ success: true });

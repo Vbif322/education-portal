@@ -36,7 +36,7 @@ export default function LandingCourseCard({
   ctaLabel = "Подробнее о курсе",
 }: Props) {
   const {
-    id,
+    slug,
     name,
     description,
     format,
@@ -134,7 +134,7 @@ export default function LandingCourseCard({
         </section>
       )}
 
-      <Link href={`/courses/${id}`} className={s.cta}>
+      <Link href={`/courses/${slug}`} className={s.cta}>
         {ctaLabel}
       </Link>
     </article>

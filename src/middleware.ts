@@ -19,13 +19,15 @@ const publicRoutes = [
 // К тому же /forgot-password — сегодня единственный способ сменить пароль:
 // экрана смены пароля в кабинете нет.
 const guestOnlyRoutes = ["/login", "/register"];
-// Публичная страница курса: ровно один числовой сегмент (/courses/123).
-// Не матчит /courses/123/lessons/... — платный плеер остаётся защищённым.
-const COURSE_DETAIL = /^\/courses\/\d+\/?$/;
+// Публичная страница курса: ровно один сегмент — slug или старый числовой id,
+// который страница редиректит на slug (/courses/berezhlivoe-proizvodstvo,
+// /courses/123). Не матчит /courses/<slug>/lessons/... — платный плеер
+// остаётся защищённым.
+const COURSE_DETAIL = /^\/courses\/[a-z0-9-]+\/?$/;
 // Картинка ссылки для соцсетей: Next отдаёт её отдельным маршрутом
-// /courses/123/opengraph-image-<hash>. Её запрашивают краулеры и мессенджеры
+// /courses/<slug>/opengraph-image-<hash>. Её запрашивают краулеры и мессенджеры
 // без cookie — без этого исключения в превью уезжала бы страница логина.
-const COURSE_OG_IMAGE = /^\/courses\/\d+\/opengraph-image[\w-]*\/?$/;
+const COURSE_OG_IMAGE = /^\/courses\/[a-z0-9-]+\/opengraph-image[\w-]*\/?$/;
 
 function isPublicRoute(path: string): boolean {
   return (

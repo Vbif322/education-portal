@@ -9,7 +9,9 @@ import {
   Target,
   Video,
 } from "lucide-react";
-import { canAccessCourse, getCourseById } from "@/app/lib/dal/course.dal";
+import type { CourseFulldata } from "@/@types/course";
+import { canAccessCourse } from "@/app/lib/dal/course.dal";
+import { resolveCourse } from "@/app/lib/course-route";
 import { getOptionalUser } from "@/app/lib/dal";
 import { canManage } from "@/app/utils/permissions";
 import FeatureCard from "@/app/components/feature-card/FeatureCard";
@@ -27,22 +29,19 @@ import { Skill } from "./subcomponents/Skill";
 import s from "./style.module.css";
 
 type Props = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 };
 
 /** Сколько навыков показать чек-листом в герое — остальные ждут своей секции. */
 const HERO_SKILLS = 3;
 
 /**
- * Разбор курса из параметра маршрута. `getCourseById` обёрнут в `cache()`,
- * поэтому вызов и здесь, и в `generateMetadata` стоит одного запроса.
+ * Курс из параметра маршрута; старый числовой адрес уходит редиректом на slug.
+ * `getCourseBySlug` обёрнут в `cache()`, поэтому вызов и здесь, и в
+ * `generateMetadata` стоит одного запроса.
  */
-async function loadCourse(idParam: string) {
-  const courseId = Number.parseInt(idParam, 10);
-  if (Number.isNaN(courseId)) {
-    return null;
-  }
-  return getCourseById(courseId);
+function loadCourse(slugParam: string) {
+  return resolveCourse(slugParam);
 }
 
 type CourseView = {
@@ -55,14 +54,12 @@ type CourseView = {
 /**
  * Узкая проекция дерева курса.
  *
- * `getCourseById` отдаёт строки уроков целиком, включая `videoURL`. Страница
+ * `getCourseBySlug` отдаёт строки уроков целиком, включая `videoURL`. Страница
  * публичная и рендерится в HTML, поэтому наружу уходят только название и
  * длительность — ссылку на видео сюда пускать нельзя.
  */
 function toCourseView(
-  modules: Awaited<ReturnType<typeof getCourseById>> extends null
-    ? never
-    : NonNullable<Awaited<ReturnType<typeof getCourseById>>>["modules"]
+  modules: CourseFulldata["modules"]
 ): CourseView {
   const projected: ProgramModule[] = modules.map(({ module }) => ({
     id: module.id,
@@ -92,8 +89,8 @@ function toCourseView(
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const course = await loadCourse(id);
+  const { slug } = await params;
+  const course = await loadCourse(slug);
 
   if (!course) {
     return { title: "Курс не найден" };
@@ -109,12 +106,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${course.name} — курс Кирилла Месеняшина`,
     description,
-    alternates: { canonical: `/courses/${course.id}` },
+    alternates: { canonical: `/courses/${course.slug}` },
     openGraph: {
       type: "article",
       title: course.name,
       description,
-      url: `/courses/${course.id}`,
+      url: `/courses/${course.slug}`,
       locale: "ru_RU",
     },
   };
@@ -169,11 +166,11 @@ function courseSchemaJson(input: {
 }
 
 export default async function CoursePage({ params }: Props) {
-  const { id } = await params;
+  const { slug } = await params;
 
   const [user, course] = await Promise.all([
     getOptionalUser(),
-    loadCourse(id),
+    loadCourse(slug),
   ]);
 
   if (!course) {
@@ -199,6 +196,7 @@ export default async function CoursePage({ params }: Props) {
   return (
     <CourseAccessProvider
       courseId={course.id}
+      courseSlug={course.slug}
       courseName={course.name}
       canOpen={canOpen}
       defaultEmail={user?.email}

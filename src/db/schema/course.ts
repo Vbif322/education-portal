@@ -12,6 +12,10 @@ import { coursesToModules } from "./coursesToModules";
 export const courses = prodSchema.table("courses", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 256 }).notNull(),
+  /** Адрес страницы курса: /courses/<slug>. Заполняется из названия при
+   *  создании и дальше не следует за переименованием — иначе ломались бы
+   *  ссылки из рекламы и закладок. Правила — в `app/utils/slug.ts`. */
+  slug: varchar({ length: 128 }).notNull().unique(),
   description: varchar({ length: 1024 }),
   program: text(),
   /** Как проходит обучение: «В записи», «Онлайн», «С наставником».

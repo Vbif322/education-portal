@@ -4,10 +4,10 @@ import { getUser } from "@/app/lib/dal";
 import Aside from "../../../../components/aside/Aside";
 import s from "./layout.module.css";
 import {
-  getCourseById,
   getCourseProgress,
   getCompletedLessonIds,
 } from "@/app/lib/dal/course.dal";
+import { findCourse } from "@/app/lib/course-route";
 import { getLessonsAccess } from "@/app/lib/dal/lesson.dal";
 import type { LessonAccessState } from "@/app/lib/dal/lesson.dal";
 import { notFound } from "next/navigation";
@@ -15,22 +15,21 @@ import { notFound } from "next/navigation";
 const ModuleLayout: FC<
   Readonly<{
     children: React.ReactNode;
-    params: Promise<{ id: string }>;
+    params: Promise<{ slug: string }>;
   }>
 > = async ({ children, params }) => {
   const user = await getUser();
-  const { id } = await params;
-  const courseId = Number(id);
-
-  const [course, progress, completedLessonIds] = await Promise.all([
-    getCourseById(courseId),
-    getCourseProgress(courseId),
-    getCompletedLessonIds(courseId),
-  ]);
+  const { slug } = await params;
+  const course = await findCourse(slug);
 
   if (!course) {
     notFound();
   }
+
+  const [progress, completedLessonIds] = await Promise.all([
+    getCourseProgress(course.id),
+    getCompletedLessonIds(course.id),
+  ]);
 
   // Доступ по каждому уроку — чтобы сайдбар честно помечал закрытые замком.
   // `getLessonsAccess` намеренно не глушит ошибки, а `error.tsx` в проекте пока

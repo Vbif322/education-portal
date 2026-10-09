@@ -36,6 +36,13 @@
       "when": 1788894395402,
       "tag": "0004_dapper_wild_child",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791566470981,
+      "tag": "0005_course_slug",
+      "breakpoints": true
     }
   ]
 }

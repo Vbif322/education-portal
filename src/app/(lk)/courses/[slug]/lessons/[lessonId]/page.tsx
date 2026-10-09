@@ -7,17 +7,14 @@ import s from "./style.module.css";
 import { completeLessonProgress, getLesson } from "@/app/lib/dal/lesson.dal";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import {
-  getCourseById,
-  getNextLesson,
-  getPreviousLesson,
-} from "@/app/lib/dal/course.dal";
+import { getNextLesson, getPreviousLesson } from "@/app/lib/dal/course.dal";
+import { resolveCourse } from "@/app/lib/course-route";
 import ContactModal from "@/app/(lk)/dashboard/lessons/[id]/contact-modal";
 import { getUser } from "@/app/lib/dal";
 
 interface CourseEduPageProps {
   params: Promise<{
-    id: string;
+    slug: string;
     lessonId: string;
   }>;
 }
@@ -40,12 +37,16 @@ interface CourseEduPageProps {
 // ];
 
 const CourseEduPage: FC<CourseEduPageProps> = async ({ params }) => {
-  const { lessonId, id } = await params;
+  const { lessonId, slug } = await params;
+  const course = await resolveCourse(slug, `/lessons/${lessonId}`);
   const lesson = await getLesson(Number(lessonId));
-  const course = await getCourseById(Number(id));
   if (!lesson || !course) {
     notFound();
   }
+  // Server actions ниже замыкают только примитивы: замкнутые значения
+  // сериализуются на клиент, а в дереве курса лежат ссылки на видео.
+  const courseId = course.id;
+  const courseSlug = course.slug;
   const forbidden = "forbidden" in lesson;
   const lessonTitle = forbidden ? "Урок" : lesson.name;
   // Только ради предзаполнения формы в ContactModal; getUser обёрнут в
@@ -66,29 +67,29 @@ const CourseEduPage: FC<CourseEduPageProps> = async ({ params }) => {
   const currentLesson = currentLessonIndex !== -1 ? currentLessonIndex + 1 : 1;
 
   const breadcrumbItems = [
-    { label: course.name, href: `/courses/${id}` },
-    { label: lessonTitle, href: `/courses/${id}/lessons/${lessonId}` },
+    { label: course.name, href: `/courses/${courseSlug}` },
+    { label: lessonTitle, href: `/courses/${courseSlug}/lessons/${lessonId}` },
   ];
 
   const onPrevious = async () => {
     "use server";
     const previousLessonId = await getPreviousLesson(
-      Number(id),
+      courseId,
       Number(lessonId)
     );
     if (previousLessonId) {
-      redirect(`/courses/${id}/lessons/${previousLessonId}`);
+      redirect(`/courses/${courseSlug}/lessons/${previousLessonId}`);
     }
   };
 
   const onNext = async () => {
     "use server";
-    const nextLessonId = await getNextLesson(Number(id), Number(lessonId));
+    const nextLessonId = await getNextLesson(courseId, Number(lessonId));
     await completeLessonProgress(Number(lessonId));
     if (nextLessonId) {
-      redirect(`/courses/${id}/lessons/${nextLessonId}`);
+      redirect(`/courses/${courseSlug}/lessons/${nextLessonId}`);
     }
-    revalidatePath(`/courses/${id}/lessons`);
+    revalidatePath(`/courses/${courseSlug}/lessons`);
   };
 
   return (

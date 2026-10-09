@@ -18,7 +18,7 @@ import s from "../style.module.css";
 /**
  * Единственный клиентский островок страницы курса.
  *
- * Кнопка «Получить доступ» стоит в трёх местах (герой, финальный блок, липкая
+ * Кнопка «Узнать условия обучения» стоит в трёх местах (герой, финальный блок, липкая
  * панель), а диалог заявки должен быть один: два смонтированных `ContactDialog`
  * означали бы две независимые формы и два состояния успеха. Поэтому состояние
  * живёт в провайдере, а кнопки — тонкие потребители контекста.
@@ -47,6 +47,7 @@ function useCourseAccess(): CourseAccessValue {
 
 type ProviderProps = {
   courseId: number;
+  courseSlug: string;
   courseName: string;
   /** Доступ уже есть — роль, подписка или индивидуальная выдача. */
   canOpen: boolean;
@@ -56,6 +57,7 @@ type ProviderProps = {
 
 export function CourseAccessProvider({
   courseId,
+  courseSlug,
   courseName,
   canOpen,
   defaultEmail,
@@ -73,7 +75,7 @@ export function CourseAccessProvider({
     }
 
     const observer = new IntersectionObserver(([entry]) =>
-      setHeroCtaVisible(entry.isIntersecting)
+      setHeroCtaVisible(entry.isIntersecting),
     );
     observer.observe(heroCta);
 
@@ -82,7 +84,7 @@ export function CourseAccessProvider({
 
   const activate = useCallback(() => {
     if (canOpen) {
-      router.push(`/courses/${courseId}/lessons`);
+      router.push(`/courses/${courseSlug}/lessons`);
       return;
     }
 
@@ -90,15 +92,15 @@ export function CourseAccessProvider({
     // конверсией по рекламе не является.
     reachGoal(CTA_GOALS.courseAccess, { courseId });
     setDialogOpen(true);
-  }, [canOpen, courseId, router]);
+  }, [canOpen, courseId, courseSlug, router]);
 
   const value = useMemo<CourseAccessValue>(
     () => ({
-      label: canOpen ? "Начать обучение" : "Получить доступ",
+      label: canOpen ? "Начать обучение" : "Узнать условия обучения",
       activate,
       registerHeroCta: setHeroCta,
     }),
-    [canOpen, activate]
+    [canOpen, activate],
   );
 
   return (
@@ -123,7 +125,11 @@ export function CourseAccessProvider({
           <div className={s.stickyBarSpacer} aria-hidden="true" />
           <div className={s.stickyBar}>
             <span className={s.stickyBar__name}>{courseName}</span>
-            <Button size="md" onClick={activate} className={s.stickyBar__button}>
+            <Button
+              size="md"
+              onClick={activate}
+              className={s.stickyBar__button}
+            >
               {value.label}
             </Button>
           </div>
